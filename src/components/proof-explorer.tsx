@@ -81,11 +81,7 @@ export default function ProofExplorer() {
         }
       } catch (error) {
         console.error("Error reading from cache:", error);
-        toast({
-          variant: 'destructive',
-          title: 'Cache Error',
-          description: 'Could not read from the cache. Generating a new proof.',
-        });
+        // Fall through to generate a new proof without showing a toast
       }
     }
 
