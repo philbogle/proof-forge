@@ -12,7 +12,7 @@ export async function generateProof(
     {
       name: 'generateProofFlow',
       inputSchema: GenerateProofInputSchema,
-      outputSchema: z.string().stream(), // We expect a streaming string output
+      outputSchema: z.any(), // Streams are handled by the return type.
     },
     async (input) => {
       const prompt = `
@@ -40,10 +40,11 @@ Begin the proof now.
         },
         stream: true,
       });
+      // Genkit manages the stream serialization to the client.
       return stream;
     }
   );
 
   const stream = await generateProofFlow(input);
-  return { proofStream: stream };
+  return { proofStream: stream as ReadableStream<string> };
 }
