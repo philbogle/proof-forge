@@ -10,14 +10,15 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { FormalityLevel } from '@/lib/types';
-
+import {FormalityLevel} from '@/lib/types';
 
 const AnswerQuestionInputSchema = z.object({
   theoremName: z.string().describe('The name of the theorem.'),
   theoremText: z.string().describe('The text of the theorem.'),
   question: z.string().describe('The user question about the theorem.'),
-  formalityLevel: z.enum(['plainEnglish', 'englishDescription', 'semiFormal', 'rigorousFormal']).describe('The current formality level of the proof.'),
+  formalityLevel: z
+    .enum(['informalEnglish', 'semiFormal', 'rigorous'])
+    .describe('The current formality level of the proof.'),
 });
 export type AnswerQuestionInput = z.infer<typeof AnswerQuestionInputSchema>;
 
@@ -26,7 +27,9 @@ const AnswerQuestionOutputSchema = z.object({
 });
 export type AnswerQuestionOutput = z.infer<typeof AnswerQuestionOutputSchema>;
 
-export async function answerQuestion(input: AnswerQuestionInput): Promise<AnswerQuestionOutput> {
+export async function answerQuestion(
+  input: AnswerQuestionInput
+): Promise<AnswerQuestionOutput> {
   return answerQuestionFlow(input);
 }
 
@@ -51,7 +54,7 @@ const answerQuestionFlow = ai.defineFlow(
     inputSchema: AnswerQuestionInputSchema,
     outputSchema: AnswerQuestionOutputSchema,
   },
-  async input => {
+  async (input) => {
     const {output} = await prompt(input);
     return output!;
   }

@@ -1,8 +1,4 @@
-export type FormalityLevel =
-  | 'plainEnglish'
-  | 'englishDescription'
-  | 'semiFormal'
-  | 'rigorousFormal';
+export type FormalityLevel = 'informalEnglish' | 'semiFormal' | 'rigorous';
 
 export type Theorem = {
   id: string;

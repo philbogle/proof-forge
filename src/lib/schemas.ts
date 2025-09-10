@@ -4,7 +4,7 @@ export const GenerateProofInputSchema = z.object({
   theoremName: z.string().describe('The name of the theorem to prove.'),
   theoremStatement: z.string().describe('The statement of the theorem.'),
   formality: z
-    .enum(['plainEnglish', 'englishDescription', 'semiFormal', 'rigorousFormal'])
+    .enum(['informalEnglish', 'semiFormal', 'rigorous'])
     .describe('The desired level of formality for the proof.'),
   userBackground: z
     .string()

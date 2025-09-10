@@ -15,25 +15,29 @@ import { useToast } from '@/hooks/use-toast';
 import { answerQuestion } from '@/ai/flows/natural-language-questioning';
 import { generateProof } from '@/ai/flows/generate-proof-flow';
 import { Loader2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-import { theorems, type Theorem } from '@/lib/theorems';
+import { theorems } from '@/lib/theorems';
 import type { FormalityLevel } from '@/lib/types';
 import { ProofDisplay } from '@/components/proof-display';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
-  { id: 'plainEnglish', name: 'Plain English' },
-  { id: 'englishDescription', name: 'English Description' },
+  { id: 'informalEnglish', name: 'Informal English' },
   { id: 'semiFormal', name: 'Semi-Formal' },
-  { id: 'rigorousFormal', name: 'Rigorous Formal' },
+  { id: 'rigorous', name: 'Rigorous' },
 ];
 
 export default function ProofExplorer() {
-  const [theoremName, setTheoremName] = React.useState(theorems[0].name);
-  const [theoremStatement, setTheoremStatement] = React.useState(
-    theorems[0].statement
+  const [selectedTheoremId, setSelectedTheoremId] = React.useState(
+    theorems[0].id
   );
   const [formalityLevel, setFormalityLevel] =
     React.useState<FormalityLevel>('semiFormal');
@@ -47,102 +51,52 @@ export default function ProofExplorer() {
   );
   const [renderMarkdown, setRenderMarkdown] = React.useState(true);
 
-  const [suggestions, setSuggestions] = React.useState<Theorem[]>([]);
-  const [isSuggestionsVisible, setIsSuggestionsVisible] = React.useState(false);
-
   const { toast } = useToast();
-  const suggestionsRef = React.useRef<HTMLUListElement>(null);
 
-  const generateNewProof = React.useCallback(
-    async (name: string, statement: string) => {
-      if (!name || !statement) return;
-
-      setIsProofLoading(true);
-      setAnswer('');
-      setQuestion('');
-      setProof('');
-      try {
-        const { proof } = await generateProof({
-          theoremName: name,
-          theoremStatement: statement,
-          formality: formalityLevel,
-          userBackground,
-        });
-        setProof(proof);
-      } catch (error) {
-        console.error('Error generating proof:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description:
-            'Could not generate the proof. Please check the console for details.',
-        });
-        setProof('Failed to generate proof.');
-      } finally {
-        setIsProofLoading(false);
-      }
-    },
-    [formalityLevel, userBackground, toast]
+  const selectedTheorem = React.useMemo(
+    () => theorems.find((t) => t.id === selectedTheoremId) || theorems[0],
+    [selectedTheoremId]
   );
 
-  React.useEffect(() => {
-    // Initial proof generation
-    generateNewProof(theoremName, theoremStatement);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const generateNewProof = React.useCallback(async () => {
+    setIsProofLoading(true);
+    setAnswer('');
+    setQuestion('');
+    setProof('');
 
-  const handleTheoremInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setTheoremName(value);
-    if (value) {
-      const filteredSuggestions = theorems
-        .filter((t) => t.name.toLowerCase().includes(value.toLowerCase()))
-        .slice(0, 10);
-      setSuggestions(filteredSuggestions);
-      setIsSuggestionsVisible(true);
-    } else {
-      setSuggestions([]);
-      setIsSuggestionsVisible(false);
+    try {
+      const { proof } = await generateProof({
+        theoremName: selectedTheorem.name,
+        theoremStatement: selectedTheorem.statement,
+        formality: formalityLevel,
+        userBackground,
+      });
+      setProof(proof);
+    } catch (error) {
+      console.error('Error generating proof:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description:
+          'Could not generate the proof. Please check the console for details.',
+      });
+      setProof('Failed to generate proof.');
+    } finally {
+      setIsProofLoading(false);
     }
-  };
+  }, [formalityLevel, userBackground, toast, selectedTheorem]);
 
-  const handleSuggestionClick = (theorem: Theorem) => {
-    setTheoremName(theorem.name);
-    setTheoremStatement(theorem.statement);
-    setIsSuggestionsVisible(false);
-    generateNewProof(theorem.name, theorem.statement);
-  };
+  React.useEffect(() => {
+    generateNewProof();
+  }, [generateNewProof]);
 
-  const handleGenerateClick = () => {
-    setIsSuggestionsVisible(false);
-    const knownTheorem = theorems.find(
-      (t) => t.name.toLowerCase() === theoremName.toLowerCase()
-    );
-    const statementToUse =
-      knownTheorem?.statement ?? `A theorem about ${theoremName}`;
-    setTheoremStatement(statementToUse);
-    generateNewProof(theoremName, statementToUse);
+  const handleTheoremChange = (theoremId: string) => {
+    setSelectedTheoremId(theoremId);
   };
 
   const handleFormalityChange = (level: FormalityLevel) => {
     setFormalityLevel(level);
-    generateNewProof(theoremName, theoremStatement);
   };
-
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node)
-      ) {
-        setIsSuggestionsVisible(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   return (
     <div className="flex h-full min-h-screen flex-col items-center bg-gray-50/50 p-4 font-headline md:p-6 lg:p-8">
@@ -152,66 +106,41 @@ export default function ProofExplorer() {
             Proof Explorer
           </h1>
           <p className="max-w-2xl text-lg text-muted-foreground">
-            Select a theorem from the list or type your own, then explore its
-            proof at different levels of formality.
+            Select a theorem from the list, then explore its proof at different
+            levels of formality.
           </p>
         </header>
 
-        <div className="mb-8 grid grid-cols-1 items-end gap-4 md:grid-cols-3">
-          <div className="relative col-span-1 flex flex-col gap-2 md:col-span-2">
-            <Label htmlFor="theorem-input" className="text-sm font-medium">
+        <div className="mb-8 grid grid-cols-1 items-end gap-4">
+          <div className="col-span-1 flex flex-col gap-2">
+            <Label htmlFor="theorem-select" className="text-sm font-medium">
               Theorem
             </Label>
-            <Input
-              id="theorem-input"
-              type="text"
-              value={theoremName}
-              onChange={handleTheoremInputChange}
-              onFocus={() => theoremName && setIsSuggestionsVisible(true)}
-              placeholder="Search for a theorem or type your own..."
-              className="bg-white"
-              autoComplete="off"
-            />
-            {isSuggestionsVisible && suggestions.length > 0 && (
-              <ul
-                ref={suggestionsRef}
-                className="absolute top-full z-10 mt-1 w-full rounded-md border bg-white shadow-lg"
-              >
-                {suggestions.map((theorem) => (
-                  <li
-                    key={theorem.id}
-                    className="cursor-pointer p-2 hover:bg-gray-100"
-                    onMouseDown={(e) => {
-                      e.preventDefault(); // Prevent input from losing focus
-                      handleSuggestionClick(theorem);
-                    }}
-                  >
-                    {theorem.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <Button
-              onClick={handleGenerateClick}
-              disabled={isProofLoading || !theoremName.trim()}
+            <Select
+              value={selectedTheoremId}
+              onValueChange={handleTheoremChange}
             >
-              {isProofLoading && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Generate Proof
-            </Button>
+              <SelectTrigger id="theorem-select" className="bg-white">
+                <SelectValue placeholder="Select a theorem" />
+              </SelectTrigger>
+              <SelectContent>
+                {theorems.map((theorem) => (
+                  <SelectItem key={theorem.id} value={theorem.id}>
+                    {theorem.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        <div className="mb-6 flex items-start justify-between">
+        <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              {theoremName}
+              {selectedTheorem.name}
             </h2>
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-start gap-2 md:items-end">
             <Label className="text-xs text-muted-foreground">
               Formality Level
             </Label>
@@ -243,7 +172,10 @@ export default function ProofExplorer() {
                   </CardDescription>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Label htmlFor="markdown-toggle" className="text-sm font-medium">
+                  <Label
+                    htmlFor="markdown-toggle"
+                    className="text-sm font-medium"
+                  >
                     Raw
                   </Label>
                   <Switch
@@ -263,10 +195,7 @@ export default function ProofExplorer() {
                   <Skeleton className="h-4 w-1/2" />
                 </div>
               ) : renderMarkdown ? (
-                <ProofDisplay
-                  key={`${theoremName}-${formalityLevel}`}
-                  content={proof}
-                />
+                <ProofDisplay content={proof} />
               ) : (
                 <pre className="whitespace-pre-wrap font-code text-sm">
                   <code>{proof}</code>
@@ -298,7 +227,7 @@ export default function ProofExplorer() {
                   setAnswer('');
                   try {
                     const result = await answerQuestion({
-                      theoremName: theoremName,
+                      theoremName: selectedTheorem.name,
                       theoremText: proof,
                       question,
                       formalityLevel,
