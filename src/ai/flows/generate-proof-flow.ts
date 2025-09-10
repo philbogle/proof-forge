@@ -11,6 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
+export type GenerateProofInput = z.infer<typeof GenerateProofInputSchema>;
 const GenerateProofInputSchema = z.object({
   theoremName: z.string().describe('The name of the theorem to prove.'),
   theoremStatement: z.string().describe('The statement of the theorem.'),
@@ -22,14 +23,13 @@ const GenerateProofInputSchema = z.object({
     .describe("The user's mathematical background.")
     .optional(),
 });
-export type GenerateProofInput = z.infer<typeof GenerateProofInputSchema>;
 
+export type GenerateProofOutput = z.infer<typeof GenerateProofOutputSchema>;
 const GenerateProofOutputSchema = z.object({
   proof: z
     .string()
     .describe('The generated proof in Markdown format, including LaTeX for mathematical expressions.'),
 });
-export type GenerateProofOutput = z.infer<typeof GenerateProofOutputSchema>;
 
 export async function generateProof(
   input: GenerateProofInput
@@ -50,13 +50,10 @@ You are an expert mathematician and a skilled teacher. Your task is to generate 
 ${input.userBackground ? `**Target Audience Background:** ${input.userBackground}` : ''}
 
 **Instructions:**
-1.  Generate a clear, correct, and well-structured proof.
-2.  The output **must** be in Markdown format.
-3.  **Crucially, all mathematical expressions and symbols must be written in LaTeX.**
-    -   For **inline** mathematics, enclose the LaTeX code in single dollar signs. For example: \`Let $x$ be a number.\`
-    -   For **block-level** or display mathematics, enclose the LaTeX code in double dollar signs. For example: \`$$a^2 + b^2 = c^2$$\`
-4.  Adapt the tone, terminology, and level of detail to the specified formality level and target audience. For "plainEnglish", avoid math notation entirely.
-5.  At the end of semi-formal and rigorous proofs, include "Q.E.D."
+Your output must be in Markdown format.
+Always use rendered LaTeX for math: $formula$ for inline (using \\mathbf{} for vectors), and $$formula$$ for display equations. Critically, ensure no whitespace exists immediately inside delimiters (use $E=mc^2$, not $ E = mc^2 $). When display math ($$...$$) appears within lists, start it on a new line with zero leading indentation. Reserve code blocks (\`\`\`) strictly for programming code implementations, never for displaying mathematical formulas. Choose inline math for brevity/flow and display math for complex or emphasized equations, maintaining clean separation and standard paragraph spacing (one blank line after display math) for a professional, scientific document style.
+For "plainEnglish" formality, avoid math notation entirely.
+At the end of semi-formal and rigorous proofs, include "Q.E.D."
 
 Begin the proof now.
 `;
