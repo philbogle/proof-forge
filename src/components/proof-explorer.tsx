@@ -137,6 +137,15 @@ export default function ProofExplorer() {
       // The useEffect will then trigger the proof generation
   }
 
+  React.useEffect(() => {
+    const selectedTheorem = theorems.find(
+      (t) => t.name.toLowerCase() === theoremName.toLowerCase()
+    );
+    if (selectedTheorem) {
+      setTheoremStatement(selectedTheorem.statement);
+    }
+  }, [theoremName]);
+
   return (
     <div className="flex h-full min-h-screen flex-col items-center bg-gray-50/50 p-4 font-headline md:p-6 lg:p-8">
       <div className="w-full max-w-4xl">
@@ -193,10 +202,14 @@ export default function ProofExplorer() {
                           key={theorem.id}
                           value={theorem.name}
                           onSelect={(currentValue) => {
-                             const selectedTheorem = theorems.find(t => t.name.toLowerCase() === currentValue.toLowerCase());
-                              if (selectedTheorem) {
-                                handleTheoremSelect(selectedTheorem);
-                              }
+                            setTheoremName(
+                              theorems.find(
+                                (t) =>
+                                  t.name.toLowerCase() ===
+                                  currentValue.toLowerCase()
+                              )?.name || currentValue
+                            );
+                            setComboOpen(false);
                           }}
                         >
                           <Check
