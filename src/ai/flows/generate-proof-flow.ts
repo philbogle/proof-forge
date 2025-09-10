@@ -25,13 +25,14 @@ export type GenerateProofOutput = z.infer<typeof GenerateProofOutputSchema>;
 
 
 export async function generateProof(
-  input: GenerateProofInput
+  input: GenerateProofInput,
+  onChunk: (chunk: string) => void
 ): Promise<GenerateProofOutput> {
   const generateProofFlow = ai.defineFlow(
     {
       name: 'generateProofFlow',
       inputSchema: GenerateProofInputSchema,
-      outputSchema: GenerateProofOutputSchema,
+      outputSchema: z.string(), // We expect a streaming string output
     },
     async (input) => {
       const prompt = `
@@ -52,16 +53,23 @@ At the end of semi-formal and rigorous proofs, include "Q.E.D."
 Begin the proof now.
 `;
 
-      const { output } = await ai.generate({
+      const { stream } = ai.generateStream({
         prompt: prompt,
         output: {
-          schema: GenerateProofOutputSchema,
+          format: 'text',
         },
       });
 
-      return output!;
+      let fullProof = '';
+      for await (const chunk of stream) {
+        fullProof += chunk;
+        onChunk(chunk);
+      }
+
+      return fullProof;
     }
   );
 
-  return generateProofFlow(input);
+  const finalProof = await generateProofFlow(input);
+  return { proof: finalProof };
 }

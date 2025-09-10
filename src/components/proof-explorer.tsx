@@ -21,6 +21,7 @@ import { ProofDisplay } from '@/components/proof-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { Switch } from '@/components/ui/switch';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'plainEnglish', name: 'Plain English' },
@@ -44,6 +45,7 @@ export default function ProofExplorer() {
   const [userBackground, setUserBackground] = React.useState(
     'a college student studying mathematics'
   );
+  const [renderMarkdown, setRenderMarkdown] = React.useState(true);
 
   const [suggestions, setSuggestions] = React.useState<Theorem[]>([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = React.useState(false);
@@ -60,13 +62,17 @@ export default function ProofExplorer() {
       setQuestion('');
       setProof('');
       try {
-        const result = await generateProof({
-          theoremName: name,
-          theoremStatement: statement,
-          formality: formalityLevel,
-          userBackground,
-        });
-        setProof(result.proof);
+        await generateProof(
+          {
+            theoremName: name,
+            theoremStatement: statement,
+            formality: formalityLevel,
+            userBackground,
+          },
+          (chunk) => {
+            setProof((prevProof) => prevProof + chunk);
+          }
+        );
       } catch (error) {
         console.error('Error generating proof:', error);
         toast({
@@ -110,7 +116,7 @@ export default function ProofExplorer() {
     setIsSuggestionsVisible(false);
     generateNewProof(theorem.name, theorem.statement);
   };
-  
+
   const handleGenerateClick = () => {
     setIsSuggestionsVisible(false);
     const knownTheorem = theorems.find(
@@ -121,7 +127,7 @@ export default function ProofExplorer() {
     setTheoremStatement(statementToUse);
     generateNewProof(theoremName, statementToUse);
   };
-  
+
   const handleFormalityChange = (level: FormalityLevel) => {
     setFormalityLevel(level);
     generateNewProof(theoremName, theoremStatement);
@@ -168,6 +174,7 @@ export default function ProofExplorer() {
               onFocus={() => theoremName && setIsSuggestionsVisible(true)}
               placeholder="Search for a theorem or type your own..."
               className="bg-white"
+              autoComplete="off"
             />
             {isSuggestionsVisible && suggestions.length > 0 && (
               <ul
@@ -190,7 +197,10 @@ export default function ProofExplorer() {
             )}
           </div>
           <div className="col-span-1 flex flex-col gap-2">
-            <Button onClick={handleGenerateClick} disabled={isProofLoading}>
+            <Button
+              onClick={handleGenerateClick}
+              disabled={isProofLoading || !theoremName.trim()}
+            >
               {isProofLoading && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
@@ -229,25 +239,42 @@ export default function ProofExplorer() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Proof</CardTitle>
-              <CardDescription>
-                This is a dynamically generated presentation of the proof at the
-                selected formality level.
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Proof</CardTitle>
+                  <CardDescription>
+                    This is a dynamically generated presentation of the proof.
+                  </CardDescription>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="markdown-toggle" className="text-sm font-medium">
+                    Raw
+                  </Label>
+                  <Switch
+                    id="markdown-toggle"
+                    checked={!renderMarkdown}
+                    onCheckedChange={(checked) => setRenderMarkdown(!checked)}
+                  />
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="prose prose-blue dark:prose-invert max-w-none font-body text-base leading-relaxed">
-              {isProofLoading ? (
+            <CardContent>
+              {isProofLoading && !proof ? (
                 <div className="space-y-4">
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-1/2" />
                 </div>
-              ) : (
+              ) : renderMarkdown ? (
                 <ProofDisplay
                   key={`${theoremName}-${formalityLevel}`}
                   content={proof}
                 />
+              ) : (
+                <pre className="whitespace-pre-wrap font-code text-sm">
+                  <code>{proof}</code>
+                </pre>
               )}
             </CardContent>
           </Card>
@@ -267,7 +294,8 @@ export default function ProofExplorer() {
                 onChange={(e) => setQuestion(e.target.value)}
                 className="min-h-[100px] font-body"
               />
-              <Button onClick={async () => {
+              <Button
+                onClick={async () => {
                   if (!question.trim()) return;
 
                   setIsAnswerLoading(true);
@@ -291,7 +319,9 @@ export default function ProofExplorer() {
                   } finally {
                     setIsAnswerLoading(false);
                   }
-              }} disabled={isAnswerLoading}>
+                }}
+                disabled={isAnswerLoading}
+              >
                 {isAnswerLoading && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
