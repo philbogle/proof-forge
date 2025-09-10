@@ -71,6 +71,8 @@ export default function ProofExplorer() {
     if (!theoremName || !theoremStatement) return;
 
     setIsProofLoading(true);
+    setAnswer('');
+    setQuestion('');
     try {
       const result = await generateProof({
         theoremName: theoremName,
@@ -95,7 +97,7 @@ export default function ProofExplorer() {
 
   React.useEffect(() => {
     generateNewProof();
-  }, [theoremName, theoremStatement, formalityLevel, userBackground, generateNewProof]);
+  }, [theoremName, formalityLevel, generateNewProof]);
 
   const handleAskQuestion = async () => {
     if (!question.trim()) return;
@@ -122,6 +124,18 @@ export default function ProofExplorer() {
       setIsAnswerLoading(false);
     }
   };
+
+  const handleGenerateClick = () => {
+     const knownTheorem = theorems.find(
+        (t) => t.name.toLowerCase() === theoremName.toLowerCase()
+      );
+      if (knownTheorem) {
+        setTheoremStatement(knownTheorem.statement);
+      } else {
+        setTheoremStatement(`A theorem about ${theoremName}`);
+      }
+      // The useEffect will then trigger the proof generation
+  }
 
   return (
     <div className="flex h-full min-h-screen flex-col items-center bg-gray-50/50 p-4 font-headline md:p-6 lg:p-8">
@@ -163,17 +177,8 @@ export default function ProofExplorer() {
                 >
                   <CommandInput
                     placeholder="Search for a theorem or type your own..."
-                    onValueChange={(value) => {
-                      const knownTheorem = theorems.find(
-                        (t) => t.name.toLowerCase() === value.toLowerCase()
-                      );
-                      setTheoremName(value);
-                      if (knownTheorem) {
-                        setTheoremStatement(knownTheorem.statement);
-                      } else {
-                         setTheoremStatement(`A theorem about ${value}`);
-                      }
-                    }}
+                    value={theoremName}
+                    onValueChange={setTheoremName}
                   />
                   <CommandList>
                     <CommandEmpty>
@@ -197,7 +202,7 @@ export default function ProofExplorer() {
                           <Check
                             className={cn(
                               'mr-2 h-4 w-4',
-                              theoremName === theorem.name
+                              theoremName.toLowerCase() === theorem.name.toLowerCase()
                                 ? 'opacity-100'
                                 : 'opacity-0'
                             )}
@@ -212,7 +217,7 @@ export default function ProofExplorer() {
             </Popover>
           </div>
           <div className="col-span-1 flex flex-col gap-2">
-            <Button onClick={generateNewProof} disabled={isProofLoading}>
+            <Button onClick={handleGenerateClick} disabled={isProofLoading}>
               {isProofLoading && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}

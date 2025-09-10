@@ -1,17 +1,7 @@
 'use server';
-
-/**
- * @fileOverview A flow for dynamically generating mathematical proofs.
- *
- * - generateProof - A function that creates a proof for a given theorem.
- * - GenerateProofInput - The input type for the generateProof function.
- * - GenerateProofOutput - The return type for the generateProof function.
- */
-
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-export type GenerateProofInput = z.infer<typeof GenerateProofInputSchema>;
 const GenerateProofInputSchema = z.object({
   theoremName: z.string().describe('The name of the theorem to prove.'),
   theoremStatement: z.string().describe('The statement of the theorem.'),
@@ -23,13 +13,16 @@ const GenerateProofInputSchema = z.object({
     .describe("The user's mathematical background.")
     .optional(),
 });
+export type GenerateProofInput = z.infer<typeof GenerateProofInputSchema>;
 
-export type GenerateProofOutput = z.infer<typeof GenerateProofOutputSchema>;
+
 const GenerateProofOutputSchema = z.object({
   proof: z
     .string()
     .describe('The generated proof in Markdown format, including LaTeX for mathematical expressions.'),
 });
+export type GenerateProofOutput = z.infer<typeof GenerateProofOutputSchema>;
+
 
 export async function generateProof(
   input: GenerateProofInput
@@ -53,6 +46,7 @@ ${input.userBackground ? `**Target Audience Background:** ${input.userBackground
 Your output must be in Markdown format.
 Always use rendered LaTeX for math: $formula$ for inline (using \\mathbf{} for vectors), and $$formula$$ for display equations. Critically, ensure no whitespace exists immediately inside delimiters (use $E=mc^2$, not $ E = mc^2 $). When display math ($$...$$) appears within lists, start it on a new line with zero leading indentation. Reserve code blocks (\`\`\`) strictly for programming code implementations, never for displaying mathematical formulas. Choose inline math for brevity/flow and display math for complex or emphasized equations, maintaining clean separation and standard paragraph spacing (one blank line after display math) for a professional, scientific document style.
 For "plainEnglish" formality, avoid math notation entirely.
+For "semiFormal" and "rigorousFormal" formality, provide a full proof with all steps.
 At the end of semi-formal and rigorous proofs, include "Q.E.D."
 
 Begin the proof now.
