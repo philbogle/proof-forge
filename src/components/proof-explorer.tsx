@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { answerQuestion } from '@/ai/flows/natural-language-questioning';
 import { generateProof } from '@/ai/flows/generate-proof-flow';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -28,6 +28,10 @@ import type { FormalityLevel } from '@/lib/types';
 import { ProofDisplay } from '@/components/proof-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'informalEnglish', name: 'Informal English' },
@@ -58,11 +62,33 @@ export default function ProofExplorer() {
     [selectedTheoremId]
   );
 
-  const generateNewProof = React.useCallback(async () => {
+  const generateNewProof = React.useCallback(async (forceRefresh = false) => {
     setIsProofLoading(true);
     setAnswer('');
     setQuestion('');
     setProof('');
+
+    const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
+    const cacheDocRef = doc(db, 'proofs', cacheKey);
+
+    if (!forceRefresh) {
+      try {
+        const cachedDoc = await getDoc(cacheDocRef);
+        if (cachedDoc.exists()) {
+          setProof(cachedDoc.data().proof);
+          setIsProofLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Error reading from cache:", error);
+        toast({
+          variant: 'destructive',
+          title: 'Cache Error',
+          description: 'Could not read from the cache. Generating a new proof.',
+        });
+      }
+    }
+
 
     try {
       const { proof } = await generateProof({
@@ -72,6 +98,16 @@ export default function ProofExplorer() {
         userBackground,
       });
       setProof(proof);
+      try {
+        await setDoc(cacheDocRef, { proof, timestamp: new Date() });
+      } catch (error) {
+        console.error("Error writing to cache:", error);
+        toast({
+          variant: 'destructive',
+          title: 'Cache Error',
+          description: 'Could not save the proof to the cache.',
+        });
+      }
     } catch (error) {
       console.error('Error generating proof:', error);
       toast({
@@ -99,6 +135,7 @@ export default function ProofExplorer() {
   };
 
   return (
+    <TooltipProvider>
     <div className="flex h-full min-h-screen flex-col items-center bg-gray-50/50 p-4 font-headline md:p-6 lg:p-8">
       <div className="w-full max-w-4xl">
         <header className="mb-8 flex flex-col items-center gap-4 text-center">
@@ -157,6 +194,22 @@ export default function ProofExplorer() {
                   {level.name}
                 </Button>
               ))}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => generateNewProof(true)}
+                      disabled={isProofLoading}
+                      className="h-8 w-8"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isProofLoading ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Refresh Proof</p>
+                  </TooltipContent>
+                </Tooltip>
             </div>
           </div>
         </div>
@@ -267,5 +320,6 @@ export default function ProofExplorer() {
         </div>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
