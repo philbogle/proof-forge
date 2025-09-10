@@ -33,11 +33,12 @@ At the end of semi-formal and rigorous proofs, include "Q.E.D."
 Begin the proof now.
 `;
 
-      const { stream } = ai.generateStream({
+      const { stream } = await ai.generate({
         prompt: prompt,
         output: {
           format: 'text',
         },
+        stream: true,
       });
       return stream;
     }
