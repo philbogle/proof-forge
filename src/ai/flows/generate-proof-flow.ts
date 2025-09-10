@@ -12,7 +12,9 @@ export async function generateProof(
     {
       name: 'generateProofFlow',
       inputSchema: GenerateProofInputSchema,
-      outputSchema: z.any(), // Streams are handled by the return type.
+      // The output schema describes the final, non-streamed result.
+      // For streaming, we handle the raw stream from `ai.generate`.
+      outputSchema: z.any(),
     },
     async (input) => {
       const prompt = `
