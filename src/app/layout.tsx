@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
+import 'katex/dist/katex.min.css';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -25,27 +26,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          MathJax = {
-            tex: {
-              inlineMath: [['$', '$'], ['\\(', '\\)']],
-              displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            },
-            svg: {
-              fontCache: 'global'
-            }
-          };
-        `,
-          }}
-        />
-        <script
-          type="text/javascript"
-          id="MathJax-script"
-          async
-          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
-        ></script>
       </head>
       <body className="font-headline antialiased">
         {children}

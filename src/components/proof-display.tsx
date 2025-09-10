@@ -1,28 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
-
-declare global {
-  interface Window {
-    MathJax?: {
-      typesetPromise: () => Promise<void>;
-    };
-  }
-}
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 export function ProofDisplay({ content }: { content: string }) {
-  useEffect(() => {
-    const typesetMath = async () => {
-      if (window.MathJax) {
-        try {
-          await window.MathJax.typesetPromise();
-        } catch (e) {
-          console.error('MathJax typesetPromise failed:', e);
-        }
-      }
-    };
-    typesetMath();
-  }, [content]);
-
-  return <div dangerouslySetInnerHTML={{ __html: content }} />;
+  return (
+    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehype-katex]}>
+      {content}
+    </ReactMarkdown>
+  );
 }
