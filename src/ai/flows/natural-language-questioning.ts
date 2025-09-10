@@ -10,6 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { FormalityLevel } from '@/lib/types';
+
 
 const AnswerQuestionInputSchema = z.object({
   theoremName: z.string().describe('The name of the theorem.'),

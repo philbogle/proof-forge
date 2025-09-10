@@ -1,38 +1,18 @@
 'use server';
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-
-const GenerateProofInputSchema = z.object({
-  theoremName: z.string().describe('The name of the theorem to prove.'),
-  theoremStatement: z.string().describe('The statement of the theorem.'),
-  formality: z
-    .enum(['plainEnglish', 'englishDescription', 'semiFormal', 'rigorousFormal'])
-    .describe('The desired level of formality for the proof.'),
-  userBackground: z
-    .string()
-    .describe("The user's mathematical background.")
-    .optional(),
-});
-export type GenerateProofInput = z.infer<typeof GenerateProofInputSchema>;
-
-
-const GenerateProofOutputSchema = z.object({
-  proof: z
-    .string()
-    .describe('The generated proof in Markdown format, including LaTeX for mathematical expressions.'),
-});
-export type GenerateProofOutput = z.infer<typeof GenerateProofOutputSchema>;
+import {GenerateProofOutput, GenerateProofInput} from '@/lib/types';
+import {GenerateProofInputSchema} from '@/lib/schemas';
 
 
 export async function generateProof(
   input: GenerateProofInput,
-  onChunk: (chunk: string) => void
 ): Promise<GenerateProofOutput> {
   const generateProofFlow = ai.defineFlow(
     {
       name: 'generateProofFlow',
       inputSchema: GenerateProofInputSchema,
-      outputSchema: z.string(), // We expect a streaming string output
+      outputSchema: z.string().stream(), // We expect a streaming string output
     },
     async (input) => {
       const prompt = `
@@ -59,17 +39,10 @@ Begin the proof now.
           format: 'text',
         },
       });
-
-      let fullProof = '';
-      for await (const chunk of stream) {
-        fullProof += chunk;
-        onChunk(chunk);
-      }
-
-      return fullProof;
+      return stream;
     }
   );
 
-  const finalProof = await generateProofFlow(input);
-  return { proof: finalProof };
+  const stream = await generateProofFlow(input);
+  return { proofStream: stream };
 }

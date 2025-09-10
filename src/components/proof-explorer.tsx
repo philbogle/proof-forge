@@ -16,11 +16,11 @@ import { answerQuestion } from '@/ai/flows/natural-language-questioning';
 import { generateProof } from '@/ai/flows/generate-proof-flow';
 import { Loader2 } from 'lucide-react';
 
-import { theorems, type Theorem, type FormalityLevel } from '@/lib/theorems';
+import { theorems, type Theorem } from '@/lib/theorems';
+import type { FormalityLevel } from '@/lib/types';
 import { ProofDisplay } from '@/components/proof-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
@@ -62,17 +62,22 @@ export default function ProofExplorer() {
       setQuestion('');
       setProof('');
       try {
-        await generateProof(
-          {
-            theoremName: name,
-            theoremStatement: statement,
-            formality: formalityLevel,
-            userBackground,
-          },
-          (chunk) => {
-            setProof((prevProof) => prevProof + chunk);
-          }
-        );
+        const { proofStream } = await generateProof({
+          theoremName: name,
+          theoremStatement: statement,
+          formality: formalityLevel,
+          userBackground,
+        });
+
+        const reader = proofStream.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        while (!done) {
+          const { value, done: readerDone } = await reader.read();
+          done = readerDone;
+          const chunk = decoder.decode(value, { stream: true });
+          setProof((prevProof) => prevProof + chunk);
+        }
       } catch (error) {
         console.error('Error generating proof:', error);
         toast({

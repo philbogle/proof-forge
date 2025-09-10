@@ -1,10 +1,6 @@
-export type FormalityLevel = 'plainEnglish' | 'englishDescription' | 'semiFormal' | 'rigorousFormal';
+import { Theorem } from './types';
 
-export type Theorem = {
-  id: string;
-  name: string;
-  statement: string;
-};
+export type FormalityLevel = 'plainEnglish' | 'englishDescription' | 'semiFormal' | 'rigorousFormal';
 
 export const theorems: Theorem[] = [
   {
