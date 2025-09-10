@@ -83,3 +83,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes sparkle {
+    0%, 100% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1); opacity: 1; }
+    99% { transform: scale(1); opacity: 1; }
+  }
+}

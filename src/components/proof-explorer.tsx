@@ -26,7 +26,7 @@ import {
 import { theorems } from '@/lib/theorems';
 import type { FormalityLevel } from '@/lib/types';
 import { ProofDisplay } from '@/components/proof-display';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ProofLoadingIndicator } from '@/components/proof-loading-indicator';
 import { Switch } from '@/components/ui/switch';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -84,12 +84,10 @@ export default function ProofExplorer() {
             setIsProofLoading(false);
             return;
           }
-        } catch (error) {
-          console.error(
-            'Firestore cache read failed. Falling back to generation.',
-            error
-          );
-          // Don't toast here, just fall through silently.
+        } catch (error: any) {
+          if (error.code !== 'unavailable') {
+            console.error('Firestore cache read failed:', error);
+          }
         }
       }
 
@@ -100,12 +98,11 @@ export default function ProofExplorer() {
           formality: formalityLevel,
           userBackground,
         });
-        setProof(newProof); // This was the missing line.
+        setProof(newProof);
         try {
           await setDoc(cacheDocRef, { proof: newProof, timestamp: new Date() });
         } catch (error) {
           console.error('Firestore cache write failed:', error);
-          // Optional: toast only on write failure if you want to notify about that.
         }
       } catch (error) {
         console.error('Error generating proof:', error);
@@ -246,12 +243,7 @@ export default function ProofExplorer() {
               </CardHeader>
               <CardContent>
                 {isProofLoading ? (
-                  <div className="space-y-4">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
+                  <ProofLoadingIndicator />
                 ) : renderMarkdown ? (
                   <ProofDisplay content={proof} />
                 ) : (
