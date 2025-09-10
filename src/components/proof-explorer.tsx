@@ -68,7 +68,7 @@ export default function ProofExplorer() {
   };
 
   const generateNewProof = React.useCallback(async () => {
-    if (!theoremName) return;
+    if (!theoremName || !theoremStatement) return;
 
     setIsProofLoading(true);
     try {
@@ -155,15 +155,24 @@ export default function ProofExplorer() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                <Command>
+                <Command
+                   filter={(value, search) => {
+                    if (value.toLowerCase().includes(search.toLowerCase())) return 1;
+                    return 0;
+                  }}
+                >
                   <CommandInput
                     placeholder="Search for a theorem or type your own..."
                     onValueChange={(value) => {
-                      setTheoremName(value);
                       const knownTheorem = theorems.find(
                         (t) => t.name.toLowerCase() === value.toLowerCase()
                       );
-                      setTheoremStatement(knownTheorem ? knownTheorem.statement : `A theorem about ${value}`);
+                      setTheoremName(value);
+                      if (knownTheorem) {
+                        setTheoremStatement(knownTheorem.statement);
+                      } else {
+                         setTheoremStatement(`A theorem about ${value}`);
+                      }
                     }}
                   />
                   <CommandList>
@@ -178,7 +187,12 @@ export default function ProofExplorer() {
                         <CommandItem
                           key={theorem.id}
                           value={theorem.name}
-                          onSelect={() => handleTheoremSelect(theorem)}
+                          onSelect={(currentValue) => {
+                             const selectedTheorem = theorems.find(t => t.name.toLowerCase() === currentValue.toLowerCase());
+                              if (selectedTheorem) {
+                                handleTheoremSelect(selectedTheorem);
+                              }
+                          }}
                         >
                           <Check
                             className={cn(
