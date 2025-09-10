@@ -25,11 +25,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { answerQuestion } from '@/ai/flows/natural-language-questioning';
+import { generateProof } from '@/ai/flows/generate-proof-flow';
 import { Loader2, BookOpen, Search } from 'lucide-react';
 
 import { theorems, type Theorem, type FormalityLevel } from '@/lib/theorems';
 import { ProofDisplay } from '@/components/proof-display';
 import { Logo } from '@/components/icons';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'plainEnglish', name: 'Plain English' },
@@ -44,22 +46,53 @@ export default function ProofExplorer() {
   );
   const [formalityLevel, setFormalityLevel] =
     React.useState<FormalityLevel>('semiFormal');
+  const [proof, setProof] = React.useState('');
+  const [isProofLoading, setIsProofLoading] = React.useState(true);
   const [question, setQuestion] = React.useState('');
   const [answer, setAnswer] = React.useState('');
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isAnswerLoading, setIsAnswerLoading] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [userBackground, setUserBackground] = React.useState('a college student studying mathematics');
 
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    const fetchProof = async () => {
+      setIsProofLoading(true);
+      try {
+        const result = await generateProof({
+          theoremName: selectedTheorem.name,
+          theoremStatement: selectedTheorem.statement,
+          formality: formalityLevel,
+          userBackground,
+        });
+        setProof(result.proof);
+      } catch (error) {
+        console.error('Error generating proof:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description:
+            'Could not generate the proof. Please check the console for details.',
+        });
+        setProof('Failed to generate proof.');
+      } finally {
+        setIsProofLoading(false);
+      }
+    };
+
+    fetchProof();
+  }, [selectedTheorem, formalityLevel, userBackground, toast]);
 
   const handleAskQuestion = async () => {
     if (!question.trim()) return;
 
-    setIsLoading(true);
+    setIsAnswerLoading(true);
     setAnswer('');
     try {
       const result = await answerQuestion({
         theoremName: selectedTheorem.name,
-        theoremText: selectedTheorem.proofs[formalityLevel],
+        theoremText: proof,
         question,
         formalityLevel,
       });
@@ -73,7 +106,7 @@ export default function ProofExplorer() {
           'Could not get an answer. Please check the console for details.',
       });
     } finally {
-      setIsLoading(false);
+      setIsAnswerLoading(false);
     }
   };
 
@@ -153,15 +186,24 @@ export default function ProofExplorer() {
               <CardHeader>
                 <CardTitle>Proof</CardTitle>
                 <CardDescription>
-                  This is a presentation of the proof at the selected formality
+                  This is a dynamically generated presentation of the proof at the selected formality
                   level.
                 </CardDescription>
               </CardHeader>
               <CardContent className="prose prose-blue dark:prose-invert max-w-none font-body text-base leading-relaxed">
-                <ProofDisplay
-                  key={`${selectedTheorem.id}-${formalityLevel}`}
-                  content={selectedTheorem.proofs[formalityLevel]}
-                />
+                {isProofLoading ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                ) : (
+                  <ProofDisplay
+                    key={`${selectedTheorem.id}-${formalityLevel}`}
+                    content={proof}
+                  />
+                )}
               </CardContent>
             </Card>
 
@@ -180,11 +222,11 @@ export default function ProofExplorer() {
                   onChange={(e) => setQuestion(e.target.value)}
                   className="min-h-[100px] font-body"
                 />
-                <Button onClick={handleAskQuestion} disabled={isLoading}>
-                  {isLoading && (
+                <Button onClick={handleAskQuestion} disabled={isAnswerLoading}>
+                  {isAnswerLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {isLoading ? 'Thinking...' : 'Ask'}
+                  {isAnswerLoading ? 'Thinking...' : 'Ask'}
                 </Button>
                 {answer && (
                   <div className="mt-4 rounded-lg border bg-secondary/50 p-4">
