@@ -62,22 +62,13 @@ export default function ProofExplorer() {
       setQuestion('');
       setProof('');
       try {
-        const { proofStream } = await generateProof({
+        const { proof } = await generateProof({
           theoremName: name,
           theoremStatement: statement,
           formality: formalityLevel,
           userBackground,
         });
-
-        const reader = proofStream.getReader();
-        const decoder = new TextDecoder();
-        let done = false;
-        while (!done) {
-          const { value, done: readerDone } = await reader.read();
-          done = readerDone;
-          const chunk = decoder.decode(value, { stream: true });
-          setProof((prevProof) => prevProof + chunk);
-        }
+        setProof(proof);
       } catch (error) {
         console.error('Error generating proof:', error);
         toast({
@@ -264,7 +255,7 @@ export default function ProofExplorer() {
               </div>
             </CardHeader>
             <CardContent>
-              {isProofLoading && !proof ? (
+              {isProofLoading ? (
                 <div className="space-y-4">
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-full" />

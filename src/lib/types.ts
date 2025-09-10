@@ -18,5 +18,5 @@ export type GenerateProofInput = {
 };
 
 export type GenerateProofOutput = {
-  proofStream: ReadableStream<string>;
+  proof: string;
 };
