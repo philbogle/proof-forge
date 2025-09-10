@@ -87,7 +87,7 @@ export default function ProofExplorer() {
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
-  }, [isProofLoading, visibleAnchor, proof]);
+  }, [isProofLoading, visibleAnchor]);
 
 
   const generateNewProof = React.useCallback(
