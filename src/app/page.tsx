@@ -1,3 +1,9 @@
+import ProofExplorer from '@/components/proof-explorer';
+
 export default function Home() {
-  return <></>;
+  return (
+    <main>
+      <ProofExplorer />
+    </main>
+  );
 }
