@@ -51,6 +51,7 @@ export default function ProofExplorer() {
     React.useState<FormalityLevel>('semiFormal');
   const [proof, setProof] = React.useState('');
   const [isProofLoading, setIsProofLoading] = React.useState(true);
+  const [showLoadingIndicator, setShowLoadingIndicator] = React.useState(false);
   const [question, setQuestion] = React.useState('');
   const [answer, setAnswer] = React.useState('');
   const [isAnswerLoading, setIsAnswerLoading] = React.useState(false);
@@ -71,7 +72,11 @@ export default function ProofExplorer() {
       setIsProofLoading(true);
       setAnswer('');
       setQuestion('');
-      setProof('');
+
+      // Only show loading indicator if proof generation takes a moment
+      const loadingTimer = setTimeout(() => {
+        setShowLoadingIndicator(true);
+      }, 300);
 
       const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
       const cacheDocRef = doc(db, 'proofs', cacheKey);
@@ -81,14 +86,25 @@ export default function ProofExplorer() {
           const cachedDoc = await getDoc(cacheDocRef);
           if (cachedDoc.exists()) {
             setProof(cachedDoc.data().proof);
+            clearTimeout(loadingTimer);
+            setShowLoadingIndicator(false);
             setIsProofLoading(false);
             return;
           }
         } catch (error: any) {
+          // Ignore offline errors, but log others
           if (error.code !== 'unavailable') {
             console.error('Firestore cache read failed:', error);
           }
         }
+      }
+
+      // If we are here, it's either a cache miss, a force refresh, or a silent cache error
+      // In any case, we show the loading indicator if it's not already shown
+      if (!showLoadingIndicator) {
+         setShowLoadingIndicator(true);
+         // Clear previous proof while new one loads if we aren't already showing skeleton
+         if (proof) setProof('');
       }
 
       try {
@@ -114,15 +130,17 @@ export default function ProofExplorer() {
         });
         setProof('Failed to generate proof.');
       } finally {
+        clearTimeout(loadingTimer);
+        setShowLoadingIndicator(false);
         setIsProofLoading(false);
       }
     },
-    [formalityLevel, userBackground, toast, selectedTheorem]
+    [formalityLevel, userBackground, toast, selectedTheorem, showLoadingIndicator, proof]
   );
 
   React.useEffect(() => {
     generateNewProof();
-  }, [generateNewProof]);
+  }, [selectedTheoremId, formalityLevel]);
 
   const handleTheoremChange = (theoremId: string) => {
     setSelectedTheoremId(theoremId);
@@ -242,7 +260,7 @@ export default function ProofExplorer() {
                 </div>
               </CardHeader>
               <CardContent>
-                {isProofLoading ? (
+                {showLoadingIndicator ? (
                   <ProofLoadingIndicator />
                 ) : renderMarkdown ? (
                   <ProofDisplay content={proof} />
