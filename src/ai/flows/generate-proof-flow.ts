@@ -28,6 +28,14 @@ ${input.userBackground ? `**Target Audience Background:** ${input.userBackground
 - For "semiFormal": Provide a step-by-step proof that uses mathematical notation but also includes intuitive explanations and more accessible language to clarify complex steps. Avoid using Greek letters. Use block-aligned formulas for the steps in the proof to make it easier to read.
 - For "rigorous": Provide a traditional, formal, and rigorous mathematical proof.
 
+${input.structuralProof ? `**IMPORTANT STRUCTURAL GUIDE:** You MUST follow the same logical structure and step numbering as the provided proof below when you generate your new proof. This is critical for helping the user see how a proof is formalized across different levels.
+
+**Existing Proof to Follow:**
+---
+${input.structuralProof}
+---
+` : ''}
+
 - Your output must be in Markdown format.
 - Always use rendered LaTeX for math: $formula$ for inline (using \\mathbf{} for vectors), and $$formula$$ for display equations. Critically, ensure no whitespace exists immediately inside delimiters (use $E=mc^2$, not $ E = mc^2 $). When display math ($$...$$) appears within lists, start it on a new line with zero leading indentation. Reserve code blocks (\`\`\`) strictly for programming code implementations, never for displaying mathematical formulas. Choose inline math for brevity/flow and display math for complex or emphasized equations, maintaining clean separation and standard paragraph spacing (one blank line after display math) for a professional, scientific document style.
 - For "informalEnglish" formality, avoid math notation entirely.

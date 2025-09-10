@@ -10,4 +10,8 @@ export const GenerateProofInputSchema = z.object({
     .string()
     .describe("The user's mathematical background.")
     .optional(),
+  structuralProof: z
+    .string()
+    .describe('An existing proof of the same theorem to use for structural guidance.')
+    .optional(),
 });

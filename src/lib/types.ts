@@ -11,6 +11,7 @@ export type GenerateProofInput = {
   theoremStatement: string;
   formality: FormalityLevel;
   userBackground?: string;
+  structuralProof?: string;
 };
 
 export type GenerateProofOutput = {

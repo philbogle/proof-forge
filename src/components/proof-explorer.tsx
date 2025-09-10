@@ -50,6 +50,9 @@ export default function ProofExplorer() {
   const [formalityLevel, setFormalityLevel] =
     React.useState<FormalityLevel>('semiFormal');
   const [proof, setProof] = React.useState('');
+  const [proofCache, setProofCache] = React.useState<Record<string, string>>(
+    {}
+  );
   const [isProofLoading, setIsProofLoading] = React.useState(true);
   const [showLoadingIndicator, setShowLoadingIndicator] = React.useState(false);
   const [question, setQuestion] = React.useState('');
@@ -70,42 +73,50 @@ export default function ProofExplorer() {
   const generateNewProof = React.useCallback(
     async (forceRefresh = false) => {
       setIsProofLoading(true);
+      setShowLoadingIndicator(true); // Always show for feedback
       setAnswer('');
       setQuestion('');
 
-      // Only show loading indicator if proof generation takes a moment
+      const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
+
+      if (!forceRefresh && proofCache[cacheKey]) {
+        setProof(proofCache[cacheKey]);
+        setIsProofLoading(false);
+        setShowLoadingIndicator(false);
+        return;
+      }
+      
       const loadingTimer = setTimeout(() => {
         setShowLoadingIndicator(true);
       }, 300);
 
-      const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
-      const cacheDocRef = doc(db, 'proofs', cacheKey);
-
       if (!forceRefresh) {
         try {
-          const cachedDoc = await getDoc(cacheDocRef);
+          const cachedDoc = await getDoc(doc(db, 'proofs', cacheKey));
           if (cachedDoc.exists()) {
-            setProof(cachedDoc.data().proof);
+            const cachedProof = cachedDoc.data().proof;
+            setProof(cachedProof);
+            setProofCache((prev) => ({ ...prev, [cacheKey]: cachedProof }));
             clearTimeout(loadingTimer);
             setShowLoadingIndicator(false);
             setIsProofLoading(false);
             return;
           }
         } catch (error: any) {
-          // Ignore offline errors, but log others
           if (error.code !== 'unavailable') {
             console.error('Firestore cache read failed:', error);
           }
         }
       }
-
-      // If we are here, it's either a cache miss, a force refresh, or a silent cache error
-      // In any case, we show the loading indicator if it's not already shown
+      
       if (!showLoadingIndicator) {
-         setShowLoadingIndicator(true);
-         // Clear previous proof while new one loads if we aren't already showing skeleton
          if (proof) setProof('');
       }
+
+      // Find another proof for the same theorem to use for structure
+      const structuralProof = Object.keys(proofCache).find(key => key.startsWith(selectedTheorem.id) && key !== cacheKey) 
+        ? proofCache[Object.keys(proofCache).find(key => key.startsWith(selectedTheorem.id) && key !== cacheKey)!]
+        : undefined;
 
       try {
         const { proof: newProof } = await generateProof({
@@ -113,10 +124,15 @@ export default function ProofExplorer() {
           theoremStatement: selectedTheorem.statement,
           formality: formalityLevel,
           userBackground,
+          structuralProof,
         });
         setProof(newProof);
+        setProofCache((prev) => ({ ...prev, [cacheKey]: newProof }));
         try {
-          await setDoc(cacheDocRef, { proof: newProof, timestamp: new Date() });
+          await setDoc(doc(db, 'proofs', cacheKey), {
+            proof: newProof,
+            timestamp: new Date(),
+          });
         } catch (error) {
           console.error('Firestore cache write failed:', error);
         }
@@ -135,7 +151,7 @@ export default function ProofExplorer() {
         setIsProofLoading(false);
       }
     },
-    [formalityLevel, userBackground, toast, selectedTheorem, showLoadingIndicator, proof]
+    [formalityLevel, userBackground, toast, selectedTheorem, proofCache, showLoadingIndicator, proof]
   );
 
   React.useEffect(() => {
