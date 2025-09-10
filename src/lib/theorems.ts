@@ -2,9 +2,9 @@ import { Theorem } from './types';
 
 export const theorems: Theorem[] = [
   {
-    id: 'pythagorean',
-    name: 'Pythagorean Theorem',
-    statement: 'In a right-angled triangle, the square of the length of the hypotenuse (the side opposite the right angle) is equal to the sum of the squares of the lengths of the other two sides.',
+    id: 'goedels_incompleteness_theorems',
+    name: 'Gödel\'s Incompleteness Theorems',
+    statement: 'The first incompleteness theorem states that in any consistent formal system F within which a certain amount of elementary arithmetic can be carried out, there are statements of the language of F which can neither be proved nor disproved in F. The second incompleteness theorem, an extension of the first, shows that the system cannot prove its own consistency.',
   },
   {
     id: 'ftc',
