@@ -79,9 +79,12 @@ export default function ProofExplorer() {
           setIsProofLoading(false);
           return;
         }
-      } catch (error) {
-        console.error("Error reading from cache:", error);
-        // Fall through to generate a new proof without showing a toast
+      } catch (error: any) {
+        if (error.code === 'unavailable') {
+          // Firestore is offline, just fall through to generate a new proof without logging an error.
+        } else {
+          console.error("Error reading from cache:", error);
+        }
       }
     }
 
