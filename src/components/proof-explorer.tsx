@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { answerQuestion } from '@/ai/flows/natural-language-questioning';
 import { generateProof } from '@/ai/flows/generate-proof-flow';
+import { editProof } from '@/ai/flows/edit-proof-flow';
 import { Loader2, RefreshCw } from 'lucide-react';
 import {
   Select,
@@ -36,6 +37,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'informalEnglish', name: 'Informal English' },
@@ -55,9 +62,9 @@ export default function ProofExplorer() {
   );
   const [isProofLoading, setIsProofLoading] = React.useState(true);
   const [showLoadingIndicator, setShowLoadingIndicator] = React.useState(false);
-  const [question, setQuestion] = React.useState('');
+  const [interactionText, setInteractionText] = React.useState('');
   const [answer, setAnswer] = React.useState('');
-  const [isAnswerLoading, setIsAnswerLoading] = React.useState(false);
+  const [isInteractionLoading, setIsInteractionLoading] = React.useState(false);
   const [userBackground, setUserBackground] = React.useState(
     'a college student studying mathematics'
   );
@@ -114,7 +121,7 @@ export default function ProofExplorer() {
       setIsProofLoading(true);
       setShowLoadingIndicator(true); // Always show for feedback
       setAnswer('');
-      setQuestion('');
+      setInteractionText('');
 
       const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
 
@@ -142,7 +149,7 @@ export default function ProofExplorer() {
             return;
           }
         } catch (error: any) {
-          if (error.code !== 'unavailable' && error.code !== 'failed-precondition') {
+          if (error.code !== 'unavailable' && error.code !== 'failed-precondition' && error.code !== 'permission-denied') {
             console.error('Firestore cache read failed:', error);
           }
         }
@@ -206,6 +213,54 @@ export default function ProofExplorer() {
   const handleFormalityChange = (level: FormalityLevel) => {
     setFormalityLevel(level);
   };
+  
+  const handleInteraction = async (type: 'question' | 'edit') => {
+    if (!interactionText.trim()) return;
+
+    setIsInteractionLoading(true);
+    setAnswer('');
+
+    try {
+      if (type === 'question') {
+        const result = await answerQuestion({
+          theoremName: selectedTheorem.name,
+          theoremText: proof,
+          question: interactionText,
+          formalityLevel,
+        });
+        setAnswer(result.answer);
+      } else if (type === 'edit') {
+        const result = await editProof({
+          proof: proof,
+          request: interactionText,
+          theoremName: selectedTheorem.name,
+          formality: formalityLevel,
+        });
+        setProof(result.editedProof);
+        // Update cache with the edited proof
+        const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
+        setProofCache((prev) => ({ ...prev, [cacheKey]: result.editedProof }));
+        try {
+            await setDoc(doc(db, 'proofs', cacheKey), {
+            proof: result.editedProof,
+            timestamp: new Date(),
+          });
+        } catch (error) {
+           console.error('Firestore cache write failed:', error);
+        }
+      }
+    } catch (error) {
+      console.error(`Error during ${type}:`, error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: `Could not process your request. Please check the console for details.`,
+      });
+    } finally {
+      setIsInteractionLoading(false);
+    }
+  };
+
 
   return (
     <TooltipProvider>
@@ -331,62 +386,62 @@ export default function ProofExplorer() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Ask a Question</CardTitle>
+                <CardTitle>Interact with the Proof</CardTitle>
                 <CardDescription>
-                  Have a question about this theorem or a specific line in the
-                  proof? Ask here.
+                  Ask a question about the proof or suggest an edit.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <Textarea
-                  placeholder="e.g., What does 'Q.E.D.' mean?"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  className="min-h-[100px] font-body"
-                />
-                <Button
-                  onClick={async () => {
-                    if (!question.trim()) return;
-
-                    setIsAnswerLoading(true);
-                    setAnswer('');
-                    try {
-                      const result = await answerQuestion({
-                        theoremName: selectedTheorem.name,
-                        theoremText: proof,
-                        question,
-                        formalityLevel,
-                      });
-                      setAnswer(result.answer);
-                    } catch (error) {
-                      console.error('Error answering question:', error);
-                      toast({
-                        variant: 'destructive',
-                        title: 'Error',
-                        description:
-                          'Could not get an answer. Please check the console for details.',
-                      });
-                    } finally {
-                      setIsAnswerLoading(false);
-                    }
-                  }}
-                  disabled={isAnswerLoading}
-                >
-                  {isAnswerLoading && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {isAnswerLoading ? 'Thinking...' : 'Ask'}
-                </Button>
-                {answer && (
-                  <div className="mt-4 rounded-lg border bg-secondary/50 p-4">
-                    <p className="font-semibold text-secondary-foreground">
-                      Answer:
-                    </p>
-                    <div className="prose prose-blue dark:prose-invert max-w-none font-body text-sm text-muted-foreground">
-                      <ProofDisplay content={answer} />
-                    </div>
-                  </div>
-                )}
+              <CardContent>
+                <Tabs defaultValue="question" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="question">Ask a Question</TabsTrigger>
+                    <TabsTrigger value="edit">Request an Edit</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="question" className="space-y-4">
+                    <Textarea
+                      placeholder="e.g., What does 'Q.E.D.' mean?"
+                      value={interactionText}
+                      onChange={(e) => setInteractionText(e.target.value)}
+                      className="mt-4 min-h-[100px] font-body"
+                    />
+                    <Button
+                      onClick={() => handleInteraction('question')}
+                      disabled={isInteractionLoading}
+                    >
+                      {isInteractionLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      {isInteractionLoading ? 'Thinking...' : 'Ask'}
+                    </Button>
+                    {answer && (
+                      <div className="mt-4 rounded-lg border bg-secondary/50 p-4">
+                        <p className="font-semibold text-secondary-foreground">
+                          Answer:
+                        </p>
+                        <div className="prose prose-blue dark:prose-invert max-w-none font-body text-sm text-muted-foreground">
+                          <ProofDisplay content={answer} />
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+                   <TabsContent value="edit" className="space-y-4">
+                     <Textarea
+                      placeholder="e.g., Explain the first step in more detail."
+                      value={interactionText}
+                      onChange={(e) => setInteractionText(e.target.value)}
+                      className="mt-4 min-h-[100px] font-body"
+                    />
+                    <Button
+                      onClick={() => handleInteraction('edit')}
+                      disabled={isInteractionLoading}
+                    >
+                      {isInteractionLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      {isInteractionLoading ? 'Editing...' : 'Submit Edit'}
+                    </Button>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>
