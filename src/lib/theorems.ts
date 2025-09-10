@@ -7,6 +7,11 @@ export const theorems: Theorem[] = [
     statement: 'The first incompleteness theorem states that in any consistent formal system F within which a certain amount of elementary arithmetic can be carried out, there are statements of the language of F which can neither be proved nor disproved in F. The second incompleteness theorem, an extension of the first, shows that the system cannot prove its own consistency.',
   },
   {
+    id: 'diagonal_lemma',
+    name: 'Diagonal Lemma',
+    statement: 'The diagonal lemma states that for any formula F(x) in a formal system that can represent all computable functions, there is a sentence S such that S is provably equivalent to F(⌈S⌉), where ⌈S⌉ is the Gödel number of S. This is a key result used in proving Gödel\'s incompleteness theorems.'
+  },
+  {
     id: 'ftc',
     name: 'Fundamental Theorem of Calculus',
     statement: 'The fundamental theorem of calculus relates the concept of differentiating a function with the concept of integrating a function. The first part states that the definite integration of a function is related to its antiderivative, and can be reversed by differentiation. The second part states that the definite integral of a function can be computed by using any one of its infinitely many antiderivatives.',
