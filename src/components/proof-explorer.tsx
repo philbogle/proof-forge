@@ -14,26 +14,13 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { answerQuestion } from '@/ai/flows/natural-language-questioning';
 import { generateProof } from '@/ai/flows/generate-proof-flow';
-import { Loader2, Check, ChevronsUpDown } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 import { theorems, type Theorem, type FormalityLevel } from '@/lib/theorems';
 import { ProofDisplay } from '@/components/proof-display';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'plainEnglish', name: 'Plain English' },
@@ -57,94 +44,103 @@ export default function ProofExplorer() {
   const [userBackground, setUserBackground] = React.useState(
     'a college student studying mathematics'
   );
-  const [comboOpen, setComboOpen] = React.useState(false);
+
+  const [suggestions, setSuggestions] = React.useState<Theorem[]>([]);
+  const [isSuggestionsVisible, setIsSuggestionsVisible] = React.useState(false);
 
   const { toast } = useToast();
+  const suggestionsRef = React.useRef<HTMLUListElement>(null);
 
-  const handleTheoremSelect = (theorem: Theorem) => {
+  const generateNewProof = React.useCallback(
+    async (name: string, statement: string) => {
+      if (!name || !statement) return;
+
+      setIsProofLoading(true);
+      setAnswer('');
+      setQuestion('');
+      setProof('');
+      try {
+        const result = await generateProof({
+          theoremName: name,
+          theoremStatement: statement,
+          formality: formalityLevel,
+          userBackground,
+        });
+        setProof(result.proof);
+      } catch (error) {
+        console.error('Error generating proof:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description:
+            'Could not generate the proof. Please check the console for details.',
+        });
+        setProof('Failed to generate proof.');
+      } finally {
+        setIsProofLoading(false);
+      }
+    },
+    [formalityLevel, userBackground, toast]
+  );
+
+  React.useEffect(() => {
+    // Initial proof generation
+    generateNewProof(theoremName, theoremStatement);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleTheoremInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setTheoremName(value);
+    if (value) {
+      const filteredSuggestions = theorems
+        .filter((t) => t.name.toLowerCase().includes(value.toLowerCase()))
+        .slice(0, 10);
+      setSuggestions(filteredSuggestions);
+      setIsSuggestionsVisible(true);
+    } else {
+      setSuggestions([]);
+      setIsSuggestionsVisible(false);
+    }
+  };
+
+  const handleSuggestionClick = (theorem: Theorem) => {
     setTheoremName(theorem.name);
     setTheoremStatement(theorem.statement);
-    setComboOpen(false);
+    setIsSuggestionsVisible(false);
+    generateNewProof(theorem.name, theorem.statement);
   };
-
-  const generateNewProof = React.useCallback(async () => {
-    if (!theoremName || !theoremStatement) return;
-
-    setIsProofLoading(true);
-    setAnswer('');
-    setQuestion('');
-    try {
-      const result = await generateProof({
-        theoremName: theoremName,
-        theoremStatement: theoremStatement,
-        formality: formalityLevel,
-        userBackground,
-      });
-      setProof(result.proof);
-    } catch (error) {
-      console.error('Error generating proof:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description:
-          'Could not generate the proof. Please check the console for details.',
-      });
-      setProof('Failed to generate proof.');
-    } finally {
-      setIsProofLoading(false);
-    }
-  }, [theoremName, theoremStatement, formalityLevel, userBackground, toast]);
-
-  React.useEffect(() => {
-    generateNewProof();
-  }, [theoremName, formalityLevel, generateNewProof]);
-
-  const handleAskQuestion = async () => {
-    if (!question.trim()) return;
-
-    setIsAnswerLoading(true);
-    setAnswer('');
-    try {
-      const result = await answerQuestion({
-        theoremName: theoremName,
-        theoremText: proof,
-        question,
-        formalityLevel,
-      });
-      setAnswer(result.answer);
-    } catch (error) {
-      console.error('Error answering question:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description:
-          'Could not get an answer. Please check the console for details.',
-      });
-    } finally {
-      setIsAnswerLoading(false);
-    }
-  };
-
+  
   const handleGenerateClick = () => {
-     const knownTheorem = theorems.find(
-        (t) => t.name.toLowerCase() === theoremName.toLowerCase()
-      );
-      if (knownTheorem) {
-        setTheoremStatement(knownTheorem.statement);
-      } else {
-        setTheoremStatement(`A theorem about ${theoremName}`);
-      }
-      // The useEffect will then trigger the proof generation
-  }
-
-  React.useEffect(() => {
-    const selectedTheorem = theorems.find(
+    setIsSuggestionsVisible(false);
+    const knownTheorem = theorems.find(
       (t) => t.name.toLowerCase() === theoremName.toLowerCase()
     );
-    if (selectedTheorem) {
-      setTheoremStatement(selectedTheorem.statement);
-    }
-  }, [theoremName]);
+    const statementToUse =
+      knownTheorem?.statement ?? `A theorem about ${theoremName}`;
+    setTheoremStatement(statementToUse);
+    generateNewProof(theoremName, statementToUse);
+  };
+  
+  const handleFormalityChange = (level: FormalityLevel) => {
+    setFormalityLevel(level);
+    generateNewProof(theoremName, theoremStatement);
+  };
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node)
+      ) {
+        setIsSuggestionsVisible(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className="flex h-full min-h-screen flex-col items-center bg-gray-50/50 p-4 font-headline md:p-6 lg:p-8">
@@ -160,74 +156,38 @@ export default function ProofExplorer() {
         </header>
 
         <div className="mb-8 grid grid-cols-1 items-end gap-4 md:grid-cols-3">
-          <div className="col-span-1 flex flex-col gap-2 md:col-span-2">
-            <Label htmlFor="theorem-select" className="text-sm font-medium">
+          <div className="relative col-span-1 flex flex-col gap-2 md:col-span-2">
+            <Label htmlFor="theorem-input" className="text-sm font-medium">
               Theorem
             </Label>
-            <Popover open={comboOpen} onOpenChange={setComboOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={comboOpen}
-                  className="w-full justify-between bg-white"
-                  id="theorem-select"
-                >
-                  <span className="truncate">{theoremName}</span>
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                <Command
-                   filter={(value, search) => {
-                    if (value.toLowerCase().includes(search.toLowerCase())) return 1;
-                    return 0;
-                  }}
-                >
-                  <CommandInput
-                    placeholder="Search for a theorem or type your own..."
-                    value={theoremName}
-                    onValueChange={setTheoremName}
-                  />
-                  <CommandList>
-                    <CommandEmpty>
-                      <p className="p-4 text-sm text-muted-foreground">
-                        No theorem found. Press enter to generate a proof for
-                        what you typed.
-                      </p>
-                    </CommandEmpty>
-                    <CommandGroup>
-                      {theorems.map((theorem) => (
-                        <CommandItem
-                          key={theorem.id}
-                          value={theorem.name}
-                          onSelect={(currentValue) => {
-                            setTheoremName(
-                              theorems.find(
-                                (t) =>
-                                  t.name.toLowerCase() ===
-                                  currentValue.toLowerCase()
-                              )?.name || currentValue
-                            );
-                            setComboOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              'mr-2 h-4 w-4',
-                              theoremName.toLowerCase() === theorem.name.toLowerCase()
-                                ? 'opacity-100'
-                                : 'opacity-0'
-                            )}
-                          />
-                          {theorem.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Input
+              id="theorem-input"
+              type="text"
+              value={theoremName}
+              onChange={handleTheoremInputChange}
+              onFocus={() => theoremName && setIsSuggestionsVisible(true)}
+              placeholder="Search for a theorem or type your own..."
+              className="bg-white"
+            />
+            {isSuggestionsVisible && suggestions.length > 0 && (
+              <ul
+                ref={suggestionsRef}
+                className="absolute top-full z-10 mt-1 w-full rounded-md border bg-white shadow-lg"
+              >
+                {suggestions.map((theorem) => (
+                  <li
+                    key={theorem.id}
+                    className="cursor-pointer p-2 hover:bg-gray-100"
+                    onMouseDown={(e) => {
+                      e.preventDefault(); // Prevent input from losing focus
+                      handleSuggestionClick(theorem);
+                    }}
+                  >
+                    {theorem.name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <div className="col-span-1 flex flex-col gap-2">
             <Button onClick={handleGenerateClick} disabled={isProofLoading}>
@@ -255,8 +215,9 @@ export default function ProofExplorer() {
                   key={level.id}
                   variant={formalityLevel === level.id ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setFormalityLevel(level.id)}
+                  onClick={() => handleFormalityChange(level.id)}
                   className="h-8 px-2 text-xs md:px-3 md:text-sm"
+                  disabled={isProofLoading}
                 >
                   {level.name}
                 </Button>
@@ -306,7 +267,31 @@ export default function ProofExplorer() {
                 onChange={(e) => setQuestion(e.target.value)}
                 className="min-h-[100px] font-body"
               />
-              <Button onClick={handleAskQuestion} disabled={isAnswerLoading}>
+              <Button onClick={async () => {
+                  if (!question.trim()) return;
+
+                  setIsAnswerLoading(true);
+                  setAnswer('');
+                  try {
+                    const result = await answerQuestion({
+                      theoremName: theoremName,
+                      theoremText: proof,
+                      question,
+                      formalityLevel,
+                    });
+                    setAnswer(result.answer);
+                  } catch (error) {
+                    console.error('Error answering question:', error);
+                    toast({
+                      variant: 'destructive',
+                      title: 'Error',
+                      description:
+                        'Could not get an answer. Please check the console for details.',
+                    });
+                  } finally {
+                    setIsAnswerLoading(false);
+                  }
+              }} disabled={isAnswerLoading}>
                 {isAnswerLoading && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
