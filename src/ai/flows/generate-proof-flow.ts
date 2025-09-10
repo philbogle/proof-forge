@@ -25,7 +25,7 @@ ${input.userBackground ? `**Target Audience Background:** ${input.userBackground
 
 **Instructions:**
 - For "informalEnglish": Provide a step-by-step proof using only plain English. Do not use mathematical notation or symbols.
-- For "semiFormal": Provide a step-by-step proof that uses mathematical notation but also includes intuitive explanations and more accessible language to clarify complex steps.
+- For "semiFormal": Provide a step-by-step proof that uses mathematical notation but also includes intuitive explanations and more accessible language to clarify complex steps. Avoid using Greek letters. Use block-aligned formulas for the steps in the proof to make it easier to read.
 - For "rigorous": Provide a traditional, formal, and rigorous mathematical proof.
 
 - Your output must be in Markdown format.
