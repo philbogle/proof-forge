@@ -24,11 +24,12 @@ You are an expert mathematician and a skilled teacher. Your task is to generate 
 ${input.userBackground ? `**Target Audience Background:** ${input.userBackground}` : ''}
 
 **Instructions:**
+- **IMPORTANT ANCHORS:** At the beginning of each distinct step, paragraph, or logical block of the proof, you MUST insert an HTML anchor tag like \`<a id="step-N"></a>\`, where 'N' is a sequential 1-based integer (step-1, step-2, etc.). This is critical for navigation.
 - For "informalEnglish": Provide a step-by-step proof using only plain English. Do not use mathematical notation or symbols.
 - For "semiFormal": Provide a step-by-step proof that uses mathematical notation but also includes intuitive explanations and more accessible language to clarify complex steps. Avoid using Greek letters. Use block-aligned formulas for the steps in the proof to make it easier to read.
 - For "rigorous": Provide a traditional, formal, and rigorous mathematical proof.
 
-${input.structuralProof ? `**IMPORTANT STRUCTURAL GUIDE:** You MUST follow the same logical structure and step numbering as the provided proof below when you generate your new proof. This is critical for helping the user see how a proof is formalized across different levels.
+${input.structuralProof ? `**IMPORTANT STRUCTURAL GUIDE:** You MUST follow the same logical structure and step numbering (for both the visible text and the \`<a id="step-N"></a>\` anchors) as the provided proof below when you generate your new proof. This is critical for helping the user see how a proof is formalized across different levels.
 
 **Existing Proof to Follow:**
 ---

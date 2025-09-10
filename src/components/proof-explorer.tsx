@@ -62,8 +62,9 @@ export default function ProofExplorer() {
     'a college student studying mathematics'
   );
   const [renderMarkdown, setRenderMarkdown] = React.useState(true);
+  const [visibleAnchor, setVisibleAnchor] = React.useState<string | null>(null);
+
   const proofCardRef = React.useRef<HTMLDivElement>(null);
-  const scrollPositionRef = React.useRef<number>(0);
 
   const { toast } = useToast();
 
@@ -71,12 +72,42 @@ export default function ProofExplorer() {
     () => theorems.find((t) => t.id === selectedTheoremId) || theorems[0],
     [selectedTheoremId]
   );
+  
+  // Effect for observing which anchor is visible
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleAnchor(entry.target.id);
+          }
+        });
+      },
+      { root: proofCardRef.current, threshold: 0.5 }
+    );
 
-  React.useLayoutEffect(() => {
-    if (!isProofLoading && proofCardRef.current) {
-      proofCardRef.current.scrollTop = scrollPositionRef.current;
+    const anchors = proofCardRef.current?.querySelectorAll('a[id^="step-"]');
+    if (anchors) {
+      anchors.forEach((anchor) => observer.observe(anchor));
     }
-  }, [isProofLoading]);
+
+    return () => {
+      if (anchors) {
+        anchors.forEach((anchor) => observer.unobserve(anchor));
+      }
+    };
+  }, [proof, renderMarkdown]);
+  
+  // Effect to scroll to the visible anchor when proof changes
+  React.useEffect(() => {
+    if (!isProofLoading && visibleAnchor) {
+      const targetElement = proofCardRef.current?.querySelector(`#${visibleAnchor}`);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [isProofLoading, visibleAnchor, proof]);
+
 
   const generateNewProof = React.useCallback(
     async (forceRefresh = false) => {
@@ -111,7 +142,7 @@ export default function ProofExplorer() {
             return;
           }
         } catch (error: any) {
-          if (error.code !== 'unavailable') {
+          if (error.code !== 'unavailable' && error.code !== 'failed-precondition') {
             console.error('Firestore cache read failed:', error);
           }
         }
@@ -167,13 +198,12 @@ export default function ProofExplorer() {
   }, [selectedTheoremId, formalityLevel]);
 
   const handleTheoremChange = (theoremId: string) => {
+    setVisibleAnchor(null);
     setSelectedTheoremId(theoremId);
+
   };
 
   const handleFormalityChange = (level: FormalityLevel) => {
-    if (proofCardRef.current) {
-      scrollPositionRef.current = proofCardRef.current.scrollTop;
-    }
     setFormalityLevel(level);
   };
 
