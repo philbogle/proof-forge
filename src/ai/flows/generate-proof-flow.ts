@@ -46,5 +46,6 @@ Begin the proof now.
   );
 
   const stream = await generateProofFlow(input);
+  // Ensure the return value matches the expected shape for the client.
   return { proofStream: stream as ReadableStream<string> };
 }
