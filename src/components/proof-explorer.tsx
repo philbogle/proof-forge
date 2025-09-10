@@ -62,6 +62,8 @@ export default function ProofExplorer() {
     'a college student studying mathematics'
   );
   const [renderMarkdown, setRenderMarkdown] = React.useState(true);
+  const proofCardRef = React.useRef<HTMLDivElement>(null);
+  const scrollPositionRef = React.useRef<number>(0);
 
   const { toast } = useToast();
 
@@ -69,6 +71,12 @@ export default function ProofExplorer() {
     () => theorems.find((t) => t.id === selectedTheoremId) || theorems[0],
     [selectedTheoremId]
   );
+
+  React.useLayoutEffect(() => {
+    if (!isProofLoading && proofCardRef.current) {
+      proofCardRef.current.scrollTop = scrollPositionRef.current;
+    }
+  }, [isProofLoading]);
 
   const generateNewProof = React.useCallback(
     async (forceRefresh = false) => {
@@ -163,6 +171,9 @@ export default function ProofExplorer() {
   };
 
   const handleFormalityChange = (level: FormalityLevel) => {
+    if (proofCardRef.current) {
+      scrollPositionRef.current = proofCardRef.current.scrollTop;
+    }
     setFormalityLevel(level);
   };
 
@@ -203,7 +214,7 @@ export default function ProofExplorer() {
             </div>
           </div>
 
-          <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+          <div className="sticky top-0 z-10 -mx-4 -mt-4 mb-6 flex flex-col items-start justify-between gap-4 border-b border-border bg-gray-50/80 p-4 backdrop-blur-sm md:flex-row md:items-center">
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 {selectedTheorem.name}
@@ -251,7 +262,7 @@ export default function ProofExplorer() {
           </div>
 
           <div className="space-y-6">
-            <Card>
+            <Card ref={proofCardRef} className="max-h-[60vh] overflow-y-auto">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
