@@ -46,7 +46,9 @@ ${input.structuralProof}
 
 - Your output must be in Markdown format.
 - Reserve code blocks (\`\`\`) strictly for programming code implementations, never for displaying mathematical formulas or names.
-- For "informal" and "rigorous" proofs: always use rendered LaTeX for math: $formula$ for inline (using \\mathbf{} for vectors), and $$formula$$ for display equations. Critically, ensure no whitespace exists immediately inside delimiters (use $E=mc^2$, not $ E = mc^2 $). When displaying math ($$...$$) appears within lists, start it on a new line with zero leading indentation. Choose inline math for brevity/flow and display math for complex or emphasized equations, maintaining clean separation and standard paragraph spacing (one blank line after display math) for a professional, scientific document style.  Use the \\ulcorner and \\urcorner notation for Goedel numbers, and prefer aligned blocks for multi-step proofs.  
+- Always use rendered LaTeX for math: $formula$ for inline (using \\mathbf{} for vectors), and $$formula$$ for display equations. Critically, ensure no whitespace exists immediately inside delimiters (use $E=mc^2$, not $ E = mc^2 $). When displaying math ($$...$$) appears within lists, start it on a new line with zero leading indentation. Choose inline math for brevity/flow and display math for complex or emphasized equations, maintaining clean separation and standard paragraph spacing (one blank line after display math) for a professional, scientific document style. 
+- Use aligned formula blocks for step-by-step proofs.
+- Use the \\ulcorner and \\urcorner notation for Goedel numbers.
 - For "rigorous" proofs, provide a full proof with all steps.
 `;
 
