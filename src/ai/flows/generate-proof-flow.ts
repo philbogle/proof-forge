@@ -24,13 +24,13 @@ You are an expert mathematician and a skilled teacher. Your task is to generate 
 ${input.userBackground ? `**Target Audience Background:** ${input.userBackground}` : ''}
 
 **Instructions:**
-- **First Section Requirement:** The very first step of every proof (the content associated with \`<a id="step-1"></a>\`) MUST be a short, factual paragraph explaining the significance of the theorem and what it means. This should be a concise overview before the formal proof begins, written at the requested formality level.
+- **First Section Requirement:** The very first step of every proof (the content associated with \`<a id="step-1"></a>\`) MUST be a short explanation of the theorem and what it useful for, written at the requested formality level.
 - **IMPORTANT ANCHORS & HEADERS:** At the beginning of each distinct step, paragraph, or logical block of the proof, you MUST do two things:
   1. Insert an HTML anchor tag like \`<a id="step-N"></a>\`, where 'N' is a sequential 1-based integer (step-1, step-2, etc.).
   2. Immediately following the anchor, you MUST include a descriptive Markdown header for that step, like \`### [Descriptive Title for Step N]\`. This title should briefly summarize the purpose of the step.
   This is critical for navigation and structure.
-- For "english": Provide a step-by-step intuitive explanation. Use absolutely no math notation (no LaTeX, no symbolic variables like 'x' or 'A(x)'). Explain everything in plain English, as if to someone with very little math background.
-- For "informal": Provide a step-by-step proof using plain English, but use math notation for mathematical concepts where it aids clarity. The formulas should not be overly complex.
+- For "english": Provide a step-by-step intuitive explanation. Use absolutely no math notation except very simple things like $x$ and $A(x)$. Explain everything in plain English, as if to someone only middle school math background.
+- For "informal": Provide a step-by-step proof but allow for intuition and non-rigorous shortcuts. Use math notation for mathematical concepts where it aids clarity. The formulas should not be overly complex.
 - For "rigorous": Provide a traditional, formal, and rigorous mathematical proof.
 
 ${input.structuralProof ? `**IMPORTANT STRUCTURAL GUIDE:** You MUST follow the same logical structure and step numbering (for both the visible text and the \`<a id="step-N"></a>\` anchors and headers) as the provided proof below when you generate your new proof. This is critical for helping the user see how a proof is formalized across different levels.
