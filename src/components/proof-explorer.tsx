@@ -8,7 +8,7 @@ import { answerQuestion } from '@/ai/flows/natural-language-questioning';
 import { generateProof } from '@/ai/flows/generate-proof-flow';
 import { editProof } from '@/ai/flows/edit-proof-flow';
 import { theorems } from '@/lib/theorems';
-import type { FormalityLevel } from '@/lib/types';
+import type { FormalityLevel, ProofVersion } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -20,12 +20,20 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Bot, Trash2 } from 'lucide-react';
+import { AlertCircle, Bot, Trash2, History } from 'lucide-react';
 import AppHeader from './proof-explorer/app-header';
 import TheoremSelector from './proof-explorer/theorem-selector';
 import ProofControls from './proof-explorer/proof-controls';
 import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'english', name: 'English' },
@@ -44,9 +52,11 @@ export default function ProofExplorer() {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [isFading, setIsFading] = React.useState(false);
 
-  const [proofCache, setProofCache] = React.useState<Record<string, string>>(
-    {}
-  );
+  const [proofCache, setProofCache] = React.useState<
+    Record<string, ProofVersion[]>
+  >({});
+  const [selectedVersion, setSelectedVersion] = React.useState<string>('');
+
   const [isProofLoading, setIsProofLoading] = React.useState(true);
   const [interactionText, setInteractionText] = React.useState('');
   const [answer, setAnswer] = React.useState('');
@@ -62,28 +72,35 @@ export default function ProofExplorer() {
     () => theorems.find((t) => t.id === selectedTheoremId) || theorems[0],
     [selectedTheoremId]
   );
+  
+  const currentProofHistory = React.useMemo(() => {
+    const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
+    return proofCache[cacheKey] || [];
+  }, [proofCache, selectedTheorem.id, formalityLevel]);
 
   const parseProofIntoPages = (fullProof: string) => {
     if (!fullProof) return [];
-    const pages = fullProof.split(/(<a id="step-\d+"><\/a>)/).filter(p => p.trim() !== '');
-    
+    const pages = fullProof
+      .split(/(<a id="step-\d+"><\/a>)/)
+      .filter((p) => p.trim() !== '');
+
     const combinedPages: string[] = [];
     for (let i = 0; i < pages.length; i += 2) {
       if (i + 1 < pages.length) {
-        combinedPages.push(pages[i] + pages[i+1]);
+        combinedPages.push(pages[i] + pages[i + 1]);
       } else {
-        if(!pages[i].startsWith('<a')) {
+        if (!pages[i].startsWith('<a')) {
           if (combinedPages.length > 0) {
-             combinedPages[combinedPages.length - 1] += pages[i];
+            combinedPages[combinedPages.length - 1] += pages[i];
           } else {
-             combinedPages.push(pages[i]);
+            combinedPages.push(pages[i]);
           }
         }
       }
     }
     return combinedPages.length > 0 ? combinedPages : [fullProof];
   };
-  
+
   React.useEffect(() => {
     const pages = parseProofIntoPages(proof);
     setProofPages(pages);
@@ -96,6 +113,28 @@ export default function ProofExplorer() {
     }
   }, [proof, currentPage]);
 
+  const saveProofVersion = React.useCallback(
+    async (level: FormalityLevel, newProof: string) => {
+      const cacheKey = `${selectedTheorem.id}-${level}`;
+      const newVersion: ProofVersion = {
+        proof: newProof,
+        timestamp: new Date().toISOString(),
+      };
+      
+      const updatedHistory = [newVersion, ...(proofCache[cacheKey] || [])];
+
+      setProofCache((prev) => ({ ...prev, [cacheKey]: updatedHistory }));
+
+      try {
+        await setDoc(doc(db, 'proofs', cacheKey), {
+          history: updatedHistory,
+        });
+      } catch (error) {
+        console.error('Firestore cache write failed:', error);
+      }
+    },
+    [selectedTheorem.id, proofCache]
+  );
 
   const generateSingleProof = React.useCallback(
     async (
@@ -110,33 +149,24 @@ export default function ProofExplorer() {
         structuralProof,
       });
 
-      const cacheKey = `${selectedTheorem.id}-${level}`;
-      setProofCache((prev) => ({ ...prev, [cacheKey]: newProof }));
-      try {
-        await setDoc(doc(db, 'proofs', cacheKey), {
-          proof: newProof,
-          timestamp: new Date(),
-        });
-      } catch (error) {
-        console.error('Firestore cache write failed:', error);
-      }
+      await saveProofVersion(level, newProof);
       return newProof;
     },
-    [selectedTheorem, userBackground]
+    [selectedTheorem, userBackground, saveProofVersion]
   );
 
   const generateNewProof = React.useCallback(
     async (forceRefresh = false) => {
       setIsFading(true);
       setIsProofLoading(true);
-
       setAnswer('');
       setInteractionText('');
+      setSelectedVersion('');
 
       const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
 
-      if (!forceRefresh && proofCache[cacheKey]) {
-        setProof(proofCache[cacheKey]);
+      if (!forceRefresh && proofCache[cacheKey] && proofCache[cacheKey].length > 0) {
+        setProof(proofCache[cacheKey][0].proof);
         setIsProofLoading(false);
         setTimeout(() => setIsFading(false), 50);
         return;
@@ -146,20 +176,23 @@ export default function ProofExplorer() {
         try {
           const cachedDoc = await getDoc(doc(db, 'proofs', cacheKey));
           if (cachedDoc.exists()) {
-            const cachedProof = cachedDoc.data().proof;
-            setProof(cachedProof);
-            setProofCache((prev) => ({ ...prev, [cacheKey]: cachedProof }));
-            setIsProofLoading(false);
-            setTimeout(() => setIsFading(false), 50);
-            return;
+            const data = cachedDoc.data();
+            const history: ProofVersion[] = data.history || [];
+            if (history.length > 0) {
+              setProof(history[0].proof);
+              setProofCache((prev) => ({ ...prev, [cacheKey]: history }));
+              setIsProofLoading(false);
+              setTimeout(() => setIsFading(false), 50);
+              return;
+            }
           }
         } catch (error: any) {
           console.error('Firestore cache read failed:', error);
         }
       }
-      
+
       if (isProofLoading) {
-         if (proof) setProof('');
+        if (proof) setProof('');
       }
 
       try {
@@ -169,39 +202,43 @@ export default function ProofExplorer() {
             : formalityLevel === 'informal'
               ? ['english', 'rigorous']
               : ['informal', 'english'];
-        
+
         let structuralProof: string | undefined;
 
         for (const level of structuralProofLevels) {
           const structuralProofKey = `${selectedTheorem.id}-${level}`;
-          structuralProof = proofCache[structuralProofKey];
-          if (structuralProof) break;
-          
+          const history = proofCache[structuralProofKey];
+          if (history && history.length > 0) {
+             structuralProof = history[0].proof;
+             if (structuralProof) break;
+          }
+
           try {
-            const cachedDoc = await getDoc(doc(db, 'proofs', structuralProofKey));
+            const cachedDoc = await getDoc(
+              doc(db, 'proofs', structuralProofKey)
+            );
             if (cachedDoc.exists()) {
-              structuralProof = cachedDoc.data().proof;
-              break;
+              const data = cachedDoc.data();
+              const structuralHistory: ProofVersion[] = data.history || [];
+              if(structuralHistory.length > 0) {
+                structuralProof = structuralHistory[0].proof;
+                break;
+              }
             }
-          } catch (error) { /* ignore */ }
+          } catch (error) {
+            /* ignore */
+          }
         }
-
-        const anyProofExists = !!structuralProof || !!proofCache[cacheKey];
-
+        
         let newProof;
-        if (!anyProofExists && !forceRefresh) {
+        if (!structuralProof && formalityLevel !== 'informal') {
             const informalProof = await generateSingleProof('informal');
-            if (formalityLevel === 'informal') {
-                newProof = informalProof;
-            } else {
-                newProof = await generateSingleProof(formalityLevel, informalProof);
-            }
+            newProof = await generateSingleProof(formalityLevel, informalProof);
         } else {
            newProof = await generateSingleProof(formalityLevel, structuralProof);
         }
 
         setProof(newProof);
-
       } catch (error) {
         console.error('Error generating proof:', error);
         toast({
@@ -216,12 +253,21 @@ export default function ProofExplorer() {
         setTimeout(() => setIsFading(false), 50);
       }
     },
-    [formalityLevel, userBackground, toast, selectedTheorem, proofCache, isProofLoading, proof, generateSingleProof]
+    [
+      formalityLevel,
+      userBackground,
+      toast,
+      selectedTheorem,
+      proofCache,
+      isProofLoading,
+      proof,
+      generateSingleProof,
+    ]
   );
 
   React.useEffect(() => {
     generateNewProof();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTheoremId, formalityLevel]);
 
   const handleTheoremChange = (theoremId: string) => {
@@ -234,38 +280,87 @@ export default function ProofExplorer() {
   };
 
   const handleClearCache = async () => {
-    const keysToClear = Object.keys(proofCache).filter(key => key.startsWith(selectedTheorem.id));
-    
-    const newCache = {...proofCache};
-    keysToClear.forEach(key => {
-        delete newCache[key];
+    const keysToClear = Object.keys(proofCache).filter((key) =>
+      key.startsWith(selectedTheorem.id)
+    );
+
+    const newCache = { ...proofCache };
+    keysToClear.forEach((key) => {
+      delete newCache[key];
     });
     setProofCache(newCache);
 
     try {
-        const deletePromises = [
-          deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-english`)),
-          deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-informal`)),
-          deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-rigorous`))
-        ];
-        await Promise.all(deletePromises);
+      const deletePromises = [
+        deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-english`)),
+        deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-informal`)),
+        deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-rigorous`)),
+      ];
+      await Promise.all(deletePromises);
     } catch (error) {
-        console.error("Error clearing Firestore cache:", error);
-         toast({
-          variant: 'destructive',
-          title: 'Cache Error',
-          description: 'Could not clear the Firestore cache. Please check the console.',
-        });
+      console.error('Error clearing Firestore cache:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Cache Error',
+        description:
+          'Could not clear the Firestore cache. Please check the console.',
+      });
     }
 
     toast({
-        title: 'Cache Cleared',
-        description: `The cache for "${selectedTheorem.name}" has been cleared.`,
+      title: 'Cache Cleared',
+      description: `The cache for "${selectedTheorem.name}" has been cleared.`,
     });
 
     generateNewProof(true);
   };
   
+  const handleRollback = async () => {
+    if (!selectedVersion) {
+      toast({
+        variant: 'destructive',
+        title: 'No Version Selected',
+        description: 'Please select a version to rollback to.',
+      });
+      return;
+    }
+    
+    const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
+    const history = proofCache[cacheKey] || [];
+    const versionToRestore = history.find(v => v.timestamp === selectedVersion);
+    
+    if (!versionToRestore) {
+       toast({
+        variant: 'destructive',
+        title: 'Version Not Found',
+        description: 'The selected version could not be found in the history.',
+      });
+      return;
+    }
+
+    setIsFading(true);
+    // This moves the selected version to the top of the history list
+    const newHistory = [versionToRestore, ...history.filter(v => v.timestamp !== selectedVersion)];
+    
+    setProofCache(prev => ({...prev, [cacheKey]: newHistory}));
+    setProof(versionToRestore.proof);
+    
+     try {
+        await setDoc(doc(db, 'proofs', cacheKey), {
+          history: newHistory,
+        });
+      } catch (error) {
+        console.error('Firestore cache write failed during rollback:', error);
+      }
+    
+    setTimeout(() => setIsFading(false), 50);
+
+    toast({
+      title: 'Rollback Successful',
+      description: `Proof has been rolled back to the version from ${new Date(selectedVersion).toLocaleString()}.`,
+    });
+  };
+
   const handleInteraction = async (type: 'question' | 'edit') => {
     if (!interactionText.trim()) return;
 
@@ -283,25 +378,17 @@ export default function ProofExplorer() {
         setAnswer(result.answer);
       } else if (type === 'edit') {
         setIsProofLoading(true);
-        const result = await editProof({
+        const { editedProof } = await editProof({
           proof: proof,
           request: interactionText,
           theoremName: selectedTheorem.name,
           formality: formalityLevel,
         });
-        setProof(result.editedProof);
-        const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
-        setProofCache((prev) => ({ ...prev, [cacheKey]: result.editedProof }));
-        try {
-            await setDoc(doc(db, 'proofs', cacheKey), {
-            proof: result.editedProof,
-            timestamp: new Date(),
-          });
-        } catch (error) {
-           console.error('Firestore cache write failed:', error);
-        } finally {
-            setIsProofLoading(false);
-        }
+        
+        await saveProofVersion(formalityLevel, editedProof);
+        setProof(editedProof);
+        
+        setIsProofLoading(false);
       }
     } catch (error) {
       console.error(`Error during ${type}:`, error);
@@ -314,7 +401,6 @@ export default function ProofExplorer() {
       setIsInteractionLoading(false);
     }
   };
-
 
   return (
     <TooltipProvider>
@@ -352,15 +438,15 @@ export default function ProofExplorer() {
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="interaction">
                 <AccordionTrigger>
-                   <div className="flex w-full items-center justify-between pr-4">
-                     <div className="flex items-center gap-2 text-sm font-medium">
-                        <Bot className="h-4 w-4" />
-                        Interact with the Proof
-                      </div>
+                  <div className="flex w-full items-center justify-between pr-4">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Bot className="h-4 w-4" />
+                      Interact with the Proof
                     </div>
+                  </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                   <InteractionPanel
+                  <InteractionPanel
                     interactionText={interactionText}
                     onInteractionTextChange={setInteractionText}
                     onInteract={handleInteraction}
@@ -378,12 +464,13 @@ export default function ProofExplorer() {
                 </AccordionTrigger>
                 <AccordionContent>
                   <Card>
-                    <CardContent className="pt-6">
+                    <CardContent className="space-y-6 pt-6">
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-semibold">Clear Theorem Cache</h4>
                           <p className="text-sm text-muted-foreground">
-                            Delete all cached proofs for "{selectedTheorem.name}" and regenerate.
+                            Delete all cached proofs for "{selectedTheorem.name}
+                            " and regenerate.
                           </p>
                         </div>
                         <Button
@@ -394,6 +481,43 @@ export default function ProofExplorer() {
                           Clear Cache
                         </Button>
                       </div>
+
+                       <div className="space-y-2">
+                         <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-semibold">Proof Version History</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Rollback to a previous version of the proof for the current formality level.
+                              </p>
+                            </div>
+                          </div>
+                          {currentProofHistory.length > 0 ? (
+                            <div className="flex items-end gap-2">
+                              <div className="grid w-full max-w-sm items-center gap-1.5">
+                                <Label htmlFor="version-select">Select Version</Label>
+                                <Select onValueChange={setSelectedVersion} value={selectedVersion}>
+                                  <SelectTrigger id="version-select">
+                                    <SelectValue placeholder="Select a version to restore" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {currentProofHistory.map(version => (
+                                      <SelectItem key={version.timestamp} value={version.timestamp}>
+                                        {new Date(version.timestamp).toLocaleString()}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <Button onClick={handleRollback} disabled={!selectedVersion}>
+                                <History className="mr-2 h-4 w-4" />
+                                Rollback
+                              </Button>
+                            </div>
+                          ) : (
+                             <p className="text-sm text-muted-foreground">No history available for this proof and formality level.</p>
+                          )}
+                      </div>
+
                     </CardContent>
                   </Card>
                 </AccordionContent>
@@ -405,5 +529,3 @@ export default function ProofExplorer() {
     </TooltipProvider>
   );
 }
-
-    

@@ -1,3 +1,4 @@
+
 export type FormalityLevel = 'english' | 'informal' | 'rigorous';
 
 export type Theorem = {
@@ -16,4 +17,9 @@ export type GenerateProofInput = {
 
 export type GenerateProofOutput = {
   proof: string;
+};
+
+export type ProofVersion = {
+  proof: string;
+  timestamp: string;
 };
