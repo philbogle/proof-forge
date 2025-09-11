@@ -54,7 +54,7 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
           ) : (
              <div
               className={cn(
-                'transition-opacity duration-300 ease-in-out',
+                'transition-opacity duration-500 ease-out',
                 isFading ? 'opacity-0' : 'opacity-100'
               )}
             >
