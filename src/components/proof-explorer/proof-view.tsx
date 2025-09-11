@@ -1,4 +1,3 @@
-
 // src/components/proof-explorer/proof-view.tsx
 import * as React from 'react';
 import {
@@ -23,7 +22,7 @@ interface ProofViewProps {
 const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
   ({ proof, renderMarkdown, onToggleRenderMarkdown, isLoading }, ref) => {
     return (
-      <Card ref={ref} className="max-h-[60vh] overflow-y-auto">
+      <Card ref={ref}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -47,7 +46,7 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-h-[250px]">
           {isLoading ? (
             <ProofLoadingIndicator />
           ) : renderMarkdown ? (

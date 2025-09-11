@@ -17,6 +17,7 @@ import TheoremSelector from './proof-explorer/theorem-selector';
 import ProofControls from './proof-explorer/proof-controls';
 import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
+import PaginationControls from './proof-explorer/pagination-controls';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'informalEnglish', name: 'Informal English' },
@@ -31,6 +32,9 @@ export default function ProofExplorer() {
   const [formalityLevel, setFormalityLevel] =
     React.useState<FormalityLevel>('semiFormal');
   const [proof, setProof] = React.useState('');
+  const [proofPages, setProofPages] = React.useState<string[]>([]);
+  const [currentPage, setCurrentPage] = React.useState(1);
+
   const [proofCache, setProofCache] = React.useState<Record<string, string>>(
     {}
   );
@@ -43,9 +47,6 @@ export default function ProofExplorer() {
     'a college student studying mathematics'
   );
   const [renderMarkdown, setRenderMarkdown] = React.useState(true);
-  const [visibleAnchor, setVisibleAnchor] = React.useState<string | null>(null);
-
-  const proofCardRef = React.useRef<HTMLDivElement>(null);
 
   const { toast } = useToast();
 
@@ -53,68 +54,48 @@ export default function ProofExplorer() {
     () => theorems.find((t) => t.id === selectedTheoremId) || theorems[0],
     [selectedTheoremId]
   );
-  
-  // Effect for observing which anchor is visible
-  React.useEffect(() => {
-    const handleScroll = () => {
-      if (!proofCardRef.current) return;
-  
-      const anchors = Array.from(proofCardRef.current.querySelectorAll('a[id^="step-"]'));
-      const cardTop = proofCardRef.current.getBoundingClientRect().top;
-  
-      let firstVisibleAnchor: HTMLElement | null = null;
-  
-      for (const anchor of anchors) {
-        const anchorTop = anchor.getBoundingClientRect().top;
-        if (anchorTop >= cardTop) {
-          firstVisibleAnchor = anchor as HTMLElement;
-          break;
+
+  const parseProofIntoPages = (fullProof: string) => {
+    if (!fullProof) return [];
+    // Split by the anchor tags. The regex includes the anchor in the result.
+    const pages = fullProof.split(/(<a id="step-\d+"><\/a>)/).filter(p => p.trim() !== '');
+    
+    // The split results in ['<a ...></a>', 'content', '<a ...></a>', 'content'...]
+    // We want to group them into pages.
+    const combinedPages: string[] = [];
+    for (let i = 0; i < pages.length; i += 2) {
+      if (i + 1 < pages.length) {
+        combinedPages.push(pages[i] + pages[i+1]);
+      } else {
+        // Handle cases where a proof might not start with an anchor
+        // or there's trailing content. For now, we'll assume valid structure.
+        if(!pages[i].startsWith('<a')) {
+          if (combinedPages.length > 0) {
+             combinedPages[combinedPages.length - 1] += pages[i];
+          } else {
+             combinedPages.push(pages[i]);
+          }
         }
       }
-      
-      if (firstVisibleAnchor) {
-        setVisibleAnchor(firstVisibleAnchor.id);
-      } else if (anchors.length > 0) {
-        // If no anchor is below the top, the last one must be the visible one.
-        setVisibleAnchor(anchors[anchors.length - 1].id);
-      }
-    };
-  
-    const proofCardElement = proofCardRef.current;
-    if (proofCardElement) {
-      proofCardElement.addEventListener('scroll', handleScroll);
     }
+    // If no anchors are found, the whole proof is page 1
+    return combinedPages.length > 0 ? combinedPages : [fullProof];
+  };
   
-    // Run once on mount to set initial anchor
-    handleScroll();
-  
-    return () => {
-      if (proofCardElement) {
-        proofCardElement.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, [proof, renderMarkdown]);
-  
-  // Effect to scroll to the visible anchor when proof changes
   React.useEffect(() => {
-    if (!isProofLoading && visibleAnchor) {
-      const targetElement = proofCardRef.current?.querySelector(`#${visibleAnchor}`);
-      if (targetElement) {
-        // Using a timeout to ensure the browser has time to render and settle.
-        setTimeout(() => {
-          targetElement.scrollIntoView({ behavior: 'auto', block: 'start' });
-        }, 100);
-      }
+    const pages = parseProofIntoPages(proof);
+    setProofPages(pages);
+    // Reset to page 1 if the new proof has fewer pages than current page
+    if (currentPage > pages.length) {
+      setCurrentPage(1);
     }
-    // We only want this to run when the loading state changes, not when the visibleAnchor changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isProofLoading]);
+  }, [proof, currentPage]);
 
 
   const generateNewProof = React.useCallback(
     async (forceRefresh = false) => {
       setIsProofLoading(true);
-      setShowLoadingIndicator(true); // Always show for feedback
+      setShowLoadingIndicator(true);
       setAnswer('');
       setInteractionText('');
 
@@ -200,9 +181,8 @@ export default function ProofExplorer() {
   }, [selectedTheoremId, formalityLevel]);
 
   const handleTheoremChange = (theoremId: string) => {
-    setVisibleAnchor(null);
+    setCurrentPage(1);
     setSelectedTheoremId(theoremId);
-
   };
 
   const handleFormalityChange = (level: FormalityLevel) => {
@@ -219,13 +199,14 @@ export default function ProofExplorer() {
       if (type === 'question') {
         const result = await answerQuestion({
           theoremName: selectedTheorem.name,
-          theoremText: proof,
+          theoremText: proof, // Ask question about the whole proof
           question: interactionText,
           formalityLevel,
         });
         setAnswer(result.answer);
       } else if (type === 'edit') {
         setIsProofLoading(true);
+        // For edits, we pass the full proof to the AI
         const result = await editProof({
           proof: proof,
           request: interactionText,
@@ -283,11 +264,17 @@ export default function ProofExplorer() {
 
           <div className="space-y-6">
             <ProofView
-              ref={proofCardRef}
-              proof={proof}
+              proof={proofPages[currentPage - 1] || ''}
               renderMarkdown={renderMarkdown}
               onToggleRenderMarkdown={setRenderMarkdown}
               isLoading={showLoadingIndicator}
+            />
+
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={proofPages.length}
+              onPageChange={setCurrentPage}
+              isLoading={isProofLoading}
             />
 
             <InteractionPanel
