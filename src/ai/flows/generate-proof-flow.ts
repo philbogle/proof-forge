@@ -24,14 +24,17 @@ You are an expert mathematician and a skilled teacher. Your task is to generate 
 ${input.userBackground ? `**Target Audience Background:** ${input.userBackground}` : ''}
 
 **Instructions:**
-- **First Section Requirement:** The very first step of every proof (the content associated with \`<a id="step-1"></a>\`) MUST be a short explanation of the theorem and what it useful for, written at the requested formality level.
+- **First Section Requirement:** The very first step of every proof (the content associated with \`<a id="step-1"></a>\`) MUST describe
+  the theorem and give a high level overview of the proof structure, at the desired formality level of "english", "informal", or "rigorous".
 - **IMPORTANT ANCHORS & HEADERS:** At the beginning of each distinct step, paragraph, or logical block of the proof, you MUST do two things:
   1. Insert an HTML anchor tag like \`<a id="step-N"></a>\`, where 'N' is a sequential 1-based integer (step-1, step-2, etc.).
-  2. Immediately following the anchor, you MUST include a descriptive Markdown header for that step, like \`### [Descriptive Title for Step N]\`. This title should briefly summarize the purpose of the step.
+  2. Immediately following the anchor, you MUST include a the step number and a descriptive Markdown header for that step, like \`### N. [Descriptive Title for Step N]\`. This title should briefly summarize the purpose of the step.
   This is critical for navigation and structure.
 - For "english": Provide a step-by-step intuitive explanation. Use absolutely no math notation except very simple things like $x$ and $A(x)$. Explain everything in plain English, as if to someone only middle school math background.
 - For "informal": Provide a step-by-step proof but allow for intuition and non-rigorous shortcuts. Use math notation for mathematical concepts where it aids clarity. The formulas should not be overly complex.
 - For "rigorous": Provide a traditional, formal, and rigorous mathematical proof.
+
+In all cases, ovoid overly long paragraphs. 
 
 ${input.structuralProof ? `**IMPORTANT STRUCTURAL GUIDE:** You MUST follow the same logical structure and step numbering (for both the visible text and the \`<a id="step-N"></a>\` anchors and headers) as the provided proof below when you generate your new proof. This is critical for helping the user see how a proof is formalized across different levels.
 
@@ -42,7 +45,7 @@ ${input.structuralProof}
 ` : ''}
 
 - Your output must be in Markdown format.
-- For "informal" and "rigorous" proofs: always use rendered LaTeX for math: $formula$ for inline (using \\mathbf{} for vectors), and $$formula$$ for display equations. Critically, ensure no whitespace exists immediately inside delimiters (use $E=mc^2$, not $ E = mc^2 $). When display math ($$...$$) appears within lists, start it on a new line with zero leading indentation. Reserve code blocks (\`\`\`) strictly for programming code implementations, never for displaying mathematical formulas. Choose inline math for brevity/flow and display math for complex or emphasized equations, maintaining clean separation and standard paragraph spacing (one blank line after display math) for a professional, scientific document style.
+- For "informal" and "rigorous" proofs: always use rendered LaTeX for math: $formula$ for inline (using \\mathbf{} for vectors), and $$formula$$ for display equations. Critically, ensure no whitespace exists immediately inside delimiters (use $E=mc^2$, not $ E = mc^2 $). When displaying math ($$...$$) appears within lists, start it on a new line with zero leading indentation. Reserve code blocks (\`\`\`) strictly for programming code implementations, never for displaying mathematical formulas. Choose inline math for brevity/flow and display math for complex or emphasized equations, maintaining clean separation and standard paragraph spacing (one blank line after display math) for a professional, scientific document style.  Use the \\ulcorner and \\urcorner notation for Goedel numbers, and prefer aligned blocks for multi-step proofs.  
 - For "rigorous" formality, provide a full proof with all steps.
 - At the end of rigorous proofs, include "Q.E.D."
 
