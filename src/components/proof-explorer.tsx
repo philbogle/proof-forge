@@ -435,31 +435,19 @@ export default function ProofExplorer() {
               isFading={isFading}
             />
 
+            <InteractionPanel
+              interactionText={interactionText}
+              onInteractionTextChange={setInteractionText}
+              onInteract={handleInteraction}
+              isInteractionLoading={isInteractionLoading}
+              answer={answer}
+            />
+
             <Accordion
               type="single"
               collapsible
               className="w-full"
-              defaultValue="interaction"
             >
-              <AccordionItem value="interaction">
-                <AccordionTrigger>
-                  <div className="flex w-full items-center justify-between pr-4">
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                      <Bot className="h-4 w-4" />
-                      Interact with the Proof
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <InteractionPanel
-                    interactionText={interactionText}
-                    onInteractionTextChange={setInteractionText}
-                    onInteract={handleInteraction}
-                    isInteractionLoading={isInteractionLoading}
-                    answer={answer}
-                  />
-                </AccordionContent>
-              </AccordionItem>
               <AccordionItem value="advanced-settings">
                 <AccordionTrigger>
                   <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
