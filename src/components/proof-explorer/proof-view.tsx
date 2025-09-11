@@ -11,16 +11,18 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ProofLoadingIndicator } from '@/components/proof-loading-indicator';
 import { ProofDisplay } from '@/components/proof-display';
+import { cn } from '@/lib/utils';
 
 interface ProofViewProps {
   proof: string;
   renderMarkdown: boolean;
   onToggleRenderMarkdown: (checked: boolean) => void;
   isLoading: boolean;
+  isFading: boolean;
 }
 
 const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
-  ({ proof, renderMarkdown, onToggleRenderMarkdown, isLoading }, ref) => {
+  ({ proof, renderMarkdown, onToggleRenderMarkdown, isLoading, isFading }, ref) => {
     return (
       <Card ref={ref}>
         <CardHeader>
@@ -49,12 +51,21 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
         <CardContent className="min-h-[250px]">
           {isLoading ? (
             <ProofLoadingIndicator />
-          ) : renderMarkdown ? (
-            <ProofDisplay content={proof} />
           ) : (
-            <pre className="whitespace-pre-wrap font-code text-sm">
-              <code>{proof}</code>
-            </pre>
+             <div
+              className={cn(
+                'transition-opacity duration-300 ease-in-out',
+                isFading ? 'opacity-0' : 'opacity-100'
+              )}
+            >
+            {renderMarkdown ? (
+              <ProofDisplay content={proof} />
+            ) : (
+              <pre className="whitespace-pre-wrap font-code text-sm">
+                <code>{proof}</code>
+              </pre>
+            )}
+            </div>
           )}
         </CardContent>
       </Card>

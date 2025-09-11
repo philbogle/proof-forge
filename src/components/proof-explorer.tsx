@@ -41,6 +41,7 @@ export default function ProofExplorer() {
   const [proof, setProof] = React.useState('');
   const [proofPages, setProofPages] = React.useState<string[]>([]);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [isFading, setIsFading] = React.useState(false);
 
   const [proofCache, setProofCache] = React.useState<Record<string, string>>(
     {}
@@ -126,8 +127,12 @@ export default function ProofExplorer() {
 
   const generateNewProof = React.useCallback(
     async (forceRefresh = false) => {
+      setIsFading(true);
       setIsProofLoading(true);
-      setShowLoadingIndicator(true);
+      const loadingTimer = setTimeout(() => {
+        setShowLoadingIndicator(true);
+      }, 300);
+
       setAnswer('');
       setInteractionText('');
 
@@ -135,14 +140,12 @@ export default function ProofExplorer() {
 
       if (!forceRefresh && proofCache[cacheKey]) {
         setProof(proofCache[cacheKey]);
+        clearTimeout(loadingTimer);
         setIsProofLoading(false);
         setShowLoadingIndicator(false);
+        setTimeout(() => setIsFading(false), 50);
         return;
       }
-      
-      const loadingTimer = setTimeout(() => {
-        setShowLoadingIndicator(true);
-      }, 300);
 
       if (!forceRefresh) {
         try {
@@ -154,6 +157,7 @@ export default function ProofExplorer() {
             clearTimeout(loadingTimer);
             setShowLoadingIndicator(false);
             setIsProofLoading(false);
+            setTimeout(() => setIsFading(false), 50);
             return;
           }
         } catch (error: any) {
@@ -208,6 +212,7 @@ export default function ProofExplorer() {
         clearTimeout(loadingTimer);
         setShowLoadingIndicator(false);
         setIsProofLoading(false);
+        setTimeout(() => setIsFading(false), 50);
       }
     },
     [formalityLevel, userBackground, toast, selectedTheorem, proofCache, showLoadingIndicator, proof, generateSingleProof]
@@ -339,6 +344,7 @@ export default function ProofExplorer() {
               renderMarkdown={renderMarkdown}
               onToggleRenderMarkdown={setRenderMarkdown}
               isLoading={showLoadingIndicator}
+              isFading={isFading}
             />
 
             <InteractionPanel
