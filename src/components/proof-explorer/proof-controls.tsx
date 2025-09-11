@@ -40,9 +40,15 @@ export default function ProofControls({
   return (
     <div className="sticky top-0 z-10 -mx-4 -mt-4 mb-6 flex flex-col items-start justify-start gap-4 border-b border-border bg-gray-50/80 p-4 backdrop-blur-sm md:flex-row md:items-end">
       <div className="flex flex-col items-start gap-4 md:flex-row md:items-end">
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          isLoading={isProofLoading}
+        />
         <div className="flex flex-col items-start gap-2">
           <Label className="text-xs text-muted-foreground">
-            Formality Level
+            Formality
           </Label>
           <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
             {formalityLevels.map((level) => (
@@ -77,17 +83,9 @@ export default function ProofControls({
             </Tooltip>
           </div>
         </div>
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-          isLoading={isProofLoading}
-        />
       </div>
       <div className="flex flex-col items-start gap-2 md:ml-auto">
-         <Label className="text-xs text-muted-foreground">
-            View
-          </Label>
+        <Label className="text-xs text-muted-foreground">View</Label>
         <div className="flex items-center space-x-2">
           <Label htmlFor="markdown-toggle" className="text-sm font-medium">
             Raw
