@@ -19,8 +19,8 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Trash2 } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, Bot, Trash2 } from 'lucide-react';
 import AppHeader from './proof-explorer/app-header';
 import TheoremSelector from './proof-explorer/theorem-selector';
 import ProofControls from './proof-explorer/proof-controls';
@@ -349,14 +349,27 @@ export default function ProofExplorer() {
               isFading={isFading}
             />
 
-            <InteractionPanel
-              interactionText={interactionText}
-              onInteractionTextChange={setInteractionText}
-              onInteract={handleInteraction}
-              isInteractionLoading={isInteractionLoading}
-              answer={answer}
-            />
-             <Accordion type="single" collapsible className="w-full">
+            <Accordion type="single" collapsible className="w-full" defaultValue="interaction">
+              <AccordionItem value="interaction">
+                <AccordionTrigger>
+                   <div className="flex w-full items-center justify-between pr-4">
+                     <div className="flex items-center gap-2 text-sm">
+                        <Bot className="h-4 w-4" />
+                        Interact with the Proof
+                      </div>
+                      <p className="text-xs text-muted-foreground">Ask a question or request an edit</p>
+                    </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                   <InteractionPanel
+                    interactionText={interactionText}
+                    onInteractionTextChange={setInteractionText}
+                    onInteract={handleInteraction}
+                    isInteractionLoading={isInteractionLoading}
+                    answer={answer}
+                  />
+                </AccordionContent>
+              </AccordionItem>
               <AccordionItem value="advanced-settings">
                 <AccordionTrigger>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
