@@ -1,6 +1,5 @@
 // src/components/proof-explorer/proof-controls.tsx
 import * as React from 'react';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -8,9 +7,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { RefreshCw } from 'lucide-react';
-import type { FormalityLevel, Theorem } from '@/lib/types';
+import type { FormalityLevel } from '@/lib/types';
 import PaginationControls from './pagination-controls';
 import { Switch } from '../ui/switch';
+import { Label } from '../ui/label';
 
 interface ProofControlsProps {
   formalityLevels: { id: FormalityLevel; name: string }[];
@@ -38,8 +38,8 @@ export default function ProofControls({
   onToggleRenderMarkdown,
 }: ProofControlsProps) {
   return (
-    <div className="mb-6 flex flex-col items-start justify-start gap-4 border-b border-border bg-transparent pb-4 md:flex-row md:items-end">
-      <div className="flex w-full flex-col items-start gap-4 md:flex-row md:items-end">
+    <div className="mb-4 flex flex-col items-start justify-start gap-4 bg-transparent md:flex-row md:items-center">
+      <div className="flex w-full flex-col items-start gap-4 md:flex-row md:items-center">
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}
