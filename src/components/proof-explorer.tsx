@@ -26,7 +26,6 @@ import TheoremSelector from './proof-explorer/theorem-selector';
 import ProofControls from './proof-explorer/proof-controls';
 import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
-import PaginationControls from './proof-explorer/pagination-controls';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'informal', name: 'Informal' },
@@ -329,6 +328,9 @@ export default function ProofExplorer() {
             isProofLoading={isProofLoading}
             onFormalityChange={handleFormalityChange}
             onRefresh={() => generateNewProof(true)}
+            currentPage={currentPage}
+            totalPages={proofPages.length}
+            onPageChange={setCurrentPage}
           />
 
           <div className="space-y-6">
@@ -337,13 +339,6 @@ export default function ProofExplorer() {
               renderMarkdown={renderMarkdown}
               onToggleRenderMarkdown={setRenderMarkdown}
               isLoading={showLoadingIndicator}
-            />
-
-            <PaginationControls
-              currentPage={currentPage}
-              totalPages={proofPages.length}
-              onPageChange={setCurrentPage}
-              isLoading={isProofLoading}
             />
 
             <InteractionPanel
