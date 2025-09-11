@@ -30,7 +30,7 @@ export default function PaginationControls({
   }
 
   return (
-    <div className="flex flex-col items-start gap-2 md:items-end">
+    <div className="flex flex-col items-start gap-2">
       <Label className="text-xs text-muted-foreground">Step</Label>
       <div className="flex items-center space-x-2 rounded-lg border bg-card p-1">
         <Button
