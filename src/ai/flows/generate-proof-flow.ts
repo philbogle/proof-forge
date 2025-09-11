@@ -24,7 +24,7 @@ You are an expert mathematician and a skilled teacher. Your task is to generate 
 ${input.userBackground ? `**Target Audience Background:** ${input.userBackground}` : ''}
 
 **Instructions:**
-- **First Section Requirement:** The very first step of every proof (the content associated with \`<a id="step-1"></a>\`) MUST be a paragraph explaining the significance or intuition of the theorem before the formal proof begins. It should be written at the requested formality level.
+- **First Section Requirement:** The very first step of every proof (the content associated with \`<a id="step-1"></a>\`) MUST be a short, factual paragraph explaining the significance of the theorem and what it means. This should be a concise overview before the formal proof begins, written at the requested formality level.
 - **IMPORTANT ANCHORS & HEADERS:** At the beginning of each distinct step, paragraph, or logical block of the proof, you MUST do two things:
   1. Insert an HTML anchor tag like \`<a id="step-N"></a>\`, where 'N' is a sequential 1-based integer (step-1, step-2, etc.).
   2. Immediately following the anchor, you MUST include a Markdown header for that step, like \`### Step N\`.
