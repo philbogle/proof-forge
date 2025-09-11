@@ -89,11 +89,41 @@ export default function ProofExplorer() {
     setProofPages(pages);
     if (currentPage > pages.length && pages.length > 0) {
       setCurrentPage(pages.length);
+    } else if (pages.length === 1 && currentPage !== 1) {
+      setCurrentPage(1);
     } else if (pages.length > 0 && currentPage === 0) {
       setCurrentPage(1);
     }
-  }, [proof]);
+  }, [proof, currentPage]);
 
+
+  const generateSingleProof = React.useCallback(
+    async (
+      level: FormalityLevel,
+      structuralProof?: string
+    ): Promise<string> => {
+      const { proof: newProof } = await generateProof({
+        theoremName: selectedTheorem.name,
+        theoremStatement: selectedTheorem.statement,
+        formality: level,
+        userBackground,
+        structuralProof,
+      });
+
+      const cacheKey = `${selectedTheorem.id}-${level}`;
+      setProofCache((prev) => ({ ...prev, [cacheKey]: newProof }));
+      try {
+        await setDoc(doc(db, 'proofs', cacheKey), {
+          proof: newProof,
+          timestamp: new Date(),
+        });
+      } catch (error) {
+        console.error('Firestore cache write failed:', error);
+      }
+      return newProof;
+    },
+    [selectedTheorem, userBackground]
+  );
 
   const generateNewProof = React.useCallback(
     async (forceRefresh = false) => {
@@ -136,28 +166,36 @@ export default function ProofExplorer() {
          if (proof) setProof('');
       }
 
-      const structuralProofKey = Object.keys(proofCache).find(key => key.startsWith(selectedTheorem.id) && key !== cacheKey);
-      const structuralProof = structuralProofKey ? proofCache[structuralProofKey] : undefined;
-
-
       try {
-        const { proof: newProof } = await generateProof({
-          theoremName: selectedTheorem.name,
-          theoremStatement: selectedTheorem.statement,
-          formality: formalityLevel,
-          userBackground,
-          structuralProof,
-        });
-        setProof(newProof);
-        setProofCache((prev) => ({ ...prev, [cacheKey]: newProof }));
-        try {
-          await setDoc(doc(db, 'proofs', cacheKey), {
-            proof: newProof,
-            timestamp: new Date(),
-          });
-        } catch (error) {
-          console.error('Firestore cache write failed:', error);
+        const otherFormality = formalityLevel === 'informal' ? 'rigorous' : 'informal';
+        const structuralProofKey = `${selectedTheorem.id}-${otherFormality}`;
+        let structuralProof = proofCache[structuralProofKey];
+
+        if (!structuralProof) {
+            try {
+                const cachedDoc = await getDoc(doc(db, 'proofs', structuralProofKey));
+                if (cachedDoc.exists()) {
+                    structuralProof = cachedDoc.data().proof;
+                }
+            } catch (error) { /* ignore */ }
         }
+
+        const anyProofExists = !!structuralProof || !!proofCache[cacheKey];
+
+        let newProof;
+        if (!anyProofExists && !forceRefresh) {
+            const informalProof = await generateSingleProof('informal');
+            if (formalityLevel === 'informal') {
+                newProof = informalProof;
+            } else {
+                newProof = await generateSingleProof(formalityLevel, informalProof);
+            }
+        } else {
+           newProof = await generateSingleProof(formalityLevel, structuralProof);
+        }
+
+        setProof(newProof);
+
       } catch (error) {
         console.error('Error generating proof:', error);
         toast({
@@ -173,7 +211,7 @@ export default function ProofExplorer() {
         setIsProofLoading(false);
       }
     },
-    [formalityLevel, userBackground, toast, selectedTheorem, proofCache, showLoadingIndicator, proof]
+    [formalityLevel, userBackground, toast, selectedTheorem, proofCache, showLoadingIndicator, proof, generateSingleProof]
   );
 
   React.useEffect(() => {
@@ -187,22 +225,24 @@ export default function ProofExplorer() {
   };
 
   const handleFormalityChange = (level: FormalityLevel) => {
+    setCurrentPage(1);
     setFormalityLevel(level);
   };
 
   const handleClearCache = async () => {
     const keysToClear = Object.keys(proofCache).filter(key => key.startsWith(selectedTheorem.id));
     
-    // Clear local cache
     const newCache = {...proofCache};
     keysToClear.forEach(key => {
         delete newCache[key];
     });
     setProofCache(newCache);
 
-    // Clear Firestore cache
     try {
-        const deletePromises = keysToClear.map(key => deleteDoc(doc(db, 'proofs', key)));
+        const deletePromises = [
+          deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-informal`)),
+          deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-rigorous`))
+        ];
         await Promise.all(deletePromises);
     } catch (error) {
         console.error("Error clearing Firestore cache:", error);
@@ -351,3 +391,5 @@ export default function ProofExplorer() {
     </TooltipProvider>
   );
 }
+
+    
