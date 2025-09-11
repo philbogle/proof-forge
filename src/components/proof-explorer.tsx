@@ -84,10 +84,15 @@ export default function ProofExplorer() {
     if (!isProofLoading && visibleAnchor) {
       const targetElement = proofCardRef.current?.querySelector(`#${visibleAnchor}`);
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Using a timeout to ensure the browser has time to render and settle.
+        setTimeout(() => {
+          targetElement.scrollIntoView({ behavior: 'auto', block: 'start' });
+        }, 100);
       }
     }
-  }, [isProofLoading, visibleAnchor]);
+    // We only want this to run when the loading state changes, not when the visibleAnchor changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isProofLoading]);
 
 
   const generateNewProof = React.useCallback(
@@ -98,6 +103,11 @@ export default function ProofExplorer() {
       setInteractionText('');
 
       const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
+
+      // This is a new theorem, don't use the old anchor.
+      if (proofCache[cacheKey] === undefined) {
+          setVisibleAnchor(null);
+      }
 
       if (!forceRefresh && proofCache[cacheKey]) {
         setProof(proofCache[cacheKey]);
@@ -174,6 +184,8 @@ export default function ProofExplorer() {
 
   React.useEffect(() => {
     generateNewProof();
+    // generateNewProof is memoized and we only want to run it when these specific dependencies change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTheoremId, formalityLevel]);
 
   const handleTheoremChange = (theoremId: string) => {
@@ -202,6 +214,7 @@ export default function ProofExplorer() {
         });
         setAnswer(result.answer);
       } else if (type === 'edit') {
+        setIsProofLoading(true);
         const result = await editProof({
           proof: proof,
           request: interactionText,
@@ -219,6 +232,8 @@ export default function ProofExplorer() {
           });
         } catch (error) {
            console.error('Firestore cache write failed:', error);
+        } finally {
+            setIsProofLoading(false);
         }
       }
     } catch (error) {
@@ -277,3 +292,5 @@ export default function ProofExplorer() {
     </TooltipProvider>
   );
 }
+
+    
