@@ -7,7 +7,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { ProofDisplay } from '@/components/proof-display';
@@ -35,21 +35,23 @@ export default function InteractionPanel({
           <TabsTrigger value="edit">Request an Edit</TabsTrigger>
         </TabsList>
         <TabsContent value="question" className="space-y-4">
-          <Textarea
-            placeholder="e.g., What does 'Q.E.D.' mean?"
-            value={interactionText}
-            onChange={(e) => onInteractionTextChange(e.target.value)}
-            className="mt-4 min-h-[100px] font-body"
-          />
-          <Button
-            onClick={() => onInteract('question')}
-            disabled={isInteractionLoading}
-          >
-            {isInteractionLoading && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
-            {isInteractionLoading ? 'Thinking...' : 'Ask'}
-          </Button>
+          <div className="mt-4 flex gap-2 font-body">
+            <Input
+              placeholder="e.g., What does 'Q.E.D.' mean?"
+              value={interactionText}
+              onChange={(e) => onInteractionTextChange(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onInteract('question')}
+            />
+            <Button
+              onClick={() => onInteract('question')}
+              disabled={isInteractionLoading}
+            >
+              {isInteractionLoading && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {isInteractionLoading ? 'Thinking...' : 'Ask'}
+            </Button>
+          </div>
           {answer && (
             <div className="mt-4 rounded-lg border bg-secondary/50 p-4">
               <p className="font-semibold text-secondary-foreground">
@@ -62,21 +64,23 @@ export default function InteractionPanel({
           )}
         </TabsContent>
         <TabsContent value="edit" className="space-y-4">
-          <Textarea
-            placeholder="e.g., Explain the first step in more detail."
-            value={interactionText}
-            onChange={(e) => onInteractionTextChange(e.target.value)}
-            className="mt-4 min-h-[100px] font-body"
-          />
-          <Button
-            onClick={() => onInteract('edit')}
-            disabled={isInteractionLoading}
-          >
-            {isInteractionLoading && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
-            {isInteractionLoading ? 'Editing...' : 'Submit Edit'}
-          </Button>
+          <div className="mt-4 flex gap-2 font-body">
+            <Input
+              placeholder="e.g., Explain the first step in more detail."
+              value={interactionText}
+              onChange={(e) => onInteractionTextChange(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onInteract('edit')}
+            />
+            <Button
+              onClick={() => onInteract('edit')}
+              disabled={isInteractionLoading}
+            >
+              {isInteractionLoading && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {isInteractionLoading ? 'Editing...' : 'Submit Edit'}
+            </Button>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

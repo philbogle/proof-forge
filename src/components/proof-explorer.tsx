@@ -435,7 +435,12 @@ export default function ProofExplorer() {
               isFading={isFading}
             />
 
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+              defaultValue="interaction"
+            >
               <AccordionItem value="interaction">
                 <AccordionTrigger>
                   <div className="flex w-full items-center justify-between pr-4">
