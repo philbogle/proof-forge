@@ -225,7 +225,6 @@ export default function ProofExplorer() {
   };
 
   const handleFormalityChange = (level: FormalityLevel) => {
-    setCurrentPage(1);
     setFormalityLevel(level);
   };
 
