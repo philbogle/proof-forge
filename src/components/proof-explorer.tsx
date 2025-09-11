@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Bot, Trash2, History } from 'lucide-react';
+import { AlertCircle, Trash2, History } from 'lucide-react';
 import AppHeader from './proof-explorer/app-header';
 import TheoremSelector from './proof-explorer/theorem-selector';
 import ProofControls from './proof-explorer/proof-controls';
@@ -121,7 +121,7 @@ export default function ProofExplorer() {
         timestamp: new Date().toISOString(),
       };
       
-      const updatedHistory = [newVersion, ...(proofCache[cacheKey] || [])];
+      const updatedHistory = [newVersion, ...(proofCache[cacheKey] || [])].slice(0, 10);
 
       setProofCache((prev) => ({ ...prev, [cacheKey]: updatedHistory }));
 
@@ -377,6 +377,7 @@ export default function ProofExplorer() {
         });
         setAnswer(result.answer);
       } else if (type === 'edit') {
+        setIsFading(true);
         setIsProofLoading(true);
         const { editedProof } = await editProof({
           proof: proof,
@@ -389,6 +390,7 @@ export default function ProofExplorer() {
         setProof(editedProof);
         
         setIsProofLoading(false);
+        setTimeout(() => setIsFading(false), 50);
       }
     } catch (error) {
       console.error(`Error during ${type}:`, error);
@@ -450,7 +452,7 @@ export default function ProofExplorer() {
             >
               <AccordionItem value="advanced-settings">
                 <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <div className="flex items-center gap-2 text-sm font-medium">
                     <AlertCircle className="h-4 w-4" />
                     Advanced Settings
                   </div>
