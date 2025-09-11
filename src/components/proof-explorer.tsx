@@ -10,8 +10,17 @@ import { editProof } from '@/ai/flows/edit-proof-flow';
 import { theorems } from '@/lib/theorems';
 import type { FormalityLevel } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { AlertCircle, Trash2 } from 'lucide-react';
 import AppHeader from './proof-explorer/app-header';
 import TheoremSelector from './proof-explorer/theorem-selector';
 import ProofControls from './proof-explorer/proof-controls';
@@ -57,18 +66,13 @@ export default function ProofExplorer() {
 
   const parseProofIntoPages = (fullProof: string) => {
     if (!fullProof) return [];
-    // Split by the anchor tags. The regex includes the anchor in the result.
     const pages = fullProof.split(/(<a id="step-\d+"><\/a>)/).filter(p => p.trim() !== '');
     
-    // The split results in ['<a ...></a>', 'content', '<a ...></a>', 'content'...]
-    // We want to group them into pages.
     const combinedPages: string[] = [];
     for (let i = 0; i < pages.length; i += 2) {
       if (i + 1 < pages.length) {
         combinedPages.push(pages[i] + pages[i+1]);
       } else {
-        // Handle cases where a proof might not start with an anchor
-        // or there's trailing content. For now, we'll assume valid structure.
         if(!pages[i].startsWith('<a')) {
           if (combinedPages.length > 0) {
              combinedPages[combinedPages.length - 1] += pages[i];
@@ -78,15 +82,15 @@ export default function ProofExplorer() {
         }
       }
     }
-    // If no anchors are found, the whole proof is page 1
     return combinedPages.length > 0 ? combinedPages : [fullProof];
   };
   
   React.useEffect(() => {
     const pages = parseProofIntoPages(proof);
     setProofPages(pages);
-    // Reset to page 1 if the new proof has fewer pages than current page
-    if (currentPage > pages.length) {
+    if (currentPage > pages.length && pages.length > 0) {
+      setCurrentPage(pages.length);
+    } else if (pages.length > 0 && currentPage === 0) {
       setCurrentPage(1);
     }
   }, [proof, currentPage]);
@@ -133,10 +137,9 @@ export default function ProofExplorer() {
          if (proof) setProof('');
       }
 
-      // Find another proof for the same theorem to use for structure
-      const structuralProof = Object.keys(proofCache).find(key => key.startsWith(selectedTheorem.id) && key !== cacheKey) 
-        ? proofCache[Object.keys(proofCache).find(key => key.startsWith(selectedTheorem.id) && key !== cacheKey)!]
-        : undefined;
+      const structuralProofKey = Object.keys(proofCache).find(key => key.startsWith(selectedTheorem.id) && key !== cacheKey);
+      const structuralProof = structuralProofKey ? proofCache[structuralProofKey] : undefined;
+
 
       try {
         const { proof: newProof } = await generateProof({
@@ -176,8 +179,7 @@ export default function ProofExplorer() {
 
   React.useEffect(() => {
     generateNewProof();
-    // generateNewProof is memoized and we only want to run it when these specific dependencies change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTheoremId, formalityLevel]);
 
   const handleTheoremChange = (theoremId: string) => {
@@ -187,6 +189,37 @@ export default function ProofExplorer() {
 
   const handleFormalityChange = (level: FormalityLevel) => {
     setFormalityLevel(level);
+  };
+
+  const handleClearCache = async () => {
+    const keysToClear = Object.keys(proofCache).filter(key => key.startsWith(selectedTheorem.id));
+    
+    // Clear local cache
+    const newCache = {...proofCache};
+    keysToClear.forEach(key => {
+        delete newCache[key];
+    });
+    setProofCache(newCache);
+
+    // Clear Firestore cache
+    try {
+        const deletePromises = keysToClear.map(key => deleteDoc(doc(db, 'proofs', key)));
+        await Promise.all(deletePromises);
+    } catch (error) {
+        console.error("Error clearing Firestore cache:", error);
+         toast({
+          variant: 'destructive',
+          title: 'Cache Error',
+          description: 'Could not clear the Firestore cache. Please check the console.',
+        });
+    }
+
+    toast({
+        title: 'Cache Cleared',
+        description: `The cache for "${selectedTheorem.name}" has been cleared.`,
+    });
+
+    generateNewProof(true);
   };
   
   const handleInteraction = async (type: 'question' | 'edit') => {
@@ -199,14 +232,13 @@ export default function ProofExplorer() {
       if (type === 'question') {
         const result = await answerQuestion({
           theoremName: selectedTheorem.name,
-          theoremText: proof, // Ask question about the whole proof
+          theoremText: proof,
           question: interactionText,
           formalityLevel,
         });
         setAnswer(result.answer);
       } else if (type === 'edit') {
         setIsProofLoading(true);
-        // For edits, we pass the full proof to the AI
         const result = await editProof({
           proof: proof,
           request: interactionText,
@@ -214,7 +246,6 @@ export default function ProofExplorer() {
           formality: formalityLevel,
         });
         setProof(result.editedProof);
-        // Update cache with the edited proof
         const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
         setProofCache((prev) => ({ ...prev, [cacheKey]: result.editedProof }));
         try {
@@ -284,6 +315,37 @@ export default function ProofExplorer() {
               isInteractionLoading={isInteractionLoading}
               answer={answer}
             />
+             <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="advanced-settings">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <AlertCircle className="h-4 w-4" />
+                    Advanced Settings
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold">Clear Theorem Cache</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Delete all cached proofs for "{selectedTheorem.name}" and regenerate.
+                          </p>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          onClick={handleClearCache}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Clear Cache
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </div>
       </div>

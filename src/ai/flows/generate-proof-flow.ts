@@ -24,12 +24,15 @@ You are an expert mathematician and a skilled teacher. Your task is to generate 
 ${input.userBackground ? `**Target Audience Background:** ${input.userBackground}` : ''}
 
 **Instructions:**
-- **IMPORTANT ANCHORS:** At the beginning of each distinct step, paragraph, or logical block of the proof, you MUST insert an HTML anchor tag like \`<a id="step-N"></a>\`, where 'N' is a sequential 1-based integer (step-1, step-2, etc.). This is critical for navigation.
+- **IMPORTANT ANCHORS & HEADERS:** At the beginning of each distinct step, paragraph, or logical block of the proof, you MUST do two things:
+  1. Insert an HTML anchor tag like \`<a id="step-N"></a>\`, where 'N' is a sequential 1-based integer (step-1, step-2, etc.).
+  2. Immediately following the anchor, you MUST include a Markdown header for that step, like \`### Step N\`.
+  This is critical for navigation and structure.
 - For "informalEnglish": Provide a step-by-step proof using only plain English. Do not use mathematical notation or symbols.
 - For "semiFormal": Provide a numbered, step-by-step proof. Each step should feature block-aligned mathematical formulas and include brief, inline explanations. Avoid using Greek letters.
 - For "rigorous": Provide a traditional, formal, and rigorous mathematical proof.
 
-${input.structuralProof ? `**IMPORTANT STRUCTURAL GUIDE:** You MUST follow the same logical structure and step numbering (for both the visible text and the \`<a id="step-N"></a>\` anchors) as the provided proof below when you generate your new proof. This is critical for helping the user see how a proof is formalized across different levels.
+${input.structuralProof ? `**IMPORTANT STRUCTURAL GUIDE:** You MUST follow the same logical structure and step numbering (for both the visible text and the \`<a id="step-N"></a>\` anchors and headers) as the provided proof below when you generate your new proof. This is critical for helping the user see how a proof is formalized across different levels.
 
 **Existing Proof to Follow:**
 ---
