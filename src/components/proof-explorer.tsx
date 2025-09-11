@@ -47,7 +47,6 @@ export default function ProofExplorer() {
     {}
   );
   const [isProofLoading, setIsProofLoading] = React.useState(true);
-  const [showLoadingIndicator, setShowLoadingIndicator] = React.useState(false);
   const [interactionText, setInteractionText] = React.useState('');
   const [answer, setAnswer] = React.useState('');
   const [isInteractionLoading, setIsInteractionLoading] = React.useState(false);
@@ -129,9 +128,6 @@ export default function ProofExplorer() {
     async (forceRefresh = false) => {
       setIsFading(true);
       setIsProofLoading(true);
-      const loadingTimer = setTimeout(() => {
-        setShowLoadingIndicator(true);
-      }, 300);
 
       setAnswer('');
       setInteractionText('');
@@ -140,9 +136,7 @@ export default function ProofExplorer() {
 
       if (!forceRefresh && proofCache[cacheKey]) {
         setProof(proofCache[cacheKey]);
-        clearTimeout(loadingTimer);
         setIsProofLoading(false);
-        setShowLoadingIndicator(false);
         setTimeout(() => setIsFading(false), 50);
         return;
       }
@@ -154,8 +148,6 @@ export default function ProofExplorer() {
             const cachedProof = cachedDoc.data().proof;
             setProof(cachedProof);
             setProofCache((prev) => ({ ...prev, [cacheKey]: cachedProof }));
-            clearTimeout(loadingTimer);
-            setShowLoadingIndicator(false);
             setIsProofLoading(false);
             setTimeout(() => setIsFading(false), 50);
             return;
@@ -165,7 +157,7 @@ export default function ProofExplorer() {
         }
       }
       
-      if (!showLoadingIndicator) {
+      if (isProofLoading) {
          if (proof) setProof('');
       }
 
@@ -209,13 +201,11 @@ export default function ProofExplorer() {
         });
         setProof('Failed to generate proof.');
       } finally {
-        clearTimeout(loadingTimer);
-        setShowLoadingIndicator(false);
         setIsProofLoading(false);
         setTimeout(() => setIsFading(false), 50);
       }
     },
-    [formalityLevel, userBackground, toast, selectedTheorem, proofCache, showLoadingIndicator, proof, generateSingleProof]
+    [formalityLevel, userBackground, toast, selectedTheorem, proofCache, isProofLoading, proof, generateSingleProof]
   );
 
   React.useEffect(() => {
@@ -343,7 +333,7 @@ export default function ProofExplorer() {
               proof={proofPages[currentPage - 1] || ''}
               renderMarkdown={renderMarkdown}
               onToggleRenderMarkdown={setRenderMarkdown}
-              isLoading={showLoadingIndicator}
+              isLoading={isProofLoading}
               isFading={isFading}
             />
 
