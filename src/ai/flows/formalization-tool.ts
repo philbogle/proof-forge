@@ -14,7 +14,7 @@ import {z} from 'genkit';
 
 const ShouldIncludeInformationInputSchema = z.object({
   theorem: z.string().describe('The theorem being proven.'),
-  proofLevel: z.enum(['informalEnglish', 'semiFormal', 'rigorous']).describe('The current level of formality of the proof.'),
+  proofLevel: z.enum(['informal', 'rigorous']).describe('The current level of formality of the proof.'),
   userBackground: z.string().describe('The user’s background in mathematics.'),
   informationType: z.string().describe('The type of information being considered for inclusion, e.g., \"historical context\", \"intuition behind the proof\", \"detailed explanation of a specific step\".'),
 });

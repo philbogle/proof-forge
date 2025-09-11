@@ -17,7 +17,7 @@ const AnswerQuestionInputSchema = z.object({
   theoremText: z.string().describe('The text of the theorem.'),
   question: z.string().describe('The user question about the theorem.'),
   formalityLevel: z
-    .enum(['informalEnglish', 'semiFormal', 'rigorous'])
+    .enum(['informal', 'rigorous'])
     .describe('The current formality level of the proof.'),
 });
 export type AnswerQuestionInput = z.infer<typeof AnswerQuestionInputSchema>;

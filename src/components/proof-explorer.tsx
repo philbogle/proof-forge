@@ -29,8 +29,7 @@ import InteractionPanel from './proof-explorer/interaction-panel';
 import PaginationControls from './proof-explorer/pagination-controls';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
-  { id: 'informalEnglish', name: 'Informal English' },
-  { id: 'semiFormal', name: 'Semi-Formal' },
+  { id: 'informal', name: 'Informal' },
   { id: 'rigorous', name: 'Rigorous' },
 ];
 
@@ -39,7 +38,7 @@ export default function ProofExplorer() {
     theorems[0].id
   );
   const [formalityLevel, setFormalityLevel] =
-    React.useState<FormalityLevel>('semiFormal');
+    React.useState<FormalityLevel>('informal');
   const [proof, setProof] = React.useState('');
   const [proofPages, setProofPages] = React.useState<string[]>([]);
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -93,7 +92,7 @@ export default function ProofExplorer() {
     } else if (pages.length > 0 && currentPage === 0) {
       setCurrentPage(1);
     }
-  }, [proof, currentPage]);
+  }, [proof]);
 
 
   const generateNewProof = React.useCallback(

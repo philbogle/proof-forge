@@ -16,7 +16,7 @@ const EditProofInputSchema = z.object({
   proof: z.string().describe('The original proof text in Markdown format.'),
   request: z.string().describe('The user\'s instructions for how to edit the proof.'),
   theoremName: z.string().describe('The name of the theorem the proof is for.'),
-  formality: z.enum(['informalEnglish', 'semiFormal', 'rigorous']).describe('The formality level of the proof.'),
+  formality: z.enum(['informal', 'rigorous']).describe('The formality level of the proof.'),
 });
 export type EditProofInput = z.infer<typeof EditProofInputSchema>;
 
