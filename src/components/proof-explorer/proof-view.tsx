@@ -3,10 +3,7 @@ import * as React from 'react';
 import {
   Card,
   CardContent,
-  CardHeader,
 } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { ProofLoadingIndicator } from '@/components/proof-loading-indicator';
 import { ProofDisplay } from '@/components/proof-display';
 import { cn } from '@/lib/utils';
@@ -14,33 +11,15 @@ import { cn } from '@/lib/utils';
 interface ProofViewProps {
   proof: string;
   renderMarkdown: boolean;
-  onToggleRenderMarkdown: (checked: boolean) => void;
   isLoading: boolean;
   isFading: boolean;
 }
 
 const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
-  ({ proof, renderMarkdown, onToggleRenderMarkdown, isLoading, isFading }, ref) => {
+  ({ proof, renderMarkdown, isLoading, isFading }, ref) => {
     return (
       <Card ref={ref}>
-        <CardHeader>
-          <div className="flex items-center justify-end">
-            <div className="flex items-center space-x-2">
-              <Label
-                htmlFor="markdown-toggle"
-                className="text-sm font-medium"
-              >
-                Raw
-              </Label>
-              <Switch
-                id="markdown-toggle"
-                checked={!renderMarkdown}
-                onCheckedChange={(checked) => onToggleRenderMarkdown(!checked)}
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="min-h-[250px]">
+        <CardContent className="min-h-[250px] pt-6">
           {isLoading ? (
             <ProofLoadingIndicator />
           ) : (

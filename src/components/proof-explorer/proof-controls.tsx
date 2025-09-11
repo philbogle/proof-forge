@@ -10,9 +10,9 @@ import {
 import { RefreshCw } from 'lucide-react';
 import type { FormalityLevel, Theorem } from '@/lib/types';
 import PaginationControls from './pagination-controls';
+import { Switch } from '../ui/switch';
 
 interface ProofControlsProps {
-  selectedTheorem: Theorem;
   formalityLevels: { id: FormalityLevel; name: string }[];
   formalityLevel: FormalityLevel;
   isProofLoading: boolean;
@@ -21,10 +21,11 @@ interface ProofControlsProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  renderMarkdown: boolean;
+  onToggleRenderMarkdown: (checked: boolean) => void;
 }
 
 export default function ProofControls({
-  selectedTheorem,
   formalityLevels,
   formalityLevel,
   isProofLoading,
@@ -33,9 +34,11 @@ export default function ProofControls({
   currentPage,
   totalPages,
   onPageChange,
+  renderMarkdown,
+  onToggleRenderMarkdown,
 }: ProofControlsProps) {
   return (
-    <div className="sticky top-0 z-10 -mx-4 -mt-4 mb-6 flex flex-col items-start justify-start gap-4 border-b border-border bg-gray-50/80 p-4 backdrop-blur-sm md:flex-row md:items-center">
+    <div className="sticky top-0 z-10 -mx-4 -mt-4 mb-6 flex flex-col items-start justify-start gap-4 border-b border-border bg-gray-50/80 p-4 backdrop-blur-sm md:flex-row md:items-end">
       <div className="flex flex-col items-start gap-4 md:flex-row md:items-end">
         <div className="flex flex-col items-start gap-2">
           <Label className="text-xs text-muted-foreground">
@@ -80,6 +83,21 @@ export default function ProofControls({
           onPageChange={onPageChange}
           isLoading={isProofLoading}
         />
+      </div>
+      <div className="flex flex-col items-start gap-2 md:ml-auto">
+         <Label className="text-xs text-muted-foreground">
+            View
+          </Label>
+        <div className="flex items-center space-x-2">
+          <Label htmlFor="markdown-toggle" className="text-sm font-medium">
+            Raw
+          </Label>
+          <Switch
+            id="markdown-toggle"
+            checked={!renderMarkdown}
+            onCheckedChange={(checked) => onToggleRenderMarkdown(!checked)}
+          />
+        </div>
       </div>
     </div>
   );

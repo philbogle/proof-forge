@@ -329,7 +329,6 @@ export default function ProofExplorer() {
           />
 
           <ProofControls
-            selectedTheorem={selectedTheorem}
             formalityLevels={formalityLevels}
             formalityLevel={formalityLevel}
             isProofLoading={isProofLoading}
@@ -338,13 +337,14 @@ export default function ProofExplorer() {
             currentPage={currentPage}
             totalPages={proofPages.length}
             onPageChange={setCurrentPage}
+            renderMarkdown={renderMarkdown}
+            onToggleRenderMarkdown={setRenderMarkdown}
           />
 
           <div className="space-y-6">
             <ProofView
               proof={proofPages[currentPage - 1] || ''}
               renderMarkdown={renderMarkdown}
-              onToggleRenderMarkdown={setRenderMarkdown}
               isLoading={isProofLoading}
               isFading={isFading}
             />
