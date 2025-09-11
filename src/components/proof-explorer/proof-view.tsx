@@ -3,9 +3,7 @@ import * as React from 'react';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -26,13 +24,7 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
     return (
       <Card ref={ref}>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Proof</CardTitle>
-              <CardDescription>
-                This is a dynamically generated presentation of the proof.
-              </CardDescription>
-            </div>
+          <div className="flex items-center justify-end">
             <div className="flex items-center space-x-2">
               <Label
                 htmlFor="markdown-toggle"
