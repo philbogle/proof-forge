@@ -19,7 +19,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle, Bot, Trash2 } from 'lucide-react';
 import AppHeader from './proof-explorer/app-header';
 import TheoremSelector from './proof-explorer/theorem-selector';
@@ -349,7 +349,7 @@ export default function ProofExplorer() {
               isFading={isFading}
             />
 
-            <Accordion type="single" collapsible className="w-full" defaultValue="interaction">
+            <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="interaction">
                 <AccordionTrigger>
                    <div className="flex w-full items-center justify-between pr-4">

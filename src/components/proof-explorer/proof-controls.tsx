@@ -38,64 +38,56 @@ export default function ProofControls({
   onToggleRenderMarkdown,
 }: ProofControlsProps) {
   return (
-    <div className="sticky top-0 z-10 -mx-4 -mt-4 mb-6 flex flex-col items-start justify-start gap-4 border-b border-border bg-gray-50/80 p-4 backdrop-blur-sm md:flex-row md:items-end">
-      <div className="flex flex-col items-start gap-4 md:flex-row md:items-end">
+    <div className="mb-6 flex flex-col items-start justify-start gap-4 border-b border-border bg-transparent pb-4 md:flex-row md:items-end">
+      <div className="flex w-full flex-col items-start gap-4 md:flex-row md:items-end">
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={onPageChange}
           isLoading={isProofLoading}
         />
-        <div className="flex flex-col items-start gap-2">
-          <Label className="text-xs text-muted-foreground">
-            Formality
-          </Label>
-          <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
-            {formalityLevels.map((level) => (
+        <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
+          {formalityLevels.map((level) => (
+            <Button
+              key={level.id}
+              variant={formalityLevel === level.id ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onFormalityChange(level.id)}
+              className="h-8 px-2 text-xs md:px-3 md:text-sm"
+              disabled={isProofLoading}
+            >
+              {level.name}
+            </Button>
+          ))}
+          <Tooltip>
+            <TooltipTrigger asChild>
               <Button
-                key={level.id}
-                variant={formalityLevel === level.id ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => onFormalityChange(level.id)}
-                className="h-8 px-2 text-xs md:px-3 md:text-sm"
+                variant="ghost"
+                size="icon"
+                onClick={onRefresh}
                 disabled={isProofLoading}
+                className="h-8 w-8"
               >
-                {level.name}
+                <RefreshCw
+                  className={`h-4 w-4 ${isProofLoading ? 'animate-spin' : ''}`}
+                />
               </Button>
-            ))}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onRefresh}
-                  disabled={isProofLoading}
-                  className="h-8 w-8"
-                >
-                  <RefreshCw
-                    className={`h-4 w-4 ${isProofLoading ? 'animate-spin' : ''}`}
-                  />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Refresh Proof</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Refresh Proof</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
-      <div className="flex flex-col items-start gap-2 md:ml-auto">
-        <Label className="text-xs text-muted-foreground">View</Label>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="markdown-toggle" className="text-sm font-medium">
-            Raw
-          </Label>
-          <Switch
-            id="markdown-toggle"
-            checked={!renderMarkdown}
-            onCheckedChange={(checked) => onToggleRenderMarkdown(!checked)}
-          />
-        </div>
+      <div className="flex items-center space-x-2 md:ml-auto">
+        <Label htmlFor="markdown-toggle" className="text-sm font-medium">
+          Raw
+        </Label>
+        <Switch
+          id="markdown-toggle"
+          checked={!renderMarkdown}
+          onCheckedChange={(checked) => onToggleRenderMarkdown(!checked)}
+        />
       </div>
     </div>
   );

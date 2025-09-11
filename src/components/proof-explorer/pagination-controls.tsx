@@ -30,31 +30,28 @@ export default function PaginationControls({
   }
 
   return (
-    <div className="flex flex-col items-start gap-2">
-      <Label className="text-xs text-muted-foreground">Step</Label>
-      <div className="flex items-center space-x-2 rounded-lg border bg-card p-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handlePrevious}
-          disabled={currentPage <= 1 || isLoading}
-          className="h-8 w-8 p-0"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-xs font-medium text-muted-foreground">
-          {currentPage} / {totalPages}
-        </span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleNext}
-          disabled={currentPage >= totalPages || isLoading}
-          className="h-8 w-8 p-0"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
+    <div className="flex items-center space-x-2 rounded-lg border bg-card p-1">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handlePrevious}
+        disabled={currentPage <= 1 || isLoading}
+        className="h-8 w-8 p-0"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      <span className="text-xs font-medium text-muted-foreground">
+        {isLoading ? '- / -' : `${currentPage} / ${totalPages}`}
+      </span>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleNext}
+        disabled={currentPage >= totalPages || isLoading}
+        className="h-8 w-8 p-0"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
     </div>
   );
 }
