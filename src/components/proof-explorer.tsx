@@ -28,6 +28,7 @@ import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
+  { id: 'english', name: 'English' },
   { id: 'informal', name: 'Informal' },
   { id: 'rigorous', name: 'Rigorous' },
 ];
@@ -162,17 +163,27 @@ export default function ProofExplorer() {
       }
 
       try {
-        const otherFormality = formalityLevel === 'informal' ? 'rigorous' : 'informal';
-        const structuralProofKey = `${selectedTheorem.id}-${otherFormality}`;
-        let structuralProof = proofCache[structuralProofKey];
+        const structuralProofLevels: FormalityLevel[] =
+          formalityLevel === 'english'
+            ? ['informal', 'rigorous']
+            : formalityLevel === 'informal'
+              ? ['english', 'rigorous']
+              : ['informal', 'english'];
+        
+        let structuralProof: string | undefined;
 
-        if (!structuralProof) {
-            try {
-                const cachedDoc = await getDoc(doc(db, 'proofs', structuralProofKey));
-                if (cachedDoc.exists()) {
-                    structuralProof = cachedDoc.data().proof;
-                }
-            } catch (error) { /* ignore */ }
+        for (const level of structuralProofLevels) {
+          const structuralProofKey = `${selectedTheorem.id}-${level}`;
+          structuralProof = proofCache[structuralProofKey];
+          if (structuralProof) break;
+          
+          try {
+            const cachedDoc = await getDoc(doc(db, 'proofs', structuralProofKey));
+            if (cachedDoc.exists()) {
+              structuralProof = cachedDoc.data().proof;
+              break;
+            }
+          } catch (error) { /* ignore */ }
         }
 
         const anyProofExists = !!structuralProof || !!proofCache[cacheKey];
@@ -233,6 +244,7 @@ export default function ProofExplorer() {
 
     try {
         const deletePromises = [
+          deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-english`)),
           deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-informal`)),
           deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-rigorous`))
         ];
@@ -381,5 +393,3 @@ export default function ProofExplorer() {
     </TooltipProvider>
   );
 }
-
-    
