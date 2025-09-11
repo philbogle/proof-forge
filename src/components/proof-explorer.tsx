@@ -353,11 +353,10 @@ export default function ProofExplorer() {
               <AccordionItem value="interaction">
                 <AccordionTrigger>
                    <div className="flex w-full items-center justify-between pr-4">
-                     <div className="flex items-center gap-2 text-sm">
+                     <div className="flex items-center gap-2 text-sm font-medium">
                         <Bot className="h-4 w-4" />
                         Interact with the Proof
                       </div>
-                      <p className="text-xs text-muted-foreground">Ask a question or request an edit</p>
                     </div>
                 </AccordionTrigger>
                 <AccordionContent>
@@ -372,7 +371,7 @@ export default function ProofExplorer() {
               </AccordionItem>
               <AccordionItem value="advanced-settings">
                 <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                     <AlertCircle className="h-4 w-4" />
                     Advanced Settings
                   </div>
@@ -406,3 +405,5 @@ export default function ProofExplorer() {
     </TooltipProvider>
   );
 }
+
+    
