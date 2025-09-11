@@ -6,7 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { FormalityLevel } from '@/lib/types';
 import PaginationControls from './pagination-controls';
 import { Switch } from '../ui/switch';
@@ -37,8 +37,24 @@ export default function ProofControls({
   renderMarkdown,
   onToggleRenderMarkdown,
 }: ProofControlsProps) {
+  const currentIndex = formalityLevels.findIndex(
+    (level) => level.id === formalityLevel
+  );
+
+  const handlePreviousFormality = () => {
+    if (currentIndex > 0) {
+      onFormalityChange(formalityLevels[currentIndex - 1].id);
+    }
+  };
+
+  const handleNextFormality = () => {
+    if (currentIndex < formalityLevels.length - 1) {
+      onFormalityChange(formalityLevels[currentIndex + 1].id);
+    }
+  };
+
   return (
-    <div className="mb-4 flex flex-col items-start justify-start gap-4 bg-transparent md:flex-row md:items-center">
+    <div className="mb-2 flex flex-col items-start justify-start gap-4 bg-transparent md:flex-row md:items-center">
       <div className="flex w-full flex-col items-start gap-4 md:flex-row md:items-center">
         <PaginationControls
           currentPage={currentPage}
@@ -47,6 +63,22 @@ export default function ProofControls({
           isLoading={isProofLoading}
         />
         <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handlePreviousFormality}
+                disabled={currentIndex === 0 || isProofLoading}
+                className="h-8 w-8"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Less Formal</p>
+            </TooltipContent>
+          </Tooltip>
           {formalityLevels.map((level) => (
             <Button
               key={level.id}
@@ -59,6 +91,24 @@ export default function ProofControls({
               {level.name}
             </Button>
           ))}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleNextFormality}
+                disabled={
+                  currentIndex === formalityLevels.length - 1 || isProofLoading
+                }
+                className="h-8 w-8"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>More Formal</p>
+            </TooltipContent>
+          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
