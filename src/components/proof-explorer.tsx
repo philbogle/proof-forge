@@ -56,25 +56,41 @@ export default function ProofExplorer() {
   
   // Effect for observing which anchor is visible
   React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setVisibleAnchor(entry.target.id);
-          }
-        });
-      },
-      { root: proofCardRef.current, threshold: 0.5 }
-    );
-
-    const anchors = proofCardRef.current?.querySelectorAll('a[id^="step-"]');
-    if (anchors) {
-      anchors.forEach((anchor) => observer.observe(anchor));
+    const handleScroll = () => {
+      if (!proofCardRef.current) return;
+  
+      const anchors = Array.from(proofCardRef.current.querySelectorAll('a[id^="step-"]'));
+      const cardTop = proofCardRef.current.getBoundingClientRect().top;
+  
+      let firstVisibleAnchor: HTMLElement | null = null;
+  
+      for (const anchor of anchors) {
+        const anchorTop = anchor.getBoundingClientRect().top;
+        if (anchorTop >= cardTop) {
+          firstVisibleAnchor = anchor as HTMLElement;
+          break;
+        }
+      }
+      
+      if (firstVisibleAnchor) {
+        setVisibleAnchor(firstVisibleAnchor.id);
+      } else if (anchors.length > 0) {
+        // If no anchor is below the top, the last one must be the visible one.
+        setVisibleAnchor(anchors[anchors.length - 1].id);
+      }
+    };
+  
+    const proofCardElement = proofCardRef.current;
+    if (proofCardElement) {
+      proofCardElement.addEventListener('scroll', handleScroll);
     }
-
+  
+    // Run once on mount to set initial anchor
+    handleScroll();
+  
     return () => {
-      if (anchors) {
-        anchors.forEach((anchor) => observer.unobserve(anchor));
+      if (proofCardElement) {
+        proofCardElement.removeEventListener('scroll', handleScroll);
       }
     };
   }, [proof, renderMarkdown]);
@@ -103,11 +119,6 @@ export default function ProofExplorer() {
       setInteractionText('');
 
       const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
-
-      // This is a new theorem, don't use the old anchor.
-      if (proofCache[cacheKey] === undefined) {
-          setVisibleAnchor(null);
-      }
 
       if (!forceRefresh && proofCache[cacheKey]) {
         setProof(proofCache[cacheKey]);
