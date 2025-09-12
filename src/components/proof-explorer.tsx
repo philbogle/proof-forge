@@ -432,7 +432,7 @@ export default function ProofExplorer() {
           <AppHeader />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-1">
-              <div className="sticky top-6 space-y-8">
+              <div className="sticky top-6 space-y-4">
                 <TheoremSelector
                   theorems={theorems}
                   selectedTheoremId={selectedTheoremId}
