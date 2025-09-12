@@ -35,7 +35,7 @@ const editProofFlow = ai.defineFlow(
   },
   async (input) => {
     const prompt = `
-You are an expert mathematician and a skilled editor. Your task is to edit a mathematical proof based on the user's request.
+You are an expert mathematician and a skilled editor. Your task is to edit a mathematical proof based on the user's request, while adhering to strict formatting guidelines.
 
 **Theorem Name:** ${input.theoremName}
 **Formality Level:** ${input.formality}
@@ -53,20 +53,22 @@ ${input.proofSection || 'No specific section provided.'}
 ${input.proof}
 ---
 
-**Instructions:**
-- Read the original proof, the user's request, and the specific proof section carefully.
-- Generate a new version of the **entire proof** that incorporates the requested changes.
-- **IMPORTANT ANCHORS:** You MUST preserve the HTML anchor tags like \`<a id="step-N"></a>\` from the original proof. Do not add new ones or renumber existing ones. This is critical for navigation.
-- Your output must be in Markdown format, following the same styling and LaTeX conventions as the original proof.
-- **ALIGNED EQUATIONS**: For multi-step derivations or a sequence of logical steps, you MUST use the 'aligned' environment within display math blocks. For example:
-$$
-\\begin{aligned}
-A &= B \\\\
-  &= C \\\\
-  &= D
-\\end{aligned}
-$$
-- Ensure the final output is only the full, edited proof text. Do not add any commentary before or after the proof.
+**Instructions for Generating the Edited Proof:**
+1.  **Incorporate the Edit:** Read the original proof and the user's request carefully. Generate a new version of the **entire proof** that incorporates the requested changes.
+2.  **Preserve Anchors and Headers:** You MUST preserve the HTML anchor tags (e.g., \`<a id="step-N"></a>\`) and the Markdown headers (e.g., \`### N. Step Title\`) from the original proof. Do not add new ones, renumber them, or remove them. This is critical for navigation.
+3.  **Maintain Formatting:** Your output must be in Markdown format, following the same styling and LaTeX conventions as the original proof.
+4.  **Math Rendering:**
+    - Always use rendered LaTeX for math: $formula$ for inline math and $$formula$$ for display equations.
+    - **ALIGNED EQUATIONS**: For multi-step derivations or a sequence of logical steps, you MUST use the 'aligned' environment within display math blocks. For example:
+      $$
+      \\begin{aligned}
+      A &= B \\\\
+        &= C \\\\
+        &= D
+      \\end{aligned}
+      $$
+    - Do not use code blocks (\`\`\`) for mathematical formulas.
+5.  **Output:** Ensure the final output is ONLY the full, edited proof text. Do not add any commentary before or after the proof.
 
 Begin the edited proof now.
 `;
