@@ -1,4 +1,3 @@
-
 // src/components/proof-explorer/proof-controls.tsx
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
@@ -41,6 +40,7 @@ export default function ProofControls({
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between gap-2">
       <div className="flex flex-col items-stretch gap-2 rounded-lg border bg-card p-1">
         <div className="flex items-center gap-1">
           {formalityLevels.map((level) => (
@@ -57,7 +57,6 @@ export default function ProofControls({
           ))}
         </div>
       </div>
-      <div className="flex items-center justify-between gap-2">
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}
@@ -85,7 +84,7 @@ export default function ProofControls({
       </div>
       <div className="flex w-full items-center justify-between space-x-2">
         <Label htmlFor="markdown-toggle" className="text-sm font-medium">
-          Rendered View
+          Rendered
         </Label>
         <Switch
           id="markdown-toggle"
