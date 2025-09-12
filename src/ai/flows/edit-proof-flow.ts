@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import { PROOF_FORMATTING_INSTRUCTIONS } from '../prompts';
 
 const EditProofInputSchema = z.object({
   proof: z.string().describe('The original proof text in Markdown format.'),
@@ -57,18 +58,10 @@ ${input.proof}
 1.  **Incorporate the Edit:** Read the original proof and the user's request carefully. Generate a new version of the **entire proof** that incorporates the requested changes.
 2.  **Preserve Anchors and Headers:** You MUST preserve the HTML anchor tags (e.g., \`<a id="step-N"></a>\`) and the Markdown headers (e.g., \`### N. Step Title\`) from the original proof. Do not add new ones, renumber them, or remove them. This is critical for navigation.
 3.  **Maintain Formatting:** Your output must be in Markdown format, following the same styling and LaTeX conventions as the original proof.
-4.  **Math Rendering:**
-    - Always use rendered LaTeX for math: $formula$ for inline math and $$formula$$ for display equations.
-    - **ALIGNED EQUATIONS**: For multi-step derivations or a sequence of logical steps, you MUST use the 'aligned' environment within display math blocks. For example:
-      $$
-      \\begin{aligned}
-      A &= B \\\\
-        &= C \\\\
-        &= D
-      \\end{aligned}
-      $$
-    - Do not use code blocks (\`\`\`) for mathematical formulas.
-5.  **Output:** Ensure the final output is ONLY the full, edited proof text. Do not add any commentary before or after the proof.
+4. **Output:** Ensure the final output is ONLY the full, edited proof text. Do not add any commentary before or after the proof.
+
+**Formatting Rules:**
+${PROOF_FORMATTING_INSTRUCTIONS}
 
 Begin the edited proof now.
 `;
