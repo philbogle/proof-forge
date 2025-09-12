@@ -366,6 +366,8 @@ export default function ProofExplorer() {
 
     setIsInteractionLoading(true);
     setAnswer('');
+    
+    const proofSection = proofPages[currentPage - 1] || '';
 
     try {
       if (type === 'question') {
@@ -374,6 +376,7 @@ export default function ProofExplorer() {
           theoremText: proof,
           question: interactionText,
           formalityLevel,
+          proofSection,
         });
         setAnswer(result.answer);
       } else if (type === 'edit') {
@@ -384,6 +387,7 @@ export default function ProofExplorer() {
           request: interactionText,
           theoremName: selectedTheorem.name,
           formality: formalityLevel,
+          proofSection,
         });
         
         await saveProofVersion(formalityLevel, editedProof);

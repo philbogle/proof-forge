@@ -17,6 +17,7 @@ const EditProofInputSchema = z.object({
   request: z.string().describe('The user\'s instructions for how to edit the proof.'),
   theoremName: z.string().describe('The name of the theorem the proof is for.'),
   formality: z.enum(['informal', 'rigorous']).describe('The formality level of the proof.'),
+  proofSection: z.string().optional().describe('The specific section of the proof the user is currently viewing. The edit request likely pertains to this section.'),
 });
 export type EditProofInput = z.infer<typeof EditProofInputSchema>;
 
@@ -42,17 +43,22 @@ You are an expert mathematician and a skilled editor. Your task is to edit a mat
 **User's Edit Request:**
 ${input.request}
 
-**Original Proof:**
+**Context:** The user is likely requesting an edit to the following section of the proof:
+---
+${input.proofSection || 'No specific section provided.'}
+---
+
+**Full Original Proof:**
 ---
 ${input.proof}
 ---
 
 **Instructions:**
-- Read the original proof and the user's request carefully.
-- Generate a new version of the proof that incorporates the requested changes.
+- Read the original proof, the user's request, and the specific proof section carefully.
+- Generate a new version of the **entire proof** that incorporates the requested changes.
 - **IMPORTANT ANCHORS:** You MUST preserve the HTML anchor tags like \`<a id="step-N"></a>\` from the original proof. Do not add new ones or renumber existing ones. This is critical for navigation.
 - Your output must be in Markdown format, following the same styling and LaTeX conventions as the original proof.
-- Ensure the final output is only the full, edited proof text.
+- Ensure the final output is only the full, edited proof text. Do not add any commentary before or after the proof.
 
 Begin the edited proof now.
 `;

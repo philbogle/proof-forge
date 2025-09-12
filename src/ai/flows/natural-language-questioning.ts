@@ -19,6 +19,7 @@ const AnswerQuestionInputSchema = z.object({
   formalityLevel: z
     .enum(['informal', 'rigorous'])
     .describe('The current formality level of the proof.'),
+  proofSection: z.string().optional().describe('The specific section of the proof the user is currently viewing. This should be considered the primary context for the question.'),
 });
 export type AnswerQuestionInput = z.infer<typeof AnswerQuestionInputSchema>;
 
@@ -39,10 +40,19 @@ const prompt = ai.definePrompt({
   output: {schema: AnswerQuestionOutputSchema},
   prompt: `You are an expert mathematician skilled at explaining complex theorems.
 
-You will be provided with the name and text of a theorem, the current level of formality, and a user's question.  Answer the user's question clearly and concisely, taking into account their current level of mathematical understanding.
+You will be provided with the name and text of a theorem, the current level of formality, and a user's question. Answer the user's question clearly and concisely.
+
+**Primary Context:** The user is currently looking at the following section of the proof. Base your answer primarily on this context.
+---
+{{{proofSection}}}
+---
+
+**Full Proof Context:** You may use the full proof text below for broader context if needed.
+---
+{{{theoremText}}}
+---
 
 Theorem Name: {{{theoremName}}}
-Theorem Text: {{{theoremText}}}
 Current Formality Level: {{{formalityLevel}}}
 
 User Question: {{{question}}}`,
