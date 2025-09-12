@@ -1,6 +1,6 @@
 'use client';
 
-import { Wand2 } from 'lucide-react';
+import { WandSparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface Sparkle {
@@ -13,8 +13,8 @@ export function ProofLoadingIndicator() {
 
   useEffect(() => {
     const generateSparkles = () => {
-      const newSparkles = Array.from({ length: 20 }).map((_, i) => {
-        const angle = (i / 20) * 360;
+      const newSparkles = Array.from({ length: 30 }).map((_, i) => {
+        const angle = (i / 30) * 360;
         const radius = Math.random() * 25 + 40;
         return {
           id: i,
@@ -29,16 +29,19 @@ export function ProofLoadingIndicator() {
     };
 
     generateSparkles();
+    const interval = setInterval(generateSparkles, 2000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-border bg-card p-8 text-center">
       <div className="relative h-24 w-24">
-        <Wand2 className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 animate-pulse text-primary" />
+        <WandSparkles className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 animate-pulse text-primary" />
         {sparkles.map((sparkle) => (
           <div
             key={sparkle.id}
-            className="absolute left-1/2 top-1/2 h-2 w-2 rounded-full bg-primary"
+            className="absolute left-1/2 top-1/2 h-1.5 w-1.5 rounded-full bg-primary"
             style={sparkle.style}
           />
         ))}
