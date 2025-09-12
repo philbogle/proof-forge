@@ -2,7 +2,7 @@ import ProofExplorer from '@/components/proof-explorer';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gray-50/50">
+    <main className="min-h-screen">
       <ProofExplorer />
     </main>
   );

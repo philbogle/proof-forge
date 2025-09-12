@@ -23,7 +23,7 @@ export default function TheoremSelector({
   onTheoremChange,
 }: TheoremSelectorProps) {
   return (
-    <div className="mb-8 grid grid-cols-1 items-end gap-4">
+    <div className="grid grid-cols-1 items-end gap-4">
       <div className="col-span-1 flex flex-col gap-2">
         <Label htmlFor="theorem-select" className="text-sm font-medium">
           Theorem

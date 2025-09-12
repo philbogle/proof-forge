@@ -11,7 +11,12 @@ import { theorems } from '@/lib/theorems';
 import type { FormalityLevel, ProofVersion } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   Accordion,
   AccordionContent,
@@ -34,6 +39,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from './ui/sidebar';
+import { Separator } from './ui/separator';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'english', name: 'English' },
@@ -72,7 +86,7 @@ export default function ProofExplorer() {
     () => theorems.find((t) => t.id === selectedTheoremId) || theorems[0],
     [selectedTheoremId]
   );
-  
+
   const currentProofHistory = React.useMemo(() => {
     const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
     return proofCache[cacheKey] || [];
@@ -120,8 +134,11 @@ export default function ProofExplorer() {
         proof: newProof,
         timestamp: new Date().toISOString(),
       };
-      
-      const updatedHistory = [newVersion, ...(proofCache[cacheKey] || [])].slice(0, 10);
+
+      const updatedHistory = [newVersion, ...(proofCache[cacheKey] || [])].slice(
+        0,
+        10
+      );
 
       setProofCache((prev) => ({ ...prev, [cacheKey]: updatedHistory }));
 
@@ -165,7 +182,11 @@ export default function ProofExplorer() {
 
       const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
 
-      if (!forceRefresh && proofCache[cacheKey] && proofCache[cacheKey].length > 0) {
+      if (
+        !forceRefresh &&
+        proofCache[cacheKey] &&
+        proofCache[cacheKey].length > 0
+      ) {
         setProof(proofCache[cacheKey][0].proof);
         setIsProofLoading(false);
         setTimeout(() => setIsFading(false), 50);
@@ -209,8 +230,8 @@ export default function ProofExplorer() {
           const structuralProofKey = `${selectedTheorem.id}-${level}`;
           const history = proofCache[structuralProofKey];
           if (history && history.length > 0) {
-             structuralProof = history[0].proof;
-             if (structuralProof) break;
+            structuralProof = history[0].proof;
+            if (structuralProof) break;
           }
 
           try {
@@ -220,7 +241,7 @@ export default function ProofExplorer() {
             if (cachedDoc.exists()) {
               const data = cachedDoc.data();
               const structuralHistory: ProofVersion[] = data.history || [];
-              if(structuralHistory.length > 0) {
+              if (structuralHistory.length > 0) {
                 structuralProof = structuralHistory[0].proof;
                 break;
               }
@@ -229,13 +250,13 @@ export default function ProofExplorer() {
             /* ignore */
           }
         }
-        
+
         let newProof;
         if (!structuralProof && formalityLevel !== 'informal') {
-            const informalProof = await generateSingleProof('informal');
-            newProof = await generateSingleProof(formalityLevel, informalProof);
+          const informalProof = await generateSingleProof('informal');
+          newProof = await generateSingleProof(formalityLevel, informalProof);
         } else {
-           newProof = await generateSingleProof(formalityLevel, structuralProof);
+          newProof = await generateSingleProof(formalityLevel, structuralProof);
         }
 
         setProof(newProof);
@@ -314,7 +335,7 @@ export default function ProofExplorer() {
 
     generateNewProof(true);
   };
-  
+
   const handleRollback = async () => {
     if (!selectedVersion) {
       toast({
@@ -324,13 +345,15 @@ export default function ProofExplorer() {
       });
       return;
     }
-    
+
     const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
     const history = proofCache[cacheKey] || [];
-    const versionToRestore = history.find(v => v.timestamp === selectedVersion);
-    
+    const versionToRestore = history.find(
+      (v) => v.timestamp === selectedVersion
+    );
+
     if (!versionToRestore) {
-       toast({
+      toast({
         variant: 'destructive',
         title: 'Version Not Found',
         description: 'The selected version could not be found in the history.',
@@ -340,24 +363,29 @@ export default function ProofExplorer() {
 
     setIsFading(true);
     // This moves the selected version to the top of the history list
-    const newHistory = [versionToRestore, ...history.filter(v => v.timestamp !== selectedVersion)];
-    
-    setProofCache(prev => ({...prev, [cacheKey]: newHistory}));
+    const newHistory = [
+      versionToRestore,
+      ...history.filter((v) => v.timestamp !== selectedVersion),
+    ];
+
+    setProofCache((prev) => ({ ...prev, [cacheKey]: newHistory }));
     setProof(versionToRestore.proof);
-    
-     try {
-        await setDoc(doc(db, 'proofs', cacheKey), {
-          history: newHistory,
-        });
-      } catch (error) {
-        console.error('Firestore cache write failed during rollback:', error);
-      }
-    
+
+    try {
+      await setDoc(doc(db, 'proofs', cacheKey), {
+        history: newHistory,
+      });
+    } catch (error) {
+      console.error('Firestore cache write failed during rollback:', error);
+    }
+
     setTimeout(() => setIsFading(false), 50);
 
     toast({
       title: 'Rollback Successful',
-      description: `Proof has been rolled back to the version from ${new Date(selectedVersion).toLocaleString()}.`,
+      description: `Proof has been rolled back to the version from ${new Date(
+        selectedVersion
+      ).toLocaleString()}.`,
     });
   };
 
@@ -366,7 +394,7 @@ export default function ProofExplorer() {
 
     setIsInteractionLoading(true);
     setAnswer('');
-    
+
     const proofSection = proofPages[currentPage - 1] || '';
 
     try {
@@ -389,10 +417,10 @@ export default function ProofExplorer() {
           formality: formalityLevel,
           proofSection,
         });
-        
+
         await saveProofVersion(formalityLevel, editedProof);
         setProof(editedProof);
-        
+
         setIsProofLoading(false);
         setTimeout(() => setIsFading(false), 50);
       }
@@ -410,36 +438,42 @@ export default function ProofExplorer() {
 
   return (
     <TooltipProvider>
-      <div className="flex h-full min-h-screen flex-col items-center bg-gray-50/50 p-4 font-headline md:p-6 lg:p-8">
-        <div className="w-full max-w-4xl">
-          <AppHeader />
-
-          <TheoremSelector
-            theorems={theorems}
-            selectedTheoremId={selectedTheoremId}
-            onTheoremChange={handleTheoremChange}
-          />
-
-          <ProofControls
-            formalityLevels={formalityLevels}
-            formalityLevel={formalityLevel}
-            isProofLoading={isProofLoading}
-            onFormalityChange={handleFormalityChange}
-            onRefresh={() => generateNewProof(true)}
-            currentPage={currentPage}
-            totalPages={proofPages.length}
-            onPageChange={setCurrentPage}
-            renderMarkdown={renderMarkdown}
-            onToggleRenderMarkdown={setRenderMarkdown}
-          />
-
-          <div className="space-y-6">
-            <ProofView
-              proof={proofPages[currentPage - 1] || ''}
-              renderMarkdown={renderMarkdown}
-              isLoading={isProofLoading}
-              isFading={isFading}
+      <SidebarProvider>
+        <Sidebar>
+          <SidebarHeader>
+             <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Controls</h2>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarTrigger />
+                </TooltipTrigger>
+                <TooltipContent side="right" align="center">
+                  <p>Toggle Sidebar (Ctrl+B)</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <Separator />
+          </SidebarHeader>
+          <SidebarContent className="p-4 space-y-8">
+            <TheoremSelector
+              theorems={theorems}
+              selectedTheoremId={selectedTheoremId}
+              onTheoremChange={handleTheoremChange}
             />
+
+            <ProofControls
+              formalityLevels={formalityLevels}
+              formalityLevel={formalityLevel}
+              isProofLoading={isProofLoading}
+              onFormalityChange={handleFormalityChange}
+              onRefresh={() => generateNewProof(true)}
+              currentPage={currentPage}
+              totalPages={proofPages.length}
+              onPageChange={setCurrentPage}
+              renderMarkdown={renderMarkdown}
+              onToggleRenderMarkdown={setRenderMarkdown}
+            />
+             <Separator />
 
             <InteractionPanel
               interactionText={interactionText}
@@ -448,12 +482,9 @@ export default function ProofExplorer() {
               isInteractionLoading={isInteractionLoading}
               answer={answer}
             />
+             <Separator />
 
-            <Accordion
-              type="single"
-              collapsible
-              className="w-full"
-            >
+            <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="advanced-settings">
                 <AccordionTrigger>
                   <div className="flex items-center gap-2 text-sm font-medium">
@@ -475,56 +506,85 @@ export default function ProofExplorer() {
                         <Button
                           variant="destructive"
                           onClick={handleClearCache}
+                          size="sm"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Clear Cache
+                          Clear
                         </Button>
                       </div>
 
-                       <div className="space-y-2">
-                         <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="font-semibold">Proof Version History</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Rollback to a previous version of the proof for the current formality level.
-                              </p>
-                            </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold">
+                              Proof Version History
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              Rollback to a previous version of the proof for
+                              the current formality level.
+                            </p>
                           </div>
-                          {currentProofHistory.length > 0 ? (
-                            <div className="flex items-end gap-2">
-                              <div className="grid w-full max-w-sm items-center gap-1.5">
-                                <Label htmlFor="version-select">Select Version</Label>
-                                <Select onValueChange={setSelectedVersion} value={selectedVersion}>
-                                  <SelectTrigger id="version-select">
-                                    <SelectValue placeholder="Select a version to restore" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {currentProofHistory.map(version => (
-                                      <SelectItem key={version.timestamp} value={version.timestamp}>
-                                        {new Date(version.timestamp).toLocaleString()}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <Button onClick={handleRollback} disabled={!selectedVersion}>
-                                <History className="mr-2 h-4 w-4" />
-                                Rollback
-                              </Button>
+                        </div>
+                        {currentProofHistory.length > 0 ? (
+                          <div className="flex items-end gap-2">
+                            <div className="grid w-full max-w-sm items-center gap-1.5">
+                              <Label htmlFor="version-select">
+                                Select Version
+                              </Label>
+                              <Select
+                                onValueChange={setSelectedVersion}
+                                value={selectedVersion}
+                              >
+                                <SelectTrigger id="version-select">
+                                  <SelectValue placeholder="Select a version to restore" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {currentProofHistory.map((version) => (
+                                    <SelectItem
+                                      key={version.timestamp}
+                                      value={version.timestamp}
+                                    >
+                                      {new Date(
+                                        version.timestamp
+                                      ).toLocaleString()}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
-                          ) : (
-                             <p className="text-sm text-muted-foreground">No history available for this proof and formality level.</p>
-                          )}
+                            <Button
+                              onClick={handleRollback}
+                              disabled={!selectedVersion}
+                            >
+                              <History className="mr-2 h-4 w-4" />
+                              Rollback
+                            </Button>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No history available for this proof and formality
+                            level.
+                          </p>
+                        )}
                       </div>
-
                     </CardContent>
                   </Card>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-          </div>
-        </div>
-      </div>
+          </SidebarContent>
+        </Sidebar>
+
+        <SidebarInset className="p-4 md:p-6 lg:p-8">
+          <AppHeader />
+          <ProofView
+            proof={proofPages[currentPage - 1] || ''}
+            renderMarkdown={renderMarkdown}
+            isLoading={isProofLoading}
+            isFading={isFading}
+          />
+        </SidebarInset>
+      </SidebarProvider>
     </TooltipProvider>
   );
 }
