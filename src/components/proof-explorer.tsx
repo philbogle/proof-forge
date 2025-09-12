@@ -434,7 +434,7 @@ export default function ProofExplorer() {
           <AppHeader />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-1">
-               <div className="sticky top-6 space-y-8">
+              <div className="sticky top-6 space-y-8">
                 <TheoremSelector
                   theorems={theorems}
                   selectedTheoremId={selectedTheoremId}
@@ -451,13 +451,6 @@ export default function ProofExplorer() {
                   onPageChange={setCurrentPage}
                   renderMarkdown={renderMarkdown}
                   onToggleRenderMarkdown={setRenderMarkdown}
-                />
-                <InteractionPanel
-                  interactionText={interactionText}
-                  onInteractionTextChange={setInteractionText}
-                  onInteract={handleInteraction}
-                  isInteractionLoading={isInteractionLoading}
-                  answer={answer}
                 />
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="advanced-settings">
@@ -558,6 +551,13 @@ export default function ProofExplorer() {
                 isLoading={isProofLoading}
                 isFading={isFading}
               />
+              <InteractionPanel
+                interactionText={interactionText}
+                onInteractionTextChange={setInteractionText}
+                onInteract={handleInteraction}
+                isInteractionLoading={isInteractionLoading}
+                answer={answer}
+              />
             </div>
           </div>
         </div>
@@ -565,3 +565,5 @@ export default function ProofExplorer() {
     </TooltipProvider>
   );
 }
+
+    
