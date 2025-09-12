@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'english', name: 'English' },
@@ -446,8 +447,6 @@ export default function ProofExplorer() {
                   currentPage={currentPage}
                   totalPages={proofPages.length}
                   onPageChange={setCurrentPage}
-                  renderMarkdown={renderMarkdown}
-                  onToggleRenderMarkdown={setRenderMarkdown}
                 />
               </div>
             </div>
@@ -458,6 +457,17 @@ export default function ProofExplorer() {
                 isLoading={isProofLoading}
                 isFading={isFading}
               />
+              <div className="flex w-full items-center justify-end space-x-2">
+                <Label htmlFor="markdown-toggle" className="text-sm font-medium">
+                  Rendered
+                </Label>
+                <Switch
+                  id="markdown-toggle"
+                  checked={renderMarkdown}
+                  onCheckedChange={setRenderMarkdown}
+                />
+              </div>
+
               <InteractionPanel
                 interactionText={interactionText}
                 onInteractionTextChange={setInteractionText}

@@ -16,8 +16,6 @@ interface ProofControlsProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  renderMarkdown: boolean;
-  onToggleRenderMarkdown: (checked: boolean) => void;
 }
 
 export default function ProofControls({
@@ -29,8 +27,6 @@ export default function ProofControls({
   currentPage,
   totalPages,
   onPageChange,
-  renderMarkdown,
-  onToggleRenderMarkdown,
 }: ProofControlsProps) {
 
   return (
@@ -57,16 +53,6 @@ export default function ProofControls({
           totalPages={totalPages}
           onPageChange={onPageChange}
           isLoading={isProofLoading}
-        />
-      </div>
-      <div className="flex w-full items-center justify-between space-x-2">
-        <Label htmlFor="markdown-toggle" className="text-sm font-medium">
-          Rendered
-        </Label>
-        <Switch
-          id="markdown-toggle"
-          checked={renderMarkdown}
-          onCheckedChange={onToggleRenderMarkdown}
         />
       </div>
     </div>
