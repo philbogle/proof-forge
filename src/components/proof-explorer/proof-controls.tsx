@@ -54,90 +54,88 @@ export default function ProofControls({
   };
 
   return (
-    <div className="flex flex-col items-start justify-start gap-4 bg-transparent">
-      <div className="flex w-full flex-col items-start gap-4">
-        <div className="flex w-full flex-col items-stretch gap-1 rounded-lg border bg-card p-1">
-          <div className="flex items-center">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handlePreviousFormality}
-                  disabled={currentIndex === 0 || isProofLoading}
-                  className="h-8 w-8"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Less Formal</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="flex-1 text-center text-sm font-medium">
-              {formalityLevels[currentIndex].name}
-            </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleNextFormality}
-                  disabled={
-                    currentIndex === formalityLevels.length - 1 ||
-                    isProofLoading
-                  }
-                  className="h-8 w-8"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>More Formal</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <div className="flex items-center gap-1">
-            {formalityLevels.map((level) => (
-              <Button
-                key={level.id}
-                variant={formalityLevel === level.id ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => onFormalityChange(level.id)}
-                className="h-8 flex-1 px-2 text-xs md:px-3 md:text-sm"
-                disabled={isProofLoading}
-              >
-                {level.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-        <div className="flex w-full items-center justify-between gap-2">
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-            isLoading={isProofLoading}
-          />
+    <div className="space-y-4">
+      <div className="flex flex-col items-stretch gap-2 rounded-lg border bg-card p-1">
+        <div className="flex items-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
-                onClick={onRefresh}
-                disabled={isProofLoading}
+                onClick={handlePreviousFormality}
+                disabled={currentIndex === 0 || isProofLoading}
                 className="h-8 w-8"
               >
-                <RefreshCw
-                  className={`h-4 w-4 ${isProofLoading ? 'animate-spin' : ''}`}
-                />
+                <ChevronLeft className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Refresh Proof</p>
+              <p>Less Formal</p>
+            </TooltipContent>
+          </Tooltip>
+          <div className="flex-1 text-center text-sm font-medium">
+            {formalityLevels[currentIndex].name}
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleNextFormality}
+                disabled={
+                  currentIndex === formalityLevels.length - 1 || isProofLoading
+                }
+                className="h-8 w-8"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>More Formal</p>
             </TooltipContent>
           </Tooltip>
         </div>
+
+        <div className="flex items-center gap-1">
+          {formalityLevels.map((level) => (
+            <Button
+              key={level.id}
+              variant={formalityLevel === level.id ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onFormalityChange(level.id)}
+              className="h-8 flex-1 px-2 text-xs md:px-3 md:text-sm"
+              disabled={isProofLoading}
+            >
+              {level.name}
+            </Button>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          isLoading={isProofLoading}
+        />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onRefresh}
+              disabled={isProofLoading}
+              className="h-8 w-8"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isProofLoading ? 'animate-spin' : ''}`}
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Refresh Proof</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
       <div className="flex w-full items-center justify-between space-x-2">
         <Label htmlFor="markdown-toggle" className="text-sm font-medium">
