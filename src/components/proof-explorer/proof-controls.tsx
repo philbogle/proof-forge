@@ -54,14 +54,8 @@ export default function ProofControls({
   };
 
   return (
-    <div className="mb-2 flex flex-col items-start justify-start gap-4 bg-transparent md:flex-row md:items-center">
+    <div className="mb-4 flex flex-col items-start justify-start gap-4 bg-transparent md:flex-row md:items-center">
       <div className="flex w-full flex-col items-start gap-4 md:flex-row md:items-center">
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-          isLoading={isProofLoading}
-        />
         <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -128,6 +122,12 @@ export default function ProofControls({
             </TooltipContent>
           </Tooltip>
         </div>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          isLoading={isProofLoading}
+        />
       </div>
       <div className="flex items-center space-x-2 md:ml-auto">
         <Label htmlFor="markdown-toggle" className="text-sm font-medium">
