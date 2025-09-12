@@ -101,10 +101,10 @@
   }
 
   .sparkle {
-    @apply absolute left-1/2 top-1/2 h-1.5 w-1.5 rounded-full bg-primary;
+    @apply absolute left-1/2 top-1/2 h-2 w-2 rounded-full bg-primary;
     transform-origin: center center;
     animation: sparkle 2s ease-in-out infinite;
-    transform: rotate(var(--sparkle-angle)) translateX(45px);
+    transform: rotate(var(--sparkle-angle)) translateX(55px);
   }
 
   .sparkle:nth-child(1) { animation-delay: 0.1s; }
