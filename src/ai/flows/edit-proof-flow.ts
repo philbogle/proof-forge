@@ -58,6 +58,14 @@ ${input.proof}
 - Generate a new version of the **entire proof** that incorporates the requested changes.
 - **IMPORTANT ANCHORS:** You MUST preserve the HTML anchor tags like \`<a id="step-N"></a>\` from the original proof. Do not add new ones or renumber existing ones. This is critical for navigation.
 - Your output must be in Markdown format, following the same styling and LaTeX conventions as the original proof.
+- **ALIGNED EQUATIONS**: For multi-step derivations or a sequence of logical steps, you MUST use the 'aligned' environment within display math blocks. For example:
+$$
+\\begin{aligned}
+A &= B \\\\
+  &= C \\\\
+  &= D
+\\end{aligned}
+$$
 - Ensure the final output is only the full, edited proof text. Do not add any commentary before or after the proof.
 
 Begin the edited proof now.
