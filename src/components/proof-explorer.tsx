@@ -15,7 +15,14 @@ import AdvancedSettings from './proof-explorer/advanced-settings';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Save } from 'lucide-react';
+import { MessageSquare, Save } from 'lucide-react';
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarTrigger,
+  SidebarContent,
+  SidebarInset,
+} from '@/components/ui/sidebar';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'english', name: 'English' },
@@ -58,103 +65,119 @@ export default function ProofExplorer() {
 
   return (
     <TooltipProvider>
-      <div className="flex h-full min-h-screen w-full flex-col">
-        <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
-          <AppHeader />
-          <div className="space-y-6">
-            <TheoremSelector
-              theorems={theorems}
-              selectedTheoremId={selectedTheoremId}
-              onTheoremChange={handleTheoremChange}
-            />
-            <ProofControls
-              formalityLevels={formalityLevels}
-              formalityLevel={formalityLevel}
-              isProofLoading={isProofLoading}
-              onFormalityChange={handleFormalityChange}
-              onRefresh={() => generateNewProof(true)}
-              currentPage={currentPage}
-              totalPages={proofPages.length}
-              onPageChange={handlePageChange}
-            />
-            <div className="space-y-6">
-              <ProofView
-                proof={
-                  !renderMarkdown && user
-                    ? rawProofEdit
-                    : proofPages[currentPage - 1] || ''
-                }
-                renderMarkdown={renderMarkdown}
-                isLoading={isProofLoading}
-                isFading={isFading}
-                isEditable={!renderMarkdown && !!user}
-                onRawProofChange={setRawProofEdit}
-              />
-              <div>
-                <div className="flex w-full items-center justify-between">
-                  <div className="text-sm text-muted-foreground font-body">
-                    {latestVersion && !isProofLoading && (
-                      <span>
-                        Last updated
-                        {latestVersion.user?.name &&
-                          ` by ${latestVersion.user.name}`}
-                        {' on '}
-                        {new Date(latestVersion.timestamp).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {!renderMarkdown && user && (
-                      <Button onClick={handleRawProofSave} size="sm">
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Changes
-                      </Button>
-                    )}
-                    <Label
-                      htmlFor="markdown-toggle"
-                      className="text-sm font-medium"
-                    >
-                      Rendered
-                    </Label>
-                    <Switch
-                      id="markdown-toggle"
-                      checked={renderMarkdown}
-                      onCheckedChange={setRenderMarkdown}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <InteractionPanel
-                  interactionText={interactionText}
-                  onInteractionTextChange={setInteractionText}
-                  onInteract={handleInteraction}
-                  isInteractionLoading={isInteractionLoading}
-                  conversationHistory={conversationHistory}
-                  isUserSignedIn={!!user}
+      <SidebarProvider defaultOpen={false}>
+        <div className="flex h-full min-h-screen w-full flex-col">
+          <SidebarInset>
+            <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
+              <AppHeader />
+              <div className="space-y-6">
+                <TheoremSelector
+                  theorems={theorems}
+                  selectedTheoremId={selectedTheoremId}
+                  onTheoremChange={handleTheoremChange}
                 />
-              </div>
-
-              {user && (
-                <div className="mt-6">
-                  <AdvancedSettings
-                    user={user}
-                    isProofLoading={isProofLoading}
-                    generateNewProof={generateNewProof}
-                    selectedTheorem={selectedTheorem}
-                    handleClearCache={handleClearCache}
-                    currentProofHistory={currentProofHistory}
-                    selectedVersion={selectedVersion}
-                    setSelectedVersion={setSelectedVersion}
-                    handleRollback={handleRollback}
+                <ProofControls
+                  formalityLevels={formalityLevels}
+                  formalityLevel={formalityLevel}
+                  isProofLoading={isProofLoading}
+                  onFormalityChange={handleFormalityChange}
+                  onRefresh={() => generateNewProof(true)}
+                  currentPage={currentPage}
+                  totalPages={proofPages.length}
+                  onPageChange={handlePageChange}
+                />
+                <div className="space-y-6">
+                  <ProofView
+                    proof={
+                      !renderMarkdown && user
+                        ? rawProofEdit
+                        : proofPages[currentPage - 1] || ''
+                    }
+                    renderMarkdown={renderMarkdown}
+                    isLoading={isProofLoading}
+                    isFading={isFading}
+                    isEditable={!renderMarkdown && !!user}
+                    onRawProofChange={setRawProofEdit}
                   />
+                  <div>
+                    <div className="flex w-full items-center justify-between">
+                      <div className="text-sm text-muted-foreground font-body">
+                        {latestVersion && !isProofLoading && (
+                          <span>
+                            Last updated
+                            {latestVersion.user?.name &&
+                              ` by ${latestVersion.user.name}`}
+                            {' on '}
+                            {new Date(
+                              latestVersion.timestamp
+                            ).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {!renderMarkdown && user && (
+                          <Button onClick={handleRawProofSave} size="sm">
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Changes
+                          </Button>
+                        )}
+                        <Label
+                          htmlFor="markdown-toggle"
+                          className="text-sm font-medium"
+                        >
+                          Rendered
+                        </Label>
+                        <Switch
+                          id="markdown-toggle"
+                          checked={renderMarkdown}
+                          onCheckedChange={setRenderMarkdown}
+                        />
+                         <SidebarTrigger variant="outline" size="sm">
+                           <MessageSquare className="mr-2 h-4 w-4" />
+                           Ask AI
+                         </SidebarTrigger>
+                      </div>
+                    </div>
+                  </div>
+
+                  {user && (
+                    <div className="mt-6">
+                      <AdvancedSettings
+                        user={user}
+                        isProofLoading={isProofLoading}
+                        generateNewProof={generateNewProof}
+                        selectedTheorem={selectedTheorem}
+                        handleClearCache={handleClearCache}
+                        currentProofHistory={currentProofHistory}
+                        selectedVersion={selectedVersion}
+                        setSelectedVersion={setSelectedVersion}
+                        handleRollback={handleRollback}
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          </SidebarInset>
+
+          <Sidebar
+            side="right"
+            collapsible="offcanvas"
+            className="w-full max-w-md"
+          >
+            <SidebarContent className="p-0">
+              <InteractionPanel
+                interactionText={interactionText}
+                onInteractionTextChange={setInteractionText}
+                onInteract={handleInteraction}
+                isInteractionLoading={isInteractionLoading}
+                conversationHistory={conversationHistory}
+                isUserSignedIn={!!user}
+              />
+            </SidebarContent>
+          </Sidebar>
         </div>
-      </div>
+      </SidebarProvider>
     </TooltipProvider>
   );
 }
