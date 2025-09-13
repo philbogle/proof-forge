@@ -2,7 +2,6 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Label } from '../ui/label';
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -41,7 +40,14 @@ export default function PaginationControls({
         <ChevronLeft className="h-4 w-4" />
       </Button>
       <span className="text-xs font-medium text-muted-foreground">
-        {isLoading ? '- / -' : `${currentPage} / ${totalPages}`}
+        {isLoading ? (
+          '-'
+        ) : (
+          <>
+            {currentPage}
+            <span className="hidden sm:inline"> / {totalPages}</span>
+          </>
+        )}
       </span>
       <Button
         variant="ghost"
