@@ -34,3 +34,8 @@ export interface AuthContextType {
   auth: Auth | null;
   loading: boolean;
 }
+
+export type ConversationTurn = {
+  question: string;
+  answer: string;
+};

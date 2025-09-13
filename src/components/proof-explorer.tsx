@@ -34,7 +34,7 @@ export default function ProofExplorer() {
     isFading,
     isProofLoading,
     interactionText,
-    answer,
+    conversationHistory,
     isInteractionLoading,
     renderMarkdown,
     rawProofEdit,
@@ -132,7 +132,7 @@ export default function ProofExplorer() {
                   onInteractionTextChange={setInteractionText}
                   onInteract={handleInteraction}
                   isInteractionLoading={isInteractionLoading}
-                  answer={answer}
+                  conversationHistory={conversationHistory}
                   isUserSignedIn={!!user}
                 />
               </div>

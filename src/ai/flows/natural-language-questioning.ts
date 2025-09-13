@@ -12,6 +12,11 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import {FormalityLevel} from '@/lib/types';
 
+const ConversationTurnSchema = z.object({
+  question: z.string(),
+  answer: z.string(),
+});
+
 const AnswerQuestionInputSchema = z.object({
   theoremName: z.string().describe('The name of the theorem.'),
   theoremText: z.string().describe('The text of the theorem.'),
@@ -20,6 +25,7 @@ const AnswerQuestionInputSchema = z.object({
     .enum(['english', 'informal', 'rigorous'])
     .describe('The current formality level of the proof.'),
   proofSection: z.string().optional().describe('The specific section of the proof the user is currently viewing. This should be considered the primary context for the question.'),
+  history: z.array(ConversationTurnSchema).optional().describe('The history of the conversation so far.'),
 });
 export type AnswerQuestionInput = z.infer<typeof AnswerQuestionInputSchema>;
 
@@ -40,7 +46,16 @@ const prompt = ai.definePrompt({
   output: {schema: AnswerQuestionOutputSchema},
   prompt: `You are an expert mathematician skilled at explaining complex theorems.
 
-You will be provided with the name and text of a theorem, the current level of formality, and a user's question. Answer the user's question clearly and concisely.
+You will be provided with the name and text of a theorem, the current level of formality, and a user's question. Answer the user's question clearly and concisely, taking into account the conversation history.
+
+{{#if history}}
+**Conversation History:**
+{{#each history}}
+User: {{{this.question}}}
+You: {{{this.answer}}}
+---
+{{/each}}
+{{/if}}
 
 **Primary Context:** The user is currently looking at the following section of the proof. Base your answer primarily on this context.
 ---

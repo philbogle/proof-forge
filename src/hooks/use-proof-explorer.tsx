@@ -8,7 +8,7 @@ import { answerQuestion } from '@/ai/flows/natural-language-questioning';
 import { generateProof } from '@/ai/flows/generate-proof-flow';
 import { editProof } from '@/ai/flows/edit-proof-flow';
 import { theorems } from '@/lib/theorems';
-import type { FormalityLevel, ProofVersion } from '@/lib/types';
+import type { FormalityLevel, ProofVersion, ConversationTurn } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 
@@ -34,7 +34,7 @@ export function useProofExplorer() {
 
   const [isProofLoading, setIsProofLoading] = React.useState(true);
   const [interactionText, setInteractionText] = React.useState('');
-  const [answer, setAnswer] = React.useState('');
+  const [conversationHistory, setConversationHistory] = React.useState<ConversationTurn[]>([]);
   const [isInteractionLoading, setIsInteractionLoading] = React.useState(false);
   const [userBackground] = React.useState(
     'a college student studying mathematics'
@@ -57,12 +57,15 @@ export function useProofExplorer() {
 
   const parseProofIntoPages = (fullProof: string) => {
     if (!fullProof) return [];
+    // Split by Markdown headers (### 1. Title)
     const parts = fullProof.split(/(?=###\s+\d+\.)/);
     if (parts.length === 0) return [];
     if (parts.length === 1 && parts[0].trim() === '') return [];
 
+    // The first part might be an intro without a header, so we handle that.
     const pages = parts.map(part => part.trim()).filter(Boolean);
     
+    // If the first page is very short and doesn't start with a header, merge it with the next one.
     if (pages.length > 1 && !pages[0].startsWith('###') && pages[0].split('\n').length < 5) {
       const firstPage = pages.shift();
       if (firstPage) {
@@ -70,8 +73,10 @@ export function useProofExplorer() {
       }
     }
     
+    // Filter out any empty pages that might have been created.
     return pages.filter(p => p.trim() !== '');
   };
+
 
   React.useEffect(() => {
     const pages = parseProofIntoPages(proof);
@@ -145,7 +150,7 @@ export function useProofExplorer() {
         setIsProofLoading(true);
       }, LOADING_INDICATOR_DELAY);
 
-      setAnswer('');
+      setConversationHistory([]);
       setInteractionText('');
       setSelectedVersion('');
 
@@ -384,7 +389,7 @@ export function useProofExplorer() {
 
     const pages = [...proofPages];
     pages[currentPage - 1] = rawProofEdit;
-    const newFullProof = pages.join('');
+    const newFullProof = pages.join('\n\n');
 
     await saveProofVersion(formalityLevel, newFullProof);
     setProof(newFullProof);
@@ -410,7 +415,8 @@ export function useProofExplorer() {
     }
 
     setIsInteractionLoading(true);
-    setAnswer('');
+    const currentQuestion = interactionText;
+    setInteractionText('');
 
     const proofSection = proofPages[currentPage - 1] || '';
 
@@ -419,17 +425,22 @@ export function useProofExplorer() {
         const result = await answerQuestion({
           theoremName: selectedTheorem.name,
           theoremText: proof,
-          question: interactionText,
+          question: currentQuestion,
           formalityLevel,
           proofSection,
+          history: conversationHistory,
         });
-        setAnswer(result.answer);
+        setConversationHistory([
+            ...conversationHistory,
+            { question: currentQuestion, answer: result.answer },
+          ]);
       } else if (type === 'edit') {
+        setConversationHistory([]);
         setIsFading(true);
         setIsProofLoading(true);
         const { editedProof } = await editProof({
           proof: proof,
-          request: interactionText,
+          request: currentQuestion,
           theoremName: selectedTheorem.name,
           formality: formalityLevel,
           proofSection,
@@ -466,7 +477,7 @@ export function useProofExplorer() {
     selectedVersion,
     isProofLoading,
     interactionText,
-    answer,
+    conversationHistory,
     isInteractionLoading,
     userBackground,
     renderMarkdown,
@@ -481,7 +492,7 @@ export function useProofExplorer() {
     setSelectedVersion,
     setIsProofLoading,
     setInteractionText,
-    setAnswer,
+    setConversationHistory,
     setIsInteractionLoading,
     setRenderMarkdown,
     handleTheoremChange,
