@@ -34,6 +34,7 @@ export default function InteractionPanel({
 }: InteractionPanelProps) {
   const [activeTab, setActiveTab] = React.useState('question');
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const viewportRef = React.useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,7 +59,7 @@ export default function InteractionPanel({
   };
 
   return (
-    <div className="flex h-full flex-col p-4 max-h-[60vh]">
+    <div className="flex h-[80vh] flex-col p-4">
       <div className="mb-4 flex items-center gap-2">
         <MessageSquare className="h-6 w-6" />
         <h2 className="text-xl font-semibold">AI Assistant</h2>
@@ -74,11 +75,8 @@ export default function InteractionPanel({
             Request an Edit
           </TabsTrigger>
         </TabsList>
-        <TabsContent
-          value="question"
-          className="flex flex-1 flex-col space-y-4 mt-4 overflow-hidden"
-        >
-          <ScrollArea className="flex-1 pr-4 -mr-4">
+        <div className="flex-1 space-y-4 pt-4 overflow-y-auto">
+          <ScrollArea className="h-full pr-4 -mr-4" viewportRef={viewportRef}>
             <div className="space-y-4">
               {conversationHistory.map((turn, index) => (
                 <div key={index} className="space-y-4">
@@ -115,7 +113,13 @@ export default function InteractionPanel({
                <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
-          <div className="mt-auto flex gap-2 border-t pt-4">
+        </div>
+
+        <TabsContent
+          value="question"
+          className="mt-auto border-t pt-4"
+        >
+           <div className="flex gap-2">
             <Input
               placeholder="e.g., What does 'Q.E.D.' mean?"
               value={interactionText}
@@ -135,12 +139,11 @@ export default function InteractionPanel({
             </Button>
           </div>
         </TabsContent>
-        <TabsContent
+         <TabsContent
           value="edit"
-          className="flex flex-1 flex-col space-y-4 overflow-hidden"
+          className="mt-auto border-t pt-4"
         >
-           <div className="flex-1" />
-          <div className="mt-auto flex gap-2 border-t pt-4">
+          <div className="flex gap-2">
             <Input
               placeholder="e.g., Explain the first step in more detail."
               value={interactionText}
