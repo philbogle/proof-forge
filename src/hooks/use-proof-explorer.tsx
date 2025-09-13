@@ -155,7 +155,7 @@ export function useProofExplorer() {
       ) {
         setProof(proofCache[cacheKey][0].proof);
         setIsProofLoading(false);
-        setTimeout(() => setIsFading(false), 50);
+        setTimeout(() => setIsFading(false), 100);
         return;
       }
 
@@ -169,7 +169,7 @@ export function useProofExplorer() {
               setProof(history[0].proof);
               setProofCache((prev) => ({ ...prev, [cacheKey]: history }));
               setIsProofLoading(false);
-              setTimeout(() => setIsFading(false), 50);
+              setTimeout(() => setIsFading(false), 100);
               return;
             }
           }
@@ -237,7 +237,7 @@ export function useProofExplorer() {
         setProof('Failed to generate proof.');
       } finally {
         setIsProofLoading(false);
-        setTimeout(() => setIsFading(false), 50);
+        setTimeout(() => setIsFading(false), 100);
       }
     },
     [
@@ -346,7 +346,7 @@ export function useProofExplorer() {
       console.error('Firestore cache write failed during rollback:', error);
     }
 
-    setTimeout(() => setIsFading(false), 50);
+    setTimeout(() => setIsFading(false), 100);
 
     toast({
       title: 'Rollback Successful',
@@ -369,7 +369,7 @@ export function useProofExplorer() {
     setProof(newFullProof);
 
     setIsProofLoading(false);
-    setTimeout(() => setIsFading(false), 50);
+    setTimeout(() => setIsFading(false), 100);
     toast({
       title: 'Proof Saved',
       description: 'Your changes have been saved.',
@@ -418,7 +418,7 @@ export function useProofExplorer() {
         setProof(editedProof);
 
         setIsProofLoading(false);
-        setTimeout(() => setIsFading(false), 50);
+        setTimeout(() => setIsFading(false), 100);
       }
     } catch (error) {
       console.error(`Error during ${type}:`, error);
