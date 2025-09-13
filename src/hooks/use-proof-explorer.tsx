@@ -417,6 +417,10 @@ export function useProofExplorer() {
     setIsInteractionLoading(true);
     const currentQuestion = interactionText;
     setInteractionText('');
+    
+    if (type === 'question') {
+      setConversationHistory(prev => [...prev, { question: currentQuestion, answer: '' }]);
+    }
 
     const proofSection = proofPages[currentPage - 1] || '';
 
@@ -430,10 +434,11 @@ export function useProofExplorer() {
           proofSection,
           history: conversationHistory,
         });
-        setConversationHistory([
-            ...conversationHistory,
-            { question: currentQuestion, answer: result.answer },
-          ]);
+        setConversationHistory(prev => {
+          const newHistory = [...prev];
+          newHistory[newHistory.length - 1].answer = result.answer;
+          return newHistory;
+        });
       } else if (type === 'edit') {
         setConversationHistory([]);
         setIsFading(true);

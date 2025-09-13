@@ -32,6 +32,8 @@ export default function InteractionPanel({
 }: InteractionPanelProps) {
   const [activeTab, setActiveTab] = React.useState('question');
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+  const viewportRef = React.useRef<HTMLDivElement>(null);
+
 
   React.useEffect(() => {
     if (!isUserSignedIn && activeTab === 'edit') {
@@ -40,13 +42,13 @@ export default function InteractionPanel({
   }, [isUserSignedIn, activeTab]);
 
   React.useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
+    if (viewportRef.current) {
+      viewportRef.current.scrollTo({
+        top: viewportRef.current.scrollHeight,
         behavior: 'smooth',
       });
     }
-  }, [conversationHistory]);
+  }, [conversationHistory, isInteractionLoading]);
 
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -62,27 +64,27 @@ export default function InteractionPanel({
         <MessageSquare className="h-6 w-6" />
         <h2 className="text-xl font-semibold">AI Assistant</h2>
       </div>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col overflow-hidden">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="question">Ask a Question</TabsTrigger>
           <TabsTrigger value="edit" disabled={!isUserSignedIn}>
             Request an Edit
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="question" className="flex flex-1 flex-col space-y-4 mt-4">
-          <div className="flex flex-1 flex-col font-body min-h-0">
-            <ScrollArea className="flex-1 pr-4">
-               <div className="space-y-4" ref={scrollAreaRef}>
-                {conversationHistory.map((turn, index) => (
-                  <div key={index} className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
-                        <User className="h-5 w-5 text-secondary-foreground" />
-                      </span>
-                      <div className="flex-1 rounded-lg border bg-secondary/30 p-3 text-sm">
-                        <p>{turn.question}</p>
-                      </div>
+        <TabsContent value="question" className="flex flex-1 flex-col space-y-4 mt-4 overflow-hidden">
+          <ScrollArea className="flex-1 pr-4 -mr-4" viewportRef={viewportRef}>
+             <div className="space-y-4" ref={scrollAreaRef}>
+              {conversationHistory.map((turn, index) => (
+                <div key={index} className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
+                      <User className="h-5 w-5 text-secondary-foreground" />
+                    </span>
+                    <div className="flex-1 rounded-lg border bg-secondary/30 p-3 text-sm">
+                      <p>{turn.question}</p>
                     </div>
+                  </div>
+                  {turn.answer && (
                     <div className="flex items-start gap-3">
                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
                         <Bot className="h-5 w-5 text-primary-foreground" />
@@ -91,52 +93,52 @@ export default function InteractionPanel({
                         <ProofDisplay content={turn.answer} />
                       </div>
                     </div>
+                  )}
+                </div>
+              ))}
+              {isInteractionLoading && activeTab === 'question' && (
+                <div className="flex items-start gap-3">
+                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
+                    <Bot className="h-5 w-5 text-primary-foreground" />
+                  </span>
+                  <div className="flex-1 rounded-lg border bg-card p-3 text-sm">
+                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   </div>
-                ))}
-                {isInteractionLoading && activeTab === 'question' && (
-                  <div className="flex items-start gap-3">
-                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-                      <Bot className="h-5 w-5 text-primary-foreground" />
-                    </span>
-                    <div className="flex-1 rounded-lg border bg-card p-3 text-sm">
-                       <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-             <div className="mt-4 flex gap-2">
-              <Input
-                placeholder="e.g., What does 'Q.E.D.' mean?"
-                value={interactionText}
-                onChange={(e) => onInteractionTextChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-              <Button
-                onClick={() => onInteract('question')}
-                disabled={isInteractionLoading}
-              >
-                {isInteractionLoading && activeTab === 'question' ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : null}
-                {isInteractionLoading && activeTab === 'question' ? 'Thinking...' : 'Ask'}
-              </Button>
+                </div>
+              )}
             </div>
+          </ScrollArea>
+           <div className="mt-4 flex gap-2 border-t pt-4">
+            <Input
+              placeholder="e.g., What does 'Q.E.D.' mean?"
+              value={interactionText}
+              onChange={(e) => onInteractionTextChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <Button
+              onClick={() => onInteract('question')}
+              disabled={isInteractionLoading || !interactionText.trim()}
+            >
+              {isInteractionLoading && activeTab === 'question' ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              {isInteractionLoading && activeTab === 'question' ? 'Thinking...' : 'Ask'}
+            </Button>
           </div>
         </TabsContent>
-        <TabsContent value="edit" className="flex flex-1 flex-col space-y-4">
-          <div className="mt-4 flex flex-1 flex-col justify-end gap-2 font-body">
-            <div className='flex-1' />
+        <TabsContent value="edit" className="flex flex-1 flex-col space-y-4 overflow-hidden">
+          <div className="flex-1" />
+          <div className="mt-4 flex gap-2 border-t pt-4">
             <Input
               placeholder="e.g., Explain the first step in more detail."
               value={interactionText}
               onChange={(e) => onInteractionTextChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={!isUserSignedIn}
+              disabled={!isUserSignedIn || isInteractionLoading}
             />
             <Button
               onClick={() => onInteract('edit')}
-              disabled={isInteractionLoading || !isUserSignedIn}
+              disabled={isInteractionLoading || !isUserSignedIn || !interactionText.trim()}
             >
               {isInteractionLoading && activeTab === 'edit' && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
