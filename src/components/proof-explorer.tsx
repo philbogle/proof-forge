@@ -82,46 +82,48 @@ export default function ProofExplorer() {
               </div>
             </div>
             <div className="md:col-span-2 space-y-6">
-              <div className="space-y-2">
-                <ProofView
-                  proof={
-                    !renderMarkdown && user
-                      ? rawProofEdit
-                      : proofPages[currentPage - 1] || ''
-                  }
-                  renderMarkdown={renderMarkdown}
-                  isLoading={isProofLoading}
-                  isFading={isFading}
-                  isEditable={!renderMarkdown && !!user}
-                  onRawProofChange={setRawProofEdit}
-                />
-                {latestVersion && !isProofLoading && (
-                  <div className="text-right text-xs text-muted-foreground font-body">
-                    Last updated
-                    {latestVersion.user?.name && ` by ${latestVersion.user.name}`}
-                    {' on '}
-                    {new Date(latestVersion.timestamp).toLocaleDateString()}
-                  </div>
-                )}
-              </div>
-              <div className="flex w-full items-center justify-end space-x-2">
-                {!renderMarkdown && user && (
-                  <Button onClick={handleRawProofSave} size="sm">
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Changes
-                  </Button>
-                )}
-                <Label
-                  htmlFor="markdown-toggle"
-                  className="text-sm font-medium"
-                >
-                  Rendered
-                </Label>
-                <Switch
-                  id="markdown-toggle"
-                  checked={renderMarkdown}
-                  onCheckedChange={setRenderMarkdown}
-                />
+              <ProofView
+                proof={
+                  !renderMarkdown && user
+                    ? rawProofEdit
+                    : proofPages[currentPage - 1] || ''
+                }
+                renderMarkdown={renderMarkdown}
+                isLoading={isProofLoading}
+                isFading={isFading}
+                isEditable={!renderMarkdown && !!user}
+                onRawProofChange={setRawProofEdit}
+              />
+              <div className="flex w-full items-center justify-between">
+                <div className="text-xs text-muted-foreground font-body">
+                  {latestVersion && !isProofLoading && (
+                    <span>
+                      Last updated
+                      {latestVersion.user?.name && ` by ${latestVersion.user.name}`}
+                      {' on '}
+                      {new Date(latestVersion.timestamp).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  {!renderMarkdown && user && (
+                    <Button onClick={handleRawProofSave} size="sm">
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </Button>
+                  )}
+                  <Label
+                    htmlFor="markdown-toggle"
+                    className="text-xs font-medium"
+                  >
+                    Rendered
+                  </Label>
+                  <Switch
+                    id="markdown-toggle"
+                    checked={renderMarkdown}
+                    onCheckedChange={setRenderMarkdown}
+                  />
+                </div>
               </div>
 
               <InteractionPanel
