@@ -95,9 +95,12 @@ export default function ProofExplorer() {
                   isEditable={!renderMarkdown && !!user}
                   onRawProofChange={setRawProofEdit}
                 />
-                {latestVersion && !isProofLoading && latestVersion.user?.name && (
+                {latestVersion && !isProofLoading && (
                   <div className="text-right text-xs text-muted-foreground font-body">
-                    Last updated by {latestVersion.user.name}
+                    Last updated
+                    {latestVersion.user?.name && ` by ${latestVersion.user.name}`}
+                    {' on '}
+                    {new Date(latestVersion.timestamp).toLocaleDateString()}
                   </div>
                 )}
               </div>
