@@ -153,13 +153,8 @@ export default function ProofExplorer() {
         <div className="fixed bottom-4 right-4 z-10 w-full max-w-md">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1" className="border-none flex flex-col items-end">
-               <AccordionTrigger className="p-0 hover:no-underline">
-                <Button
-                  variant="default"
-                  className="h-12 w-12 rounded-full p-0 shadow-lg"
-                >
-                  <MessageSquare className="h-6 w-6" />
-                </Button>
+               <AccordionTrigger className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-12 rounded-full p-0 shadow-lg flex items-center justify-center hover:no-underline [&[data-state=open]>svg]:hidden">
+                <MessageSquare className="h-6 w-6" />
               </AccordionTrigger>
               <AccordionContent className="w-full">
                 <div className="mt-2 rounded-lg border bg-card shadow-xl">
