@@ -400,6 +400,7 @@ export function useProofExplorer() {
       title: 'Proof Saved',
       description: 'Your changes have been saved.',
     });
+    setRenderMarkdown(true);
   };
 
   const handleInteraction = async (type: 'question' | 'edit') => {
