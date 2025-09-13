@@ -1,3 +1,4 @@
+
 // src/components/proof-explorer.tsx
 'use client';
 
@@ -81,7 +82,7 @@ export default function ProofExplorer() {
                 />
               </div>
             </div>
-            <div className="md:col-span-2 space-y-6">
+            <div className="md:col-span-2">
               <ProofView
                 proof={
                   !renderMarkdown && user
@@ -94,7 +95,7 @@ export default function ProofExplorer() {
                 isEditable={!renderMarkdown && !!user}
                 onRawProofChange={setRawProofEdit}
               />
-              <div className="flex w-full items-center justify-between">
+              <div className="mt-2 flex w-full items-center justify-between">
                 <div className="text-xs text-muted-foreground font-body">
                   {latestVersion && !isProofLoading && (
                     <span>
@@ -126,26 +127,30 @@ export default function ProofExplorer() {
                 </div>
               </div>
 
-              <InteractionPanel
-                interactionText={interactionText}
-                onInteractionTextChange={setInteractionText}
-                onInteract={handleInteraction}
-                isInteractionLoading={isInteractionLoading}
-                answer={answer}
-                isUserSignedIn={!!user}
-              />
+              <div className="mt-6">
+                <InteractionPanel
+                  interactionText={interactionText}
+                  onInteractionTextChange={setInteractionText}
+                  onInteract={handleInteraction}
+                  isInteractionLoading={isInteractionLoading}
+                  answer={answer}
+                  isUserSignedIn={!!user}
+                />
+              </div>
 
               {user && (
-                <AdvancedSettings
-                  isProofLoading={isProofLoading}
-                  generateNewProof={generateNewProof}
-                  selectedTheorem={selectedTheorem}
-                  handleClearCache={handleClearCache}
-                  currentProofHistory={currentProofHistory}
-                  selectedVersion={selectedVersion}
-                  setSelectedVersion={setSelectedVersion}
-                  handleRollback={handleRollback}
-                />
+                <div className="mt-6">
+                  <AdvancedSettings
+                    isProofLoading={isProofLoading}
+                    generateNewProof={generateNewProof}
+                    selectedTheorem={selectedTheorem}
+                    handleClearCache={handleClearCache}
+                    currentProofHistory={currentProofHistory}
+                    selectedVersion={selectedVersion}
+                    setSelectedVersion={setSelectedVersion}
+                    handleRollback={handleRollback}
+                  />
+                </div>
               )}
             </div>
           </div>
