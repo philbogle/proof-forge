@@ -57,25 +57,37 @@ export function useProofExplorer() {
 
   const parseProofIntoPages = (fullProof: string) => {
     if (!fullProof) return [];
-    const pages = fullProof
-      .split(/(<a id="step-\d+"><\/a>)/)
-      .filter((p) => p.trim() !== '');
-
-    const combinedPages: string[] = [];
-    for (let i = 0; i < pages.length; i += 2) {
-      if (i + 1 < pages.length) {
-        combinedPages.push(pages[i] + pages[i + 1]);
-      } else {
-        if (!pages[i].startsWith('<a')) {
-          if (combinedPages.length > 0) {
-            combinedPages[combinedPages.length - 1] += pages[i];
-          } else {
-            combinedPages.push(pages[i]);
-          }
-        }
+    // Split by the anchor tag, keeping the delimiter.
+    const parts = fullProof.split(/(<a id="step-\d+"><\/a>)/).filter(Boolean);
+    if (parts.length <= 1) {
+      return [fullProof];
+    }
+  
+    const pages: string[] = [];
+    // The first part might not start with an anchor, so handle it separately.
+    let startIndex = 0;
+    if (!parts[0].startsWith('<a')) {
+      pages.push(parts[0].trim());
+      startIndex = 1;
+    }
+  
+    // Combine anchor tags with their following content.
+    for (let i = startIndex; i < parts.length; i += 2) {
+      const anchor = parts[i];
+      const content = parts[i + 1] || '';
+      // Trim leading whitespace from the content part.
+      pages.push((anchor + content).trimStart());
+    }
+  
+    // Post-process to merge the introduction with the first step if needed.
+    if (pages.length > 1 && pages[0].split('\n').length < 5 && !pages[0].includes('###')) {
+      const firstPage = pages.shift();
+      if (firstPage) {
+        pages[0] = firstPage + '\n\n' + pages[0];
       }
     }
-    return combinedPages.length > 0 ? combinedPages : [fullProof];
+  
+    return pages.filter(p => p.trim() !== '');
   };
 
   React.useEffect(() => {
