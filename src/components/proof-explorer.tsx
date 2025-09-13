@@ -64,12 +64,12 @@ export default function ProofExplorer() {
         <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
           <AppHeader />
           <div className="space-y-6">
-            <div className="sticky top-0 z-10 bg-background py-4 space-y-6">
-              <TheoremSelector
-                theorems={theorems}
-                selectedTheoremId={selectedTheoremId}
-                onTheoremChange={handleTheoremChange}
-              />
+            <TheoremSelector
+              theorems={theorems}
+              selectedTheoremId={selectedTheoremId}
+              onTheoremChange={handleTheoremChange}
+            />
+            <div className="sticky top-0 z-10 bg-background py-4">
               <ProofControls
                 formalityLevels={formalityLevels}
                 formalityLevel={formalityLevel}
@@ -96,9 +96,9 @@ export default function ProofExplorer() {
               />
               <div>
                 <div className="flex w-full items-center justify-between">
-                   <div className="text-sm text-muted-foreground font-body">
-                     {/* The last updated by label was moved to advanced settings. */}
-                   </div>
+                  <div className="text-sm text-muted-foreground font-body">
+                    {/* The last updated by label was moved to advanced settings. */}
+                  </div>
                   {!renderMarkdown && user && (
                     <Button onClick={handleRawProofSave} size="sm">
                       <Save className="mr-2 h-4 w-4" />
@@ -130,8 +130,11 @@ export default function ProofExplorer() {
         </div>
         <div className="fixed bottom-4 right-4 z-10 w-full max-w-lg">
           <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1" className="border-none flex flex-col items-end">
-               <AccordionTrigger className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-12 rounded-full p-0 shadow-lg flex items-center justify-center hover:no-underline group">
+            <AccordionItem
+              value="item-1"
+              className="border-none flex flex-col items-end"
+            >
+              <AccordionTrigger className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-12 rounded-full p-0 shadow-lg flex items-center justify-center hover:no-underline group">
                 <MessageSquare className="h-6 w-6 group-data-[state=open]:hidden" />
                 <X className="h-6 w-6 group-data-[state=closed]:hidden" />
               </AccordionTrigger>
