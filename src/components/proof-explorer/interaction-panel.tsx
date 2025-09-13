@@ -41,10 +41,14 @@ export default function InteractionPanel({
 
   React.useEffect(() => {
     if (viewportRef.current) {
-      viewportRef.current.scrollTo({
-        top: viewportRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
+      setTimeout(() => {
+        if (viewportRef.current) {
+          viewportRef.current.scrollTo({
+            top: viewportRef.current.scrollHeight,
+            behavior: 'smooth',
+          });
+        }
+      }, 100);
     }
   }, [conversationHistory, isInteractionLoading]);
 
