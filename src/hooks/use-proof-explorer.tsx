@@ -147,15 +147,22 @@ export function useProofExplorer() {
       setSelectedVersion('');
 
       const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
+      
+      const handleCachedProof = (proofToSet: string) => {
+        // This artificial delay ensures the fade-out animation has time to play
+        setTimeout(() => {
+          setProof(proofToSet);
+          setIsProofLoading(false);
+          setTimeout(() => setIsFading(false), 100);
+        }, 300);
+      };
 
       if (
         !forceRefresh &&
         proofCache[cacheKey] &&
         proofCache[cacheKey].length > 0
       ) {
-        setProof(proofCache[cacheKey][0].proof);
-        setIsProofLoading(false);
-        setTimeout(() => setIsFading(false), 100);
+        handleCachedProof(proofCache[cacheKey][0].proof);
         return;
       }
 
@@ -166,10 +173,8 @@ export function useProofExplorer() {
             const data = cachedDoc.data();
             const history: ProofVersion[] = data.history || [];
             if (history.length > 0) {
-              setProof(history[0].proof);
               setProofCache((prev) => ({ ...prev, [cacheKey]: history }));
-              setIsProofLoading(false);
-              setTimeout(() => setIsFading(false), 100);
+              handleCachedProof(history[0].proof);
               return;
             }
           }
