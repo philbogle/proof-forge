@@ -69,8 +69,8 @@ export default function InteractionPanel({
             Request an Edit
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="question" className="flex flex-1 flex-col space-y-4">
-          <div className="mt-4 flex flex-1 flex-col font-body">
+        <TabsContent value="question" className="flex flex-1 flex-col space-y-4 mt-4">
+          <div className="flex flex-1 flex-col font-body min-h-0">
             <ScrollArea className="flex-1 pr-4">
                <div className="space-y-4" ref={scrollAreaRef}>
                 {conversationHistory.map((turn, index) => (
