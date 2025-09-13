@@ -1,4 +1,3 @@
-
 // src/components/proof-explorer/interaction-panel.tsx
 import * as React from 'react';
 import {
@@ -18,6 +17,7 @@ interface InteractionPanelProps {
   onInteract: (type: 'question' | 'edit') => void;
   isInteractionLoading: boolean;
   answer: string;
+  isUserSignedIn: boolean;
 }
 
 export default function InteractionPanel({
@@ -26,13 +26,24 @@ export default function InteractionPanel({
   onInteract,
   isInteractionLoading,
   answer,
+  isUserSignedIn,
 }: InteractionPanelProps) {
+  const [activeTab, setActiveTab] = React.useState('question');
+  
+  React.useEffect(() => {
+    if (!isUserSignedIn && activeTab === 'edit') {
+      setActiveTab('question');
+    }
+  }, [isUserSignedIn, activeTab]);
+
   return (
     <div className="p-1 pt-4">
-      <Tabs defaultValue="question" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="question">Ask a Question</TabsTrigger>
-          <TabsTrigger value="edit">Request an Edit</TabsTrigger>
+          <TabsTrigger value="edit" disabled={!isUserSignedIn}>
+            Request an Edit
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="question" className="space-y-4">
           <div className="mt-4 flex gap-2 font-body">
@@ -46,10 +57,10 @@ export default function InteractionPanel({
               onClick={() => onInteract('question')}
               disabled={isInteractionLoading}
             >
-              {isInteractionLoading && (
+              {isInteractionLoading && activeTab === 'question' && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {isInteractionLoading ? 'Thinking...' : 'Ask'}
+              {isInteractionLoading && activeTab === 'question' ? 'Thinking...' : 'Ask'}
             </Button>
           </div>
           {answer && (
@@ -70,15 +81,16 @@ export default function InteractionPanel({
               value={interactionText}
               onChange={(e) => onInteractionTextChange(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && onInteract('edit')}
+              disabled={!isUserSignedIn}
             />
             <Button
               onClick={() => onInteract('edit')}
-              disabled={isInteractionLoading}
+              disabled={isInteractionLoading || !isUserSignedIn}
             >
-              {isInteractionLoading && (
+              {isInteractionLoading && activeTab === 'edit' && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {isInteractionLoading ? 'Editing...' : 'Submit Edit'}
+              {isInteractionLoading && activeTab === 'edit' ? 'Editing...' : 'Submit Edit'}
             </Button>
           </div>
         </TabsContent>

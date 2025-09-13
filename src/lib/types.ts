@@ -1,3 +1,4 @@
+import type { User } from 'firebase/auth';
 
 export type FormalityLevel = 'english' | 'informal' | 'rigorous';
 
@@ -22,4 +23,13 @@ export type GenerateProofOutput = {
 export type ProofVersion = {
   proof: string;
   timestamp: string;
+  user?: {
+    name: string | null;
+    id: string;
+  };
 };
+
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+}

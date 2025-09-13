@@ -7,16 +7,19 @@ import {
 import { ProofLoadingIndicator } from '@/components/proof-loading-indicator';
 import { ProofDisplay } from '@/components/proof-display';
 import { cn } from '@/lib/utils';
+import { Textarea } from '../ui/textarea';
 
 interface ProofViewProps {
   proof: string;
   renderMarkdown: boolean;
   isLoading: boolean;
   isFading: boolean;
+  isEditable: boolean;
+  onRawProofChange: (newProof: string) => void;
 }
 
 const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
-  ({ proof, renderMarkdown, isLoading, isFading }, ref) => {
+  ({ proof, renderMarkdown, isLoading, isFading, isEditable, onRawProofChange }, ref) => {
     return (
       <Card ref={ref}>
         <CardContent className="min-h-[250px] p-6">
@@ -32,9 +35,12 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
             {renderMarkdown ? (
               <ProofDisplay content={proof} />
             ) : (
-              <pre className="whitespace-pre-wrap font-code text-sm">
-                <code>{proof}</code>
-              </pre>
+              <Textarea
+                className="min-h-[400px] text-sm"
+                value={proof}
+                onChange={(e) => onRawProofChange(e.target.value)}
+                readOnly={!isEditable}
+              />
             )}
             </div>
           )}
