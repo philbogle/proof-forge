@@ -10,7 +10,8 @@ import { generateProof } from '@/ai/flows/generate-proof-flow';
 import { editProof } from '@/ai/flows/edit-proof-flow';
 import { theorems } from '@/lib/theorems';
 import type { FormalityLevel, ProofVersion } from '@/lib/types';
-import { db } from '@/lib/firebase';
+import { db, app as firebaseApp } from '@/lib/firebase';
+import { initializeApp } from 'firebase/app';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import {
   TooltipProvider,
@@ -38,6 +39,12 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+
+// Server-side initialization check.
+if (typeof window === 'undefined') {
+  initializeApp(firebaseApp.options);
+}
+
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'english', name: 'English' },
