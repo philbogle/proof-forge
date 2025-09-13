@@ -31,14 +31,16 @@ export default function InteractionPanel({
   isUserSignedIn,
 }: InteractionPanelProps) {
   const [activeTab, setActiveTab] = React.useState('question');
-  const scrollViewportRef = React.useRef<HTMLDivElement>(null);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   React.useEffect(() => {
-    if (scrollViewportRef.current) {
-      scrollViewportRef.current.scrollTop =
-        scrollViewportRef.current.scrollHeight;
-    }
+    scrollToBottom();
   }, [conversationHistory, isInteractionLoading]);
+
 
   React.useEffect(() => {
     if (!isUserSignedIn && activeTab === 'edit') {
@@ -74,7 +76,7 @@ export default function InteractionPanel({
           value="question"
           className="flex flex-1 flex-col space-y-4 mt-4 overflow-hidden"
         >
-          <ScrollArea className="flex-1 pr-4 -mr-4" viewportRef={scrollViewportRef}>
+          <ScrollArea className="flex-1 pr-4 -mr-4">
             <div className="space-y-4">
               {conversationHistory.map((turn, index) => (
                 <div key={index} className="space-y-4">
@@ -108,9 +110,10 @@ export default function InteractionPanel({
                   </div>
                 </div>
               )}
+               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
-          <div className="mt-4 flex gap-2 border-t pt-4">
+          <div className="mt-auto flex gap-2 border-t pt-4">
             <Input
               placeholder="e.g., What does 'Q.E.D.' mean?"
               value={interactionText}
@@ -134,8 +137,8 @@ export default function InteractionPanel({
           value="edit"
           className="flex flex-1 flex-col space-y-4 overflow-hidden"
         >
-          <div className="flex-1" />
-          <div className="mt-4 flex gap-2 border-t pt-4">
+           <div className="flex-1" />
+          <div className="mt-auto flex gap-2 border-t pt-4">
             <Input
               placeholder="e.g., Explain the first step in more detail."
               value={interactionText}
