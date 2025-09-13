@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { answerQuestion } from '@/ai/flows/natural-language-questioning';
 import { generateProof } from '@/ai/flows/generate-proof-flow';
 import { editProof } from '@/ai/flows/edit-proof-flow';
+import { classifyIntent } from '@/ai/flows/classify-intent-flow';
 import { theorems } from '@/lib/theorems';
 import type { FormalityLevel, ProofVersion, ConversationTurn } from '@/lib/types';
 import { db } from '@/lib/firebase';
@@ -403,44 +404,49 @@ export function useProofExplorer() {
     setRenderMarkdown(true);
   };
 
-  const handleInteraction = async (type: 'question' | 'edit') => {
+  const handleInteraction = async () => {
     if (!interactionText.trim()) return;
-
-    if (type === 'edit' && !user) {
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Required',
-        description: 'You must be signed in to request an edit.',
-      });
-      return;
-    }
-
+  
     setIsInteractionLoading(true);
     const currentQuestion = interactionText;
     setInteractionText('');
-    
-    if (type === 'question') {
-      setConversationHistory(prev => [...prev, { question: currentQuestion, answer: '' }]);
-    }
-
+    setConversationHistory(prev => [...prev, { question: currentQuestion, answer: '' }]);
+  
     const proofSection = proofPages[currentPage - 1] || '';
-
+  
     try {
-      if (type === 'question') {
+      const { intent } = await classifyIntent({ text: currentQuestion });
+  
+      if (intent === 'edit' && !user) {
+        toast({
+          variant: 'destructive',
+          title: 'Authentication Required',
+          description: 'You must be signed in to request an edit.',
+        });
+        setConversationHistory(prev => {
+          const newHistory = [...prev];
+          newHistory[newHistory.length - 1].answer = "Please sign in to request an edit.";
+          return newHistory;
+        });
+        setIsInteractionLoading(false);
+        return;
+      }
+  
+      if (intent === 'question') {
         const result = await answerQuestion({
           theoremName: selectedTheorem.name,
           theoremText: proof,
           question: currentQuestion,
           formalityLevel,
           proofSection,
-          history: conversationHistory,
+          history: conversationHistory.slice(0, -1), // Don't include the current question
         });
         setConversationHistory(prev => {
           const newHistory = [...prev];
           newHistory[newHistory.length - 1].answer = result.answer;
           return newHistory;
         });
-      } else if (type === 'edit') {
+      } else if (intent === 'edit') {
         setIsFading(true);
         setIsProofLoading(true);
         const { editedProof, summary } = await editProof({
@@ -450,24 +456,32 @@ export function useProofExplorer() {
           formality: formalityLevel,
           proofSection,
         });
-
+  
         await saveProofVersion(formalityLevel, editedProof);
         setProof(editedProof);
-        setConversationHistory([
-          { question: currentQuestion, answer: summary }
-        ]);
-
+        setConversationHistory(prev => {
+           const newHistory = [...prev];
+           newHistory[newHistory.length - 1].answer = summary;
+           return newHistory;
+        });
+  
         setIsProofLoading(false);
         setTimeout(() => setIsFading(false), 100);
       }
     } catch (error) {
-      console.error(`Error during ${type}:`, error);
+      console.error(`Error during interaction:`, error);
+      const errorMessage = "I'm sorry, I couldn't process your request. Please try again.";
       toast({
         variant: 'destructive',
         title: 'Error',
         description: `Could not process your request. Please check the console for details.`,
       });
-       if (type === 'edit') {
+      setConversationHistory(prev => {
+        const newHistory = [...prev];
+        newHistory[newHistory.length - 1].answer = errorMessage;
+        return newHistory;
+      });
+       if (isProofLoading) {
         setIsProofLoading(false);
         setIsFading(false);
        }
