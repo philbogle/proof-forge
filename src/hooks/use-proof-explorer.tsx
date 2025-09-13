@@ -57,30 +57,18 @@ export function useProofExplorer() {
 
   const parseProofIntoPages = (fullProof: string) => {
     if (!fullProof) return [];
-    // Split by the anchor tag, keeping the delimiter.
-    const parts = fullProof.split(/(<a id="step-\d+"><\/a>)/).filter(Boolean);
+    // Split by Markdown headers (###), keeping the delimiter as part of the next page.
+    const parts = fullProof.split(/(?=###\s+\d+\.)/).filter(Boolean);
+  
     if (parts.length <= 1) {
-      return [fullProof];
+      return [fullProof.trim()];
     }
   
-    const pages: string[] = [];
-    // The first part might not start with an anchor, so handle it separately.
-    let startIndex = 0;
-    if (!parts[0].startsWith('<a')) {
-      pages.push(parts[0].trim());
-      startIndex = 1;
-    }
+    const pages = parts.map(part => part.trim());
   
-    // Combine anchor tags with their following content.
-    for (let i = startIndex; i < parts.length; i += 2) {
-      const anchor = parts[i];
-      const content = parts[i + 1] || '';
-      // Trim leading whitespace from the content part.
-      pages.push((anchor + content).trimStart());
-    }
-  
-    // Post-process to merge the introduction with the first step if needed.
-    if (pages.length > 1 && pages[0].split('\n').length < 5 && !pages[0].includes('###')) {
+    // Check if the first page is an introduction (doesn't start with a header).
+    // If it is, and it's short, merge it with the second page.
+    if (pages.length > 1 && !pages[0].startsWith('###') && pages[0].split('\n').length < 5) {
       const firstPage = pages.shift();
       if (firstPage) {
         pages[0] = firstPage + '\n\n' + pages[0];
