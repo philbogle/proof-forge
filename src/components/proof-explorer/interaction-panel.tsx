@@ -57,7 +57,7 @@ export default function InteractionPanel({
   }
 
   return (
-    <div className="flex h-full flex-col p-4">
+    <div className="flex h-full flex-col p-4 max-h-[60vh]">
        <div className="mb-4 flex items-center gap-2">
         <MessageSquare className="h-6 w-6" />
         <h2 className="text-xl font-semibold">AI Assistant</h2>
