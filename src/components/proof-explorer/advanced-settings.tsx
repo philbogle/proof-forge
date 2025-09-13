@@ -18,6 +18,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Trash2, History, RefreshCw } from 'lucide-react';
 import type { Theorem, ProofVersion, User } from '@/lib/types';
+import { Switch } from '../ui/switch';
 
 interface AdvancedSettingsProps {
   user: User | null;
@@ -29,6 +30,8 @@ interface AdvancedSettingsProps {
   selectedVersion: string;
   setSelectedVersion: (version: string) => void;
   handleRollback: () => void;
+  renderMarkdown: boolean;
+  setRenderMarkdown: (value: boolean) => void;
 }
 
 export default function AdvancedSettings({
@@ -41,6 +44,8 @@ export default function AdvancedSettings({
   selectedVersion,
   setSelectedVersion,
   handleRollback,
+  renderMarkdown,
+  setRenderMarkdown,
 }: AdvancedSettingsProps) {
   const canClearCache = user && user.email === 'philbogle@gmail.com';
 
@@ -56,6 +61,28 @@ export default function AdvancedSettings({
         <AccordionContent>
           <Card>
             <CardContent className="space-y-6 pt-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <h4 className="font-semibold">Raw Markdown Editor</h4>
+                  <p className="text-sm text-muted-foreground">
+                    View and edit the raw Markdown source of the proof.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Label
+                    htmlFor="markdown-toggle"
+                    className="text-sm font-medium"
+                  >
+                    Rendered
+                  </Label>
+                  <Switch
+                    id="markdown-toggle"
+                    checked={renderMarkdown}
+                    onCheckedChange={setRenderMarkdown}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <h4 className="font-semibold">Refresh and Regenerate Proof</h4>
                 <p className="text-sm text-muted-foreground">

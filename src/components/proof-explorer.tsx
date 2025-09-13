@@ -13,8 +13,6 @@ import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
 import AdvancedSettings from './proof-explorer/advanced-settings';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { MessageSquare, Save } from 'lucide-react';
 import {
   Accordion,
@@ -109,25 +107,12 @@ export default function ProofExplorer() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {!renderMarkdown && user && (
-                      <Button onClick={handleRawProofSave} size="sm">
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Changes
-                      </Button>
-                    )}
-                    <Label
-                      htmlFor="markdown-toggle"
-                      className="text-sm font-medium"
-                    >
-                      Rendered
-                    </Label>
-                    <Switch
-                      id="markdown-toggle"
-                      checked={renderMarkdown}
-                      onCheckedChange={setRenderMarkdown}
-                    />
-                  </div>
+                  {!renderMarkdown && user && (
+                    <Button onClick={handleRawProofSave} size="sm">
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -143,6 +128,8 @@ export default function ProofExplorer() {
                     selectedVersion={selectedVersion}
                     setSelectedVersion={setSelectedVersion}
                     handleRollback={handleRollback}
+                    renderMarkdown={renderMarkdown}
+                    setRenderMarkdown={setRenderMarkdown}
                   />
                 </div>
               )}
