@@ -64,21 +64,23 @@ export default function ProofExplorer() {
         <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
           <AppHeader />
           <div className="space-y-6">
-            <TheoremSelector
-              theorems={theorems}
-              selectedTheoremId={selectedTheoremId}
-              onTheoremChange={handleTheoremChange}
-            />
-            <ProofControls
-              formalityLevels={formalityLevels}
-              formalityLevel={formalityLevel}
-              isProofLoading={isProofLoading}
-              onFormalityChange={handleFormalityChange}
-              onRefresh={() => generateNewProof(true)}
-              currentPage={currentPage}
-              totalPages={proofPages.length}
-              onPageChange={handlePageChange}
-            />
+            <div className="sticky top-0 z-10 bg-background py-4 space-y-6">
+              <TheoremSelector
+                theorems={theorems}
+                selectedTheoremId={selectedTheoremId}
+                onTheoremChange={handleTheoremChange}
+              />
+              <ProofControls
+                formalityLevels={formalityLevels}
+                formalityLevel={formalityLevel}
+                isProofLoading={isProofLoading}
+                onFormalityChange={handleFormalityChange}
+                onRefresh={() => generateNewProof(true)}
+                currentPage={currentPage}
+                totalPages={proofPages.length}
+                onPageChange={handlePageChange}
+              />
+            </div>
             <div className="space-y-6">
               <ProofView
                 proof={
