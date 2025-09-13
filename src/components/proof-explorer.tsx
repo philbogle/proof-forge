@@ -1,4 +1,3 @@
-
 // src/components/proof-explorer.tsx
 'use client';
 
@@ -43,7 +42,7 @@ export default function ProofExplorer() {
     selectedVersion,
     handleTheoremChange,
     handleFormalityChange,
-    setCurrentPage,
+    handlePageChange,
     setRenderMarkdown,
     setRawProofEdit,
     handleRawProofSave,
@@ -78,7 +77,7 @@ export default function ProofExplorer() {
                   onRefresh={() => generateNewProof(true)}
                   currentPage={currentPage}
                   totalPages={proofPages.length}
-                  onPageChange={setCurrentPage}
+                  onPageChange={handlePageChange}
                 />
               </div>
             </div>

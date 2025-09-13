@@ -58,14 +58,14 @@ export function useProofExplorer() {
   const parseProofIntoPages = (fullProof: string) => {
     if (!fullProof) return [];
     // Split by Markdown headers (###), keeping the delimiter as part of the next page.
-    const parts = fullProof.split(/(?=###\s+\d+\.)/).filter(Boolean);
-  
+    const parts = fullProof.split(/(?=###\s+\d+\.)/);
+
     if (parts.length <= 1) {
-      return [fullProof.trim()];
+        return [fullProof.trim()];
     }
-  
-    const pages = parts.map(part => part.trim());
-  
+
+    const pages = parts.map(part => part.trim()).filter(Boolean);
+
     // Check if the first page is an introduction (doesn't start with a header).
     // If it is, and it's short, merge it with the second page.
     if (pages.length > 1 && !pages[0].startsWith('###') && pages[0].split('\n').length < 5) {
@@ -74,7 +74,7 @@ export function useProofExplorer() {
         pages[0] = firstPage + '\n\n' + pages[0];
       }
     }
-  
+
     return pages.filter(p => p.trim() !== '');
   };
 
@@ -282,6 +282,15 @@ export function useProofExplorer() {
     setFormalityLevel(level);
   };
 
+  const handlePageChange = (page: number) => {
+    if (page === currentPage) return;
+    setIsFading(true);
+    setTimeout(() => {
+      setCurrentPage(page);
+      setIsFading(false);
+    }, 300);
+  };
+
   const handleClearCache = async () => {
     if (!user) return;
     const keysToClear = Object.keys(proofCache).filter((key) =>
@@ -482,6 +491,7 @@ export function useProofExplorer() {
     setRenderMarkdown,
     handleTheoremChange,
     handleFormalityChange,
+    handlePageChange,
     handleClearCache,
     handleRollback,
     handleRawProofSave,
