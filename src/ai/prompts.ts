@@ -2,10 +2,7 @@
 
 export const PROOF_FORMATTING_INSTRUCTIONS = `
 - Your output must be in Markdown format.
-- **IMPORTANT ANCHORS & HEADERS:** At the beginning of each distinct step, paragraph, or logical block of the proof, you MUST do two things:
-  1. Include a the step number and a descriptive Markdown header for that step, like \`### N. [Descriptive Title for Step N]\`. This title should briefly summarize the purpose of the step.
-  2. Follow that header, insert an HTML anchor tag like \`<a id="step-N"></a>\`, where 'N' is a sequential 1-based integer (step-1, step-2, etc.).
-  This is critical for navigation and structure.
+- **IMPORTANT HEADERS:** At the beginning of each distinct step, paragraph, or logical block of the proof, you MUST include a the step number and a descriptive Markdown header for that step, like \`### N. [Descriptive Title for Step N]\`. This title should briefly summarize the purpose of the step. This is critical for navigation and structure.
 - Reserve code blocks (\`\`\`) strictly for programming code implementations, never for displaying mathematical formulas or names.
 - Always use rendered LaTeX for math: $formula$ for inline (using \\mathbf{} for vectors), and $$formula$$ for display equations.
 - Critically, ensure no whitespace exists immediately inside $ or $$ delimiters (use $E=mc^2$, not $ E = mc^2 $). 

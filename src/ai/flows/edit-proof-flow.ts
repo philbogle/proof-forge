@@ -56,9 +56,9 @@ ${input.proof}
 
 **Instructions for Generating the Edited Proof:**
 1.  **Incorporate the Edit:** Read the original proof and the user's request carefully. Generate a new version of the **entire proof** that incorporates the requested changes.
-2.  **Preserve Anchors and Headers:** You MUST preserve the HTML anchor tags (e.g., \`<a id="step-N"></a>\`) and the Markdown headers (e.g., \`### N. Step Title\`) from the original proof. Do not add new ones, renumber them, or remove them. This is critical for navigation.
+2.  **Preserve Headers:** You MUST preserve the Markdown headers (e.g., \`### N. Step Title\`) from the original proof. Do not add new ones, renumber them, or remove them. This is critical for navigation.
 3.  **Maintain Formatting:** Your output must be in Markdown format, following the same styling and LaTeX conventions as the original proof.
-4. **Output:** Ensure the final output is ONLY the full, edited proof text. Do not add any commentary before or after the proof.
+4.  **Output:** Ensure the final output is ONLY the full, edited proof text. Do not add any commentary before or after the proof.
 
 **Formatting Rules:**
 ${PROOF_FORMATTING_INSTRUCTIONS}
