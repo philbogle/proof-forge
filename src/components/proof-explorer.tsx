@@ -96,7 +96,7 @@ export default function ProofExplorer() {
                 onRawProofChange={setRawProofEdit}
               />
               <div className="mt-2 flex w-full items-center justify-between">
-                <div className="text-xs text-muted-foreground font-body">
+                <div className="text-sm text-muted-foreground font-body">
                   {latestVersion && !isProofLoading && (
                     <span>
                       Last updated
@@ -115,7 +115,7 @@ export default function ProofExplorer() {
                   )}
                   <Label
                     htmlFor="markdown-toggle"
-                    className="text-xs font-medium"
+                    className="text-sm font-medium"
                   >
                     Rendered
                   </Label>
