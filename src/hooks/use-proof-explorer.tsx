@@ -1,3 +1,4 @@
+
 // src/hooks/use-proof-explorer.tsx
 'use client';
 
@@ -103,8 +104,11 @@ export function useProofExplorer() {
       const newVersion: ProofVersion = {
         proof: newProof,
         timestamp: new Date().toISOString(),
-        user: user ? { name: user.displayName, id: user.uid } : undefined,
       };
+
+      if (user) {
+        newVersion.user = { name: user.displayName, id: user.uid };
+      }
 
       const updatedHistory = [newVersion, ...(proofCache[cacheKey] || [])].slice(
         0,
