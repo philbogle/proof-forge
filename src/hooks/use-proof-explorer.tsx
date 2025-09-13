@@ -440,10 +440,9 @@ export function useProofExplorer() {
           return newHistory;
         });
       } else if (type === 'edit') {
-        setConversationHistory([]);
         setIsFading(true);
         setIsProofLoading(true);
-        const { editedProof } = await editProof({
+        const { editedProof, summary } = await editProof({
           proof: proof,
           request: currentQuestion,
           theoremName: selectedTheorem.name,
@@ -453,6 +452,9 @@ export function useProofExplorer() {
 
         await saveProofVersion(formalityLevel, editedProof);
         setProof(editedProof);
+        setConversationHistory([
+          { question: currentQuestion, answer: summary }
+        ]);
 
         setIsProofLoading(false);
         setTimeout(() => setIsFading(false), 100);
@@ -464,6 +466,10 @@ export function useProofExplorer() {
         title: 'Error',
         description: `Could not process your request. Please check the console for details.`,
       });
+       if (type === 'edit') {
+        setIsProofLoading(false);
+        setIsFading(false);
+       }
     } finally {
       setIsInteractionLoading(false);
     }
@@ -491,6 +497,7 @@ export function useProofExplorer() {
     setProof,
     setRawProofEdit,
     setProofPages,
+
     setCurrentPage,
     setIsFading,
     setProofCache,

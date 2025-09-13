@@ -24,6 +24,7 @@ export type EditProofInput = z.infer<typeof EditProofInputSchema>;
 
 const EditProofOutputSchema = z.object({
   editedProof: z.string().describe('The edited proof in Markdown format.'),
+  summary: z.string().describe('A brief summary of the changes made and their benefits.'),
 });
 export type EditProofOutput = z.infer<typeof EditProofOutputSchema>;
 
@@ -36,7 +37,7 @@ const editProofFlow = ai.defineFlow(
   },
   async (input) => {
     const prompt = `
-You are an expert mathematician and a skilled editor. Your task is to edit a mathematical proof based on the user's request, while adhering to strict formatting guidelines.
+You are an expert mathematician and a skilled editor. Your task is to edit a mathematical proof based on the user's request, while adhering to strict formatting guidelines. After editing, you will provide the full edited proof and a short summary of what you changed.
 
 **Theorem Name:** ${input.theoremName}
 **Formality Level:** ${input.formality}
@@ -54,25 +55,26 @@ ${input.proofSection || 'No specific section provided.'}
 ${input.proof}
 ---
 
-**Instructions for Generating the Edited Proof:**
+**Instructions:**
 1.  **Incorporate the Edit:** Read the original proof and the user's request carefully. Generate a new version of the **entire proof** that incorporates the requested changes.
 2.  **Preserve Headers:** You MUST preserve the Markdown headers (e.g., \`### N. Step Title\`) from the original proof. Do not add new ones, renumber them, or remove them. This is critical for navigation.
 3.  **Maintain Formatting:** Your output must be in Markdown format, following the same styling and LaTeX conventions as the original proof.
-4.  **Output:** Ensure the final output is ONLY the full, edited proof text. Do not add any commentary before or after the proof.
+4.  **Generate Summary:** After generating the proof, create a brief, one or two-sentence summary of the edit you performed and its likely benefit to the user. For example: "I've expanded on the explanation for the base case to make the induction clearer." or "I've corrected the algebraic manipulation in step 3 to ensure the derivation is accurate."
+5.  **Output JSON:** Your final output must be a single JSON object with two keys: "editedProof" (containing the full new proof text) and "summary" (containing your summary sentence). Do not add any other commentary.
 
-**Formatting Rules:**
+**Formatting Rules for the Proof:**
 ${PROOF_FORMATTING_INSTRUCTIONS}
 
-Begin the edited proof now.
+Begin your JSON output now.
 `;
-    const {text} = await ai.generate({
+    const {output} = await ai.generate({
       prompt: prompt,
       output: {
-        format: 'text',
+        schema: EditProofOutputSchema,
       },
     });
 
-    return {editedProof: text};
+    return output!;
   }
 );
 
