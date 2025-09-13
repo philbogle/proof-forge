@@ -61,9 +61,9 @@ export default function ProofExplorer() {
       <div className="flex h-full min-h-screen w-full flex-col">
         <div className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
           <AppHeader />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-1">
-              <div className="sticky top-6 space-y-4">
+              <div className="sticky top-6 space-y-6">
                 <TheoremSelector
                   theorems={theorems}
                   selectedTheoremId={selectedTheoremId}
@@ -81,7 +81,7 @@ export default function ProofExplorer() {
                 />
               </div>
             </div>
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 space-y-6">
               <ProofView
                 proof={
                   !renderMarkdown && user
@@ -94,36 +94,38 @@ export default function ProofExplorer() {
                 isEditable={!renderMarkdown && !!user}
                 onRawProofChange={setRawProofEdit}
               />
-              <div className="mt-2 flex w-full items-center justify-between">
-                <div className="text-sm text-muted-foreground font-body">
-                  {latestVersion && !isProofLoading && (
-                    <span>
-                      Last updated
-                      {latestVersion.user?.name &&
-                        ` by ${latestVersion.user.name}`}
-                      {' on '}
-                      {new Date(latestVersion.timestamp).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2">
-                  {!renderMarkdown && user && (
-                    <Button onClick={handleRawProofSave} size="sm">
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Changes
-                    </Button>
-                  )}
-                  <Label
-                    htmlFor="markdown-toggle"
-                    className="text-sm font-medium"
-                  >
-                    Rendered
-                  </Label>
-                  <Switch
-                    id="markdown-toggle"
-                    checked={renderMarkdown}
-                    onCheckedChange={setRenderMarkdown}
-                  />
+              <div>
+                <div className="flex w-full items-center justify-between">
+                  <div className="text-sm text-muted-foreground font-body">
+                    {latestVersion && !isProofLoading && (
+                      <span>
+                        Last updated
+                        {latestVersion.user?.name &&
+                          ` by ${latestVersion.user.name}`}
+                        {' on '}
+                        {new Date(latestVersion.timestamp).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {!renderMarkdown && user && (
+                      <Button onClick={handleRawProofSave} size="sm">
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Changes
+                      </Button>
+                    )}
+                    <Label
+                      htmlFor="markdown-toggle"
+                      className="text-sm font-medium"
+                    >
+                      Rendered
+                    </Label>
+                    <Switch
+                      id="markdown-toggle"
+                      checked={renderMarkdown}
+                      onCheckedChange={setRenderMarkdown}
+                    />
+                  </div>
                 </div>
               </div>
 
