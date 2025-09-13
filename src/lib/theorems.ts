@@ -2,6 +2,11 @@ import { Theorem } from './types';
 
 export const theorems: Theorem[] = [
   {
+    id: 'cantors_diagonal_argument',
+    name: "Cantor's Diagonal Argument",
+    statement: "Cantor's diagonal argument is a proof that there are infinite sets which cannot be put into one-to-one correspondence with the infinite set of natural numbers. Such sets are known as uncountable sets. The proof shows that the set of all real numbers is uncountable.",
+  },
+  {
     id: 'goedels_incompleteness_theorems',
     name: 'Gödel\'s Incompleteness Theorems',
     statement: 'The first incompleteness theorem states that in any consistent formal system F within which a certain amount of elementary arithmetic can be carried out, there are statements of the language of F which can neither be proved nor disproved in F. The second incompleteness theorem, an extension of the first, shows that the system cannot prove its own consistency.',
