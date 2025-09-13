@@ -48,6 +48,7 @@ export default function AdvancedSettings({
   setRenderMarkdown,
 }: AdvancedSettingsProps) {
   const canClearCache = user && user.email === 'philbogle@gmail.com';
+  const latestVersion = currentProofHistory[0];
 
   return (
     <Accordion type="single" collapsible className="w-full">
@@ -61,6 +62,16 @@ export default function AdvancedSettings({
         <AccordionContent>
           <Card>
             <CardContent className="space-y-6 pt-6">
+               {latestVersion && !isProofLoading && (
+                 <div className="text-sm text-muted-foreground font-body">
+                    <span>
+                      Last updated
+                      {latestVersion.user?.name && ` by ${latestVersion.user.name}`}
+                      {' on '}
+                      {new Date(latestVersion.timestamp).toLocaleDateString()}
+                    </span>
+                 </div>
+                )}
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <h4 className="font-semibold">Raw Markdown Editor</h4>

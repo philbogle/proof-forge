@@ -58,8 +58,6 @@ export default function ProofExplorer() {
     handleRollback,
   } = useProofExplorer();
 
-  const latestVersion = currentProofHistory[0];
-
   return (
     <TooltipProvider>
       <div className="flex h-full min-h-screen w-full flex-col">
@@ -96,17 +94,9 @@ export default function ProofExplorer() {
               />
               <div>
                 <div className="flex w-full items-center justify-between">
-                  <div className="text-sm text-muted-foreground font-body">
-                    {latestVersion && !isProofLoading && (
-                      <span>
-                        Last updated
-                        {latestVersion.user?.name &&
-                          ` by ${latestVersion.user.name}`}
-                        {' on '}
-                        {new Date(latestVersion.timestamp).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
+                   <div className="text-sm text-muted-foreground font-body">
+                     {/* The last updated by label was moved to advanced settings. */}
+                   </div>
                   {!renderMarkdown && user && (
                     <Button onClick={handleRawProofSave} size="sm">
                       <Save className="mr-2 h-4 w-4" />
