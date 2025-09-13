@@ -16,14 +16,13 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [auth, setAuth] = useState<Auth | null>(null);
+  // Initialize auth instance directly, not in an effect
+  const [auth] = useState<Auth>(getAuth(app));
 
   useEffect(() => {
-    const authInstance = getAuth(app);
-    setAuth(authInstance);
-    console.log('Auth provider mounted, auth instance created:', authInstance);
+    console.log('Auth provider mounted, auth instance available:', auth);
 
-    const unsubscribe = onAuthStateChanged(authInstance, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         console.log('Auth state changed: User is signed in.', user);
         setUser(user);
@@ -38,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Auth provider unmounted, unsubscribing from auth state changes.');
       unsubscribe();
     }
-  }, []);
+  }, [auth]);
 
   return (
     <AuthContext.Provider value={{ auth, user, loading }}>
