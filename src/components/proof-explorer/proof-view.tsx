@@ -22,7 +22,7 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
   ({ proof, renderMarkdown, isLoading, isFading, isEditable, onRawProofChange }, ref) => {
     return (
       <Card ref={ref}>
-        <CardContent className="min-h-[250px] p-6">
+        <CardContent className="min-h-[250px] p-6 pt-2">
           {isLoading ? (
             <ProofLoadingIndicator />
           ) : (
