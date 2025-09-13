@@ -67,7 +67,7 @@ export default function AppHeader() {
         ) : (
           <Button onClick={handleSignIn}>
             <LogIn className="mr-2" />
-            Sign in with Google
+            Sign In
           </Button>
         )}
       </div>
