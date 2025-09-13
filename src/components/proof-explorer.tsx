@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -483,6 +484,7 @@ export default function ProofExplorer() {
                   formalityLevel={formalityLevel}
                   isProofLoading={isProofLoading}
                   onFormalityChange={handleFormalityChange}
+                  onRefresh={() => generateNewProof(true)}
                   currentPage={currentPage}
                   totalPages={proofPages.length}
                   onPageChange={setCurrentPage}
@@ -649,3 +651,5 @@ export default function ProofExplorer() {
     </TooltipProvider>
   );
 }
+
+    
