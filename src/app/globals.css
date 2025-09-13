@@ -96,6 +96,13 @@
     }
   }
 
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+
+
   .sparkle-container {
     @apply absolute inset-0;
   }
@@ -119,4 +126,10 @@
   .sparkle:nth-child(10) { animation-delay: 1.0s; }
   .sparkle:nth-child(11) { animation-delay: 1.1s; }
   .sparkle:nth-child(12) { animation-delay: 1.2s; }
+
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
 }
+
+    
