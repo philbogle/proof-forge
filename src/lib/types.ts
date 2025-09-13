@@ -1,4 +1,6 @@
-import type { User, Auth } from 'firebase/auth';
+import type { User as FirebaseUser, Auth } from 'firebase/auth';
+
+export type User = FirebaseUser;
 
 export type FormalityLevel = 'english' | 'informal' | 'rigorous';
 

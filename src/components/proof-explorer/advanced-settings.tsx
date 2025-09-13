@@ -17,9 +17,10 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Trash2, History, RefreshCw } from 'lucide-react';
-import type { Theorem, ProofVersion } from '@/lib/types';
+import type { Theorem, ProofVersion, User } from '@/lib/types';
 
 interface AdvancedSettingsProps {
+  user: User | null;
   isProofLoading: boolean;
   generateNewProof: (forceRefresh?: boolean) => void;
   selectedTheorem: Theorem;
@@ -31,6 +32,7 @@ interface AdvancedSettingsProps {
 }
 
 export default function AdvancedSettings({
+  user,
   isProofLoading,
   generateNewProof,
   selectedTheorem,
@@ -40,6 +42,8 @@ export default function AdvancedSettings({
   setSelectedVersion,
   handleRollback,
 }: AdvancedSettingsProps) {
+  const canClearCache = user && user.email === 'philbogle@gmail.com';
+
   return (
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem value="advanced-settings">
@@ -72,23 +76,25 @@ export default function AdvancedSettings({
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold">Clear Theorem Cache</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Delete all cached proofs for "{selectedTheorem.name}" and
-                    regenerate.
-                  </p>
+              {canClearCache && (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold">Clear Theorem Cache</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Delete all cached proofs for "{selectedTheorem.name}" and
+                      regenerate.
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={handleClearCache}
+                    size="sm"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Clear
+                  </Button>
                 </div>
-                <Button
-                  variant="destructive"
-                  onClick={handleClearCache}
-                  size="sm"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Clear
-                </Button>
-              </div>
+              )}
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">

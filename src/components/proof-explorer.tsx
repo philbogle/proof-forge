@@ -99,7 +99,8 @@ export default function ProofExplorer() {
                   {latestVersion && !isProofLoading && (
                     <span>
                       Last updated
-                      {latestVersion.user?.name && ` by ${latestVersion.user.name}`}
+                      {latestVersion.user?.name &&
+                        ` by ${latestVersion.user.name}`}
                       {' on '}
                       {new Date(latestVersion.timestamp).toLocaleDateString()}
                     </span>
@@ -140,6 +141,7 @@ export default function ProofExplorer() {
               {user && (
                 <div className="mt-6">
                   <AdvancedSettings
+                    user={user}
                     isProofLoading={isProofLoading}
                     generateNewProof={generateNewProof}
                     selectedTheorem={selectedTheorem}
