@@ -63,7 +63,7 @@ export default function AdvancedSettings({
           <Card>
             <CardContent className="space-y-6 pt-6">
                {latestVersion && !isProofLoading && (
-                 <div className="text-sm text-muted-foreground font-body">
+                 <div className="text-sm">
                     <span>
                       Last updated
                       {latestVersion.user?.name && ` by ${latestVersion.user.name}`}
