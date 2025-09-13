@@ -7,6 +7,11 @@ export const theorems: Theorem[] = [
     statement: 'The first incompleteness theorem states that in any consistent formal system F within which a certain amount of elementary arithmetic can be carried out, there are statements of the language of F which can neither be proved nor disproved in F. The second incompleteness theorem, an extension of the first, shows that the system cannot prove its own consistency.',
   },
   {
+    id: 'halting_problem',
+    name: 'The Halting Problem',
+    statement: 'The halting problem is the problem of determining, from a description of an arbitrary computer program and an input, whether the program will finish running or continue to run forever. Alan Turing proved in 1936 that a general algorithm to solve the halting problem for all possible program-input pairs cannot exist.',
+  },
+  {
     id: 'diagonal_lemma',
     name: 'Diagonal Lemma',
     statement: 'The diagonal lemma states that for any formula F(x) in a formal system that can represent all computable functions, there is a sentence S such that S is provably equivalent to F(⌈S⌉), where ⌈S⌉ is the Gödel number of S. This is a key result used in proving Gödel\'s incompleteness theorems.'
