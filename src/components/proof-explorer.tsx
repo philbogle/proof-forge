@@ -54,6 +54,8 @@ export default function ProofExplorer() {
     handleRollback,
   } = useProofExplorer();
 
+  const latestVersion = currentProofHistory[0];
+
   return (
     <TooltipProvider>
       <div className="flex h-full min-h-screen w-full flex-col">
@@ -80,18 +82,29 @@ export default function ProofExplorer() {
               </div>
             </div>
             <div className="md:col-span-2 space-y-6">
-              <ProofView
-                proof={
-                  !renderMarkdown && user
-                    ? rawProofEdit
-                    : proofPages[currentPage - 1] || ''
-                }
-                renderMarkdown={renderMarkdown}
-                isLoading={isProofLoading}
-                isFading={isFading}
-                isEditable={!renderMarkdown && !!user}
-                onRawProofChange={setRawProofEdit}
-              />
+              <div className="space-y-2">
+                <ProofView
+                  proof={
+                    !renderMarkdown && user
+                      ? rawProofEdit
+                      : proofPages[currentPage - 1] || ''
+                  }
+                  renderMarkdown={renderMarkdown}
+                  isLoading={isProofLoading}
+                  isFading={isFading}
+                  isEditable={!renderMarkdown && !!user}
+                  onRawProofChange={setRawProofEdit}
+                />
+                {latestVersion && !isProofLoading && (
+                  <div className="text-right text-xs text-muted-foreground font-body">
+                    Last updated{' '}
+                    {new Date(latestVersion.timestamp).toLocaleString()}
+                    {latestVersion.user?.name
+                      ? ` by ${latestVersion.user.name}`
+                      : ''}
+                  </div>
+                )}
+              </div>
               <div className="flex w-full items-center justify-end space-x-2">
                 {!renderMarkdown && user && (
                   <Button onClick={handleRawProofSave} size="sm">
