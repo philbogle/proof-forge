@@ -1,4 +1,3 @@
-
 // src/components/proof-explorer.tsx
 'use client';
 
@@ -150,7 +149,7 @@ export default function ProofExplorer() {
             </div>
           </div>
         </div>
-        <div className="fixed bottom-4 right-4 z-10 w-full max-w-md">
+        <div className="fixed bottom-4 right-4 z-10 w-full max-w-lg">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1" className="border-none flex flex-col items-end">
                <AccordionTrigger className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-12 rounded-full p-0 shadow-lg flex items-center justify-center hover:no-underline [&[data-state=open]>svg]:hidden">
