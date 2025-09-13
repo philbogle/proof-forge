@@ -4,7 +4,7 @@ import { WandSparkles } from 'lucide-react';
 
 export function ProofLoadingIndicator() {
   return (
-    <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-border bg-card p-8 text-center">
+    <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg border-dashed text-center">
       <div className="relative h-28 w-28">
         <WandSparkles className="absolute h-24 w-24 text-primary animate-float" />
         <div className="sparkle-container">
@@ -26,5 +26,3 @@ export function ProofLoadingIndicator() {
     </div>
   );
 }
-
-    
