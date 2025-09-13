@@ -31,16 +31,20 @@ export default function InteractionPanel({
   isUserSignedIn,
 }: InteractionPanelProps) {
   const [activeTab, setActiveTab] = React.useState('question');
-  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const viewportRef = React.useRef<HTMLDivElement>(null);
+  const [isScrolledToBottom, setIsScrolledToBottom] = React.useState(true);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (viewportRef.current) {
+      viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
+    }
   };
 
   React.useEffect(() => {
-    scrollToBottom();
-  }, [conversationHistory, isInteractionLoading]);
-
+    if (isScrolledToBottom) {
+      scrollToBottom();
+    }
+  }, [conversationHistory, isInteractionLoading, isScrolledToBottom]);
 
   React.useEffect(() => {
     if (!isUserSignedIn && activeTab === 'edit') {
@@ -54,6 +58,15 @@ export default function InteractionPanel({
       onInteract(activeTab as 'question' | 'edit');
     }
   };
+  
+  const handleScroll = () => {
+    const viewport = viewportRef.current;
+    if (viewport) {
+      const isAtBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 1;
+      setIsScrolledToBottom(isAtBottom);
+    }
+  };
+
 
   return (
     <div className="flex h-full flex-col p-4 max-h-[60vh]">
@@ -76,7 +89,7 @@ export default function InteractionPanel({
           value="question"
           className="flex flex-1 flex-col space-y-4 mt-4 overflow-hidden"
         >
-          <ScrollArea className="flex-1 pr-4 -mr-4">
+          <ScrollArea className="flex-1 pr-4 -mr-4" viewportRef={viewportRef} onScroll={handleScroll}>
             <div className="space-y-4">
               {conversationHistory.map((turn, index) => (
                 <div key={index} className="space-y-4">
@@ -110,7 +123,6 @@ export default function InteractionPanel({
                   </div>
                 </div>
               )}
-               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
           <div className="mt-auto flex gap-2 border-t pt-4">
