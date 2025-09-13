@@ -32,51 +32,19 @@ export default function InteractionPanel({
 }: InteractionPanelProps) {
   const [activeTab, setActiveTab] = React.useState('question');
   const scrollViewportRef = React.useRef<HTMLDivElement>(null);
-  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (scrollViewportRef.current) {
+      scrollViewportRef.current.scrollTop =
+        scrollViewportRef.current.scrollHeight;
+    }
+  }, [conversationHistory, isInteractionLoading]);
 
   React.useEffect(() => {
     if (!isUserSignedIn && activeTab === 'edit') {
       setActiveTab('question');
     }
   }, [isUserSignedIn, activeTab]);
-
-  const scrollToBottom = React.useCallback(() => {
-    const viewport = scrollViewportRef.current;
-    if (viewport) {
-      viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
-    }
-  }, []);
-
-  React.useEffect(() => {
-    const contentElement = contentRef.current;
-    if (!contentElement) return;
-
-    // Scroll to bottom initially
-    scrollToBottom();
-
-    // Use a MutationObserver to scroll to bottom whenever the content changes
-    const observer = new MutationObserver((mutations) => {
-      // We only need to scroll if the user is already near the bottom.
-      // This prevents the view from jumping if the user has scrolled up.
-      const viewport = scrollViewportRef.current;
-      if (viewport) {
-        const isScrolledToBottom =
-          viewport.scrollHeight - viewport.clientHeight <= viewport.scrollTop + 20;
-        if (isScrolledToBottom) {
-          scrollToBottom();
-        }
-      }
-    });
-
-    observer.observe(contentElement, {
-      childList: true,
-      subtree: true,
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [scrollToBottom]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -107,7 +75,7 @@ export default function InteractionPanel({
           className="flex flex-1 flex-col space-y-4 mt-4 overflow-hidden"
         >
           <ScrollArea className="flex-1 pr-4 -mr-4" viewportRef={scrollViewportRef}>
-            <div className="space-y-4" ref={contentRef}>
+            <div className="space-y-4">
               {conversationHistory.map((turn, index) => (
                 <div key={index} className="space-y-4">
                   <div className="flex items-start gap-3">
