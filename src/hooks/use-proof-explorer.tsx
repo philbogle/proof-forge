@@ -12,6 +12,8 @@ import type { FormalityLevel, ProofVersion } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 
+const LOADING_INDICATOR_DELAY = 500; // ms
+
 export function useProofExplorer() {
   const { user } = useAuth();
   const [selectedTheoremId, setSelectedTheoremId] = React.useState(
@@ -40,6 +42,8 @@ export function useProofExplorer() {
   const [renderMarkdown, setRenderMarkdown] = React.useState(true);
 
   const { toast } = useToast();
+
+  const loadingTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const selectedTheorem = React.useMemo(
     () => theorems.find((t) => t.id === selectedTheoremId) || theorems[0],
@@ -141,7 +145,11 @@ export function useProofExplorer() {
   const generateNewProof = React.useCallback(
     async (forceRefresh = false) => {
       setIsFading(true);
-      setIsProofLoading(true);
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+      loadingTimerRef.current = setTimeout(() => {
+        setIsProofLoading(true);
+      }, LOADING_INDICATOR_DELAY);
+
       setAnswer('');
       setInteractionText('');
       setSelectedVersion('');
@@ -149,9 +157,9 @@ export function useProofExplorer() {
       const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
       
       const handleCachedProof = (proofToSet: string) => {
-        // This artificial delay ensures the fade-out animation has time to play
         setTimeout(() => {
           setProof(proofToSet);
+          if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
           setIsProofLoading(false);
           setTimeout(() => setIsFading(false), 100);
         }, 300);
@@ -182,10 +190,13 @@ export function useProofExplorer() {
           console.error('Firestore cache read failed:', error);
         }
       }
-
-      if (isProofLoading) {
-        if (proof) setProof('');
+      
+      // If we've reached here, we need to generate a new proof, so ensure the loader is showing
+      if (!isProofLoading && !loadingTimerRef.current) {
+         setIsProofLoading(true);
       }
+      if (proof) setProof('');
+
 
       try {
         const structuralProofLevels: FormalityLevel[] =
@@ -241,6 +252,7 @@ export function useProofExplorer() {
         });
         setProof('Failed to generate proof.');
       } finally {
+        if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
         setIsProofLoading(false);
         setTimeout(() => setIsFading(false), 100);
       }
