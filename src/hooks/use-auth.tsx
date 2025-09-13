@@ -21,13 +21,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const authInstance = getAuth(app);
     setAuth(authInstance);
+    console.log('Auth provider mounted, auth instance created:', authInstance);
 
     const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-      setUser(user);
+      if (user) {
+        console.log('Auth state changed: User is signed in.', user);
+        setUser(user);
+      } else {
+        console.log('Auth state changed: User is signed out.');
+        setUser(null);
+      }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      console.log('Auth provider unmounted, unsubscribing from auth state changes.');
+      unsubscribe();
+    }
   }, []);
 
   return (
