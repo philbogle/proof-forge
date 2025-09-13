@@ -31,9 +31,7 @@ export default function InteractionPanel({
   isUserSignedIn,
 }: InteractionPanelProps) {
   const [activeTab, setActiveTab] = React.useState('question');
-  const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const viewportRef = React.useRef<HTMLDivElement>(null);
-
 
   React.useEffect(() => {
     if (!isUserSignedIn && activeTab === 'edit') {
@@ -73,7 +71,7 @@ export default function InteractionPanel({
         </TabsList>
         <TabsContent value="question" className="flex flex-1 flex-col space-y-4 mt-4 overflow-hidden">
           <ScrollArea className="flex-1 pr-4 -mr-4" viewportRef={viewportRef}>
-             <div className="space-y-4" ref={scrollAreaRef}>
+             <div className="space-y-4">
               {conversationHistory.map((turn, index) => (
                 <div key={index} className="space-y-4">
                   <div className="flex items-start gap-3">
