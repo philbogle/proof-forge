@@ -1,7 +1,6 @@
 // src/components/proof-explorer/app-header.tsx
 import * as React from 'react';
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,9 +14,10 @@ import { LogIn, LogOut } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 
 export default function AppHeader() {
-  const { user, loading } = useAuth();
+  const { user, auth, loading } = useAuth();
 
   const handleSignIn = async () => {
+    if (!auth) return;
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
@@ -27,6 +27,7 @@ export default function AppHeader() {
   };
 
   const handleSignOut = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
     } catch (error) {

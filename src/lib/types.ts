@@ -1,4 +1,4 @@
-import type { User } from 'firebase/auth';
+import type { User, Auth } from 'firebase/auth';
 
 export type FormalityLevel = 'english' | 'informal' | 'rigorous';
 
@@ -31,5 +31,6 @@ export type ProofVersion = {
 
 export interface AuthContextType {
   user: User | null;
+  auth: Auth | null;
   loading: boolean;
 }
