@@ -40,7 +40,7 @@ export default function AppHeader() {
   return (
     <header className="mb-4 flex items-center justify-between gap-4 text-center">
       <div className="flex items-center gap-2">
-        <h2 className="font-bold tracking-tight text-foreground sm:text-4xl">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Proof Forge
         </h2>
       </div>
