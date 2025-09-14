@@ -5,7 +5,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'The Proof Distillery',
+  title: 'Proof Forge',
   description: 'Interactively explore and understand mathematical proofs.',
 };
 
