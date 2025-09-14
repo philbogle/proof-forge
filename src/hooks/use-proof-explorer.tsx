@@ -26,7 +26,7 @@ export function useProofExplorer() {
   const [proof, setProof] = React.useState('');
   const [rawProofEdit, setRawProofEdit] = React.useState('');
   const [proofPages, setProofPages] = React.useState<string[]>([]);
-  const [currentPage, setCurrentPage] = React.useState(1);
+  const [currentPage, setCurrentPage] = React.useState(0);
   const [isFading, setIsFading] = React.useState(false);
 
   const [proofCache, setProofCache] = React.useState<
@@ -64,16 +64,8 @@ export function useProofExplorer() {
     if (parts.length === 0) return [];
     if (parts.length === 1 && parts[0].trim() === '') return [];
 
-    // The first part might be an intro without a header, so we handle that.
-    const pages = parts.map(part => part.trim()).filter(Boolean);
-    
-    // If the first page is very short and doesn't start with a header, merge it with the next one.
-    if (pages.length > 1 && !pages[0].startsWith('###') && pages[0].split('\n').length < 5) {
-      const firstPage = pages.shift();
-      if (firstPage) {
-        pages[0] = firstPage + '\n\n' + pages[0];
-      }
-    }
+    // The first part is always the theorem statement. The rest are proof steps.
+    const pages = [selectedTheorem.statement, ...parts.map(part => part.trim()).filter(Boolean)];
     
     // Filter out any empty pages that might have been created.
     return pages.filter(p => p.trim() !== '');
@@ -83,18 +75,16 @@ export function useProofExplorer() {
   React.useEffect(() => {
     const pages = parseProofIntoPages(proof);
     setProofPages(pages);
-    if (currentPage > pages.length && pages.length > 0) {
-      setCurrentPage(pages.length);
-    } else if (pages.length === 1 && currentPage !== 1) {
-      setCurrentPage(1);
-    } else if (pages.length > 0 && currentPage === 0) {
-      setCurrentPage(1);
+    if (currentPage >= pages.length && pages.length > 0) {
+      setCurrentPage(pages.length -1);
+    } else if (pages.length > 0 && currentPage < 0) {
+      setCurrentPage(0);
     }
-  }, [proof, currentPage]);
+  }, [proof, currentPage, selectedTheorem.statement]);
 
   React.useEffect(() => {
     if (!renderMarkdown && user) {
-      setRawProofEdit(proofPages[currentPage - 1] || '');
+      setRawProofEdit(proofPages[currentPage] || '');
     }
   }, [renderMarkdown, user, currentPage, proofPages]);
 
@@ -279,7 +269,7 @@ export function useProofExplorer() {
   }, [selectedTheoremId, formalityLevel]);
 
   const handleTheoremChange = (theoremId: string) => {
-    setCurrentPage(1);
+    setCurrentPage(0);
     setSelectedTheoremId(theoremId);
   };
 
@@ -393,8 +383,8 @@ export function useProofExplorer() {
     setIsProofLoading(true);
 
     const pages = [...proofPages];
-    pages[currentPage - 1] = rawProofEdit;
-    const newFullProof = pages.join('\n\n');
+    pages[currentPage] = rawProofEdit;
+    const newFullProof = pages.slice(1).join('\n\n'); // Exclude statement page
 
     await saveProofVersion(formalityLevel, newFullProof);
     setProof(newFullProof);
@@ -416,7 +406,9 @@ export function useProofExplorer() {
     setInteractionText('');
     setConversationHistory(prev => [...prev, { question: currentQuestion, answer: '' }]);
   
-    const proofSection = proofPages[currentPage - 1] || '';
+    const proofSection = proofPages[currentPage] || '';
+    const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
+    const latestProof = proofCache[cacheKey]?.[0]?.proof || proof;
   
     try {
       const { intent } = await classifyIntent({ text: currentQuestion });
@@ -439,7 +431,7 @@ export function useProofExplorer() {
       if (intent === 'question') {
         const result = await answerQuestion({
           theoremName: selectedTheorem.name,
-          theoremText: proof,
+          theoremText: latestProof,
           question: currentQuestion,
           formalityLevel,
           proofSection,
@@ -454,7 +446,7 @@ export function useProofExplorer() {
         setIsFading(true);
         setIsProofLoading(true);
         const { editedProof, summary } = await editProof({
-          proof: proof,
+          proof: latestProof,
           request: currentQuestion,
           theoremName: selectedTheorem.name,
           formality: formalityLevel,

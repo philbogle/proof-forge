@@ -86,7 +86,7 @@ export default function ProofExplorer() {
                 proof={
                   !renderMarkdown && user
                     ? rawProofEdit
-                    : proofPages[currentPage - 1] || ''
+                    : proofPages[currentPage] || ''
                 }
                 renderMarkdown={renderMarkdown}
                 isLoading={isProofLoading}

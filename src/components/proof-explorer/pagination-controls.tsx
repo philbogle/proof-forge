@@ -34,7 +34,7 @@ export default function PaginationControls({
         variant="ghost"
         size="sm"
         onClick={handlePrevious}
-        disabled={currentPage <= 1 || isLoading}
+        disabled={currentPage <= 0 || isLoading}
         className="h-8 w-8 p-0"
       >
         <ChevronLeft className="h-4 w-4" />
@@ -45,7 +45,7 @@ export default function PaginationControls({
         ) : (
           <>
             {currentPage}
-            <span className="hidden sm:inline"> / {totalPages}</span>
+            <span className="hidden sm:inline"> / {totalPages - 1}</span>
           </>
         )}
       </span>
@@ -53,7 +53,7 @@ export default function PaginationControls({
         variant="ghost"
         size="sm"
         onClick={handleNext}
-        disabled={currentPage >= totalPages || isLoading}
+        disabled={currentPage >= totalPages - 1 || isLoading}
         className="h-8 w-8 p-0"
       >
         <ChevronRight className="h-4 w-4" />
