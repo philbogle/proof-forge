@@ -163,8 +163,11 @@ export function useProofExplorer() {
       loadingTimerRef.current = setTimeout(() => {
         setIsProofLoading(true);
       }, LOADING_INDICATOR_DELAY);
-
-      setConversationHistory([]);
+      const initialMessage = isUserAdmin
+        ? "I am an AI assistant. Feel free to ask me any questions about this proof, or request an edit by describing the change you'd like to see (e.g., 'Make the base case more detailed' or 'Fix the typo in step 2')."
+        : "I am an AI assistant. You can ask me any questions about this proof to help you understand it better.";
+      
+      setConversationHistory([{ question: '', answer: initialMessage }]);
       setInteractionText('');
       setSelectedVersion('');
 
@@ -279,6 +282,7 @@ export function useProofExplorer() {
       isProofLoading,
       proof,
       generateSingleProof,
+      isUserAdmin,
     ]
   );
 
@@ -420,6 +424,15 @@ export function useProofExplorer() {
 
   const handleInteraction = async () => {
     if (!interactionText.trim()) return;
+
+    if (!user) {
+        toast({
+            variant: 'destructive',
+            title: 'Sign In Required',
+            description: 'Please sign in to interact with the AI assistant.',
+        });
+        return;
+    }
   
     setIsInteractionLoading(true);
     const currentQuestion = interactionText;
@@ -434,14 +447,10 @@ export function useProofExplorer() {
       const { intent } = await classifyIntent({ text: currentQuestion });
   
       if (intent === 'edit' && !isUserAdmin) {
-        toast({
-          variant: 'destructive',
-          title: 'Authentication Required',
-          description: 'You must be an administrator to request an edit.',
-        });
+        const adminMessage = "I'm sorry, you must be an administrator to request an edit. You can ask questions about the proof to understand it better.";
         setConversationHistory(prev => {
           const newHistory = [...prev];
-          newHistory[newHistory.length - 1].answer = "You must be an administrator to request an edit.";
+          newHistory[newHistory.length - 1].answer = adminMessage;
           return newHistory;
         });
         setIsInteractionLoading(false);
@@ -550,3 +559,5 @@ export function useProofExplorer() {
     saveProofVersion,
   };
 }
+
+    

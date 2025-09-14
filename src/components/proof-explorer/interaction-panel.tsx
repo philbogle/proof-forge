@@ -43,12 +43,12 @@ export default function InteractionPanel({
 
   const getPlaceholderText = () => {
     if (!isUserSignedIn) {
-      return "e.g., What does 'Q.E.D.' mean? Sign in to ask questions.";
+      return "Sign in to ask questions about the proof...";
     }
-    if (!isUserAdmin) {
-        return "Ask a question about the proof...";
+    if (isUserAdmin) {
+        return "Ask a question or request an edit...";
     }
-    return "Ask a question or request an edit...";
+    return "Ask a question about the proof...";
   }
 
   return (
@@ -61,14 +61,16 @@ export default function InteractionPanel({
         <div className="space-y-4">
           {conversationHistory.map((turn, index) => (
             <div key={index} className="space-y-4">
-              <div className="flex items-start gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
-                  <User className="h-5 w-5 text-secondary-foreground" />
-                </span>
-                <div className="flex-1 rounded-lg border bg-secondary/30 p-3 text-sm">
-                  <p>{turn.question}</p>
+              {turn.question && (
+                <div className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
+                    <User className="h-5 w-5 text-secondary-foreground" />
+                  </span>
+                  <div className="flex-1 rounded-lg border bg-secondary/30 p-3 text-sm">
+                    <p>{turn.question}</p>
+                  </div>
                 </div>
-              </div>
+              )}
               {turn.answer && (
                 <div className="flex items-start gap-3">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
@@ -101,11 +103,11 @@ export default function InteractionPanel({
             value={interactionText}
             onChange={(e) => onInteractionTextChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={isInteractionLoading || !isUserSignedIn}
+            disabled={isInteractionLoading}
           />
           <Button
             onClick={() => onInteract()}
-            disabled={isInteractionLoading || !interactionText.trim() || !isUserSignedIn}
+            disabled={isInteractionLoading || !interactionText.trim()}
           >
             {isInteractionLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -124,3 +126,5 @@ export default function InteractionPanel({
     </div>
   );
 }
+
+    
