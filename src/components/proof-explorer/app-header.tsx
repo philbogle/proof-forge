@@ -8,9 +8,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogIn, LogOut } from 'lucide-react';
+import { LogIn, LogOut, Menu } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 
 export default function AppHeader() {
@@ -44,31 +46,43 @@ export default function AppHeader() {
       </div>
       <div>
         {loading ? (
-          <Skeleton className="h-10 w-24" />
-        ) : user ? (
+          <Skeleton className="h-10 w-10 rounded-full" />
+        ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} />
-                  <AvatarFallback>
-                    {user.displayName ? user.displayName.charAt(0) : '?'}
-                  </AvatarFallback>
-                </Avatar>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleSignOut}>
-                <LogOut className="mr-2" />
-                Sign Out
-              </DropdownMenuItem>
+              {user ? (
+                <>
+                  <DropdownMenuLabel>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} />
+                        <AvatarFallback>
+                          {user.displayName ? user.displayName.charAt(0) : '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{user.displayName || 'Account'}</span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <DropdownMenuItem onClick={handleSignIn}>
+                  <LogIn className="mr-2" />
+                  Sign In
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
-        ) : (
-          <Button onClick={handleSignIn}>
-            <LogIn className="mr-2" />
-            Sign In
-          </Button>
         )}
       </div>
     </header>
