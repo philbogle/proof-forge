@@ -89,7 +89,7 @@ export function useProofExplorer() {
 
 
   const selectedTheorem = React.useMemo(
-    () => theorems.find((t) => t.id === selectedTheoremId) || (theorems.length > 0 ? theorems[0] : null),
+    () => theorems.find((t) => t.id === selectedTheoremId) || null,
     [selectedTheoremId, theorems]
   );
 

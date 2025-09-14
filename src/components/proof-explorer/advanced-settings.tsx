@@ -24,7 +24,7 @@ interface AdvancedSettingsProps {
   user: User | null;
   isProofLoading: boolean;
   generateNewProof: (forceRefresh?: boolean) => void;
-  selectedTheorem: Theorem;
+  selectedTheorem: Theorem | null;
   handleClearCache: () => void;
   currentProofHistory: ProofVersion[];
   selectedVersion: string;
@@ -44,6 +44,10 @@ export default function AdvancedSettings({
   handleRollback,
 }: AdvancedSettingsProps) {
   const latestVersion = currentProofHistory[0];
+
+  if (!selectedTheorem) {
+    return null;
+  }
 
   return (
     <Accordion type="single" collapsible className="w-full">
