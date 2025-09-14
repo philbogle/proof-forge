@@ -408,7 +408,12 @@ export function useProofExplorer() {
 
     const pages = [...proofPages];
     pages[currentPage] = rawProofEdit;
-    const newFullProof = pages.slice(1).join('\n\n'); // Exclude statement page
+
+    // Reconstruct the full proof from the pages array
+    const introContent = pages[0]?.replace(selectedTheorem.statement, '').trim() || '';
+    const stepContent = pages.slice(1).join('\n\n');
+    const newFullProof = [introContent, stepContent].filter(Boolean).join('\n\n');
+
 
     await saveProofVersion(formalityLevel, newFullProof);
     setProof(newFullProof);
