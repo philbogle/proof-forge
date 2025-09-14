@@ -8,19 +8,17 @@ import { answerQuestion } from '@/ai/flows/natural-language-questioning';
 import { generateProof } from '@/ai/flows/generate-proof-flow';
 import { editProof } from '@/ai/flows/edit-proof-flow';
 import { classifyIntent } from '@/ai/flows/classify-intent-flow';
-import { theorems } from '@/lib/theorems';
-import type { FormalityLevel, ProofVersion, ConversationTurn } from '@/lib/types';
+import type { FormalityLevel, ProofVersion, ConversationTurn, Theorem } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { isAdmin } from '@/lib/auth';
 
 const LOADING_INDICATOR_DELAY = 500; // ms
 
 export function useProofExplorer() {
   const { user } = useAuth();
-  const [selectedTheoremId, setSelectedTheoremId] = React.useState(
-    theorems[0].id
-  );
+  const [theorems, setTheorems] = React.useState<Theorem[]>([]);
+  const [selectedTheoremId, setSelectedTheoremId] = React.useState('');
   const [formalityLevel, setFormalityLevel] =
     React.useState<FormalityLevel>('informal');
   const [proof, setProof] = React.useState('');
@@ -50,18 +48,48 @@ export function useProofExplorer() {
 
   const loadingTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
+  React.useEffect(() => {
+    const fetchTheorems = async () => {
+      setIsProofLoading(true);
+      try {
+        const theoremsCollection = collection(db, 'theorems');
+        const q = query(theoremsCollection, orderBy('name'));
+        const theoremSnapshot = await getDocs(q);
+        const theoremsList = theoremSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Theorem));
+        setTheorems(theoremsList);
+        if (theoremsList.length > 0) {
+          setSelectedTheoremId(theoremsList[0].id);
+        } else {
+          setIsProofLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching theorems: ", error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not fetch the list of theorems.',
+        });
+        setIsProofLoading(false);
+      }
+    };
+
+    fetchTheorems();
+  }, [toast]);
+
+
   const selectedTheorem = React.useMemo(
-    () => theorems.find((t) => t.id === selectedTheoremId) || theorems[0],
-    [selectedTheoremId]
+    () => theorems.find((t) => t.id === selectedTheoremId) || (theorems.length > 0 ? theorems[0] : null),
+    [selectedTheoremId, theorems]
   );
 
   const currentProofHistory = React.useMemo(() => {
+    if (!selectedTheorem) return [];
     const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
     return proofCache[cacheKey] || [];
-  }, [proofCache, selectedTheorem.id, formalityLevel]);
+  }, [proofCache, selectedTheorem, formalityLevel]);
 
   const parseProofIntoPages = (fullProof: string) => {
-    if (!fullProof) return [];
+    if (!fullProof || !selectedTheorem) return [];
   
     // Find the index of the first step.
     const firstStepIndex = fullProof.search(/###\s+1\./);
@@ -98,7 +126,7 @@ export function useProofExplorer() {
       setCurrentPage(0);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [proof, selectedTheorem.statement]);
+  }, [proof, selectedTheorem]);
 
   React.useEffect(() => {
     if (isEditing) {
@@ -110,6 +138,7 @@ export function useProofExplorer() {
 
   const saveProofVersion = React.useCallback(
     async (level: FormalityLevel, newProof: string) => {
+      if (!selectedTheorem) return;
       const cacheKey = `${selectedTheorem.id}-${level}`;
       const newVersion: ProofVersion = {
         proof: newProof,
@@ -135,7 +164,7 @@ export function useProofExplorer() {
         console.error('Firestore cache write failed:', error);
       }
     },
-    [selectedTheorem.id, proofCache, user]
+    [selectedTheorem, proofCache, user]
   );
 
   const generateSingleProof = React.useCallback(
@@ -143,6 +172,7 @@ export function useProofExplorer() {
       level: FormalityLevel,
       structuralProof?: string
     ): Promise<string> => {
+      if (!selectedTheorem) throw new Error("No theorem selected");
       const { proof: newProof } = await generateProof({
         theoremName: selectedTheorem.name,
         theoremStatement: selectedTheorem.statement,
@@ -159,6 +189,13 @@ export function useProofExplorer() {
 
   const generateNewProof = React.useCallback(
     async (forceRefresh = false) => {
+      if (!selectedTheorem) {
+         if (theorems.length > 0) {
+            setIsProofLoading(false); // Theorems are loaded but none selected yet.
+         }
+         // if no theorems at all, loading is handled by fetchTheorems
+         return;
+      }
       setIsFading(true);
       if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
       loadingTimerRef.current = setTimeout(() => {
@@ -284,11 +321,14 @@ export function useProofExplorer() {
       proof,
       generateSingleProof,
       isUserAdmin,
+      theorems,
     ]
   );
 
   React.useEffect(() => {
-    generateNewProof();
+    if (selectedTheoremId) {
+      generateNewProof();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTheoremId, formalityLevel]);
   
@@ -326,7 +366,7 @@ export function useProofExplorer() {
   };
 
   const handleClearCache = async () => {
-    if (!isUserAdmin) return;
+    if (!isUserAdmin || !selectedTheorem) return;
     const keysToClear = Object.keys(proofCache).filter((key) =>
       key.startsWith(selectedTheorem.id)
     );
@@ -363,7 +403,7 @@ export function useProofExplorer() {
   };
 
   const handleRollback = async () => {
-    if (!isUserAdmin) return;
+    if (!isUserAdmin || !selectedTheorem) return;
     if (!selectedVersion) {
       toast({
         variant: 'destructive',
@@ -417,7 +457,7 @@ export function useProofExplorer() {
   };
 
   const handleRawProofSave = async () => {
-    if (!isUserAdmin) return;
+    if (!isUserAdmin || !selectedTheorem) return;
     setIsFading(true);
     setIsProofLoading(true);
 
@@ -457,6 +497,7 @@ export function useProofExplorer() {
         return;
     }
   
+    if (!selectedTheorem) return;
     setIsInteractionLoading(true);
     const currentQuestion = interactionText;
     setInteractionText('');
@@ -542,6 +583,7 @@ export function useProofExplorer() {
     user,
     isUserAdmin,
     isEditing,
+    theorems,
     selectedTheorem,
     selectedTheoremId,
     formalityLevel,

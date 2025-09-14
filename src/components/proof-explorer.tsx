@@ -3,7 +3,6 @@
 
 import * as React from 'react';
 import { useProofExplorer } from '@/hooks/use-proof-explorer';
-import { theorems } from '@/lib/theorems';
 import type { FormalityLevel } from '@/lib/types';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import AppHeader from './proof-explorer/app-header';
@@ -44,6 +43,7 @@ export default function ProofExplorer() {
     user,
     isUserAdmin,
     isEditing,
+    theorems,
     selectedTheorem,
     selectedTheoremId,
     formalityLevel,
@@ -75,6 +75,20 @@ export default function ProofExplorer() {
   } = useProofExplorer();
 
   const [isDiscardAlertOpen, setIsDiscardAlertOpen] = React.useState(false);
+
+  if (theorems.length === 0 && !isProofLoading) {
+    return (
+       <div className="flex h-full min-h-screen w-full flex-col">
+         <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
+           <AppHeader onToggleEditing={handleToggleEditing} />
+            <div className="flex flex-col items-center justify-center h-96 border rounded-lg bg-card">
+                <h3 className="text-xl font-semibold">No Theorems Found</h3>
+                <p className="text-muted-foreground">Please go to the admin page to add theorems.</p>
+            </div>
+         </div>
+       </div>
+    )
+  }
 
   return (
     <TooltipProvider>

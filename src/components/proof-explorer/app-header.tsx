@@ -12,8 +12,10 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogIn, LogOut, Menu } from 'lucide-react';
+import { LogIn, LogOut, Menu, Shield } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
+import { isAdmin } from '@/lib/auth';
+import Link from 'next/link';
 
 interface AppHeaderProps {
   onToggleEditing: () => void;
@@ -21,6 +23,7 @@ interface AppHeaderProps {
 
 export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
   const { user, auth, loading } = useAuth();
+  const isUserAdmin = isAdmin(user);
 
   const handleSignIn = async () => {
     if (!auth) return;
@@ -74,6 +77,14 @@ export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {isUserAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin">
+                        <Shield className="mr-2" />
+                        Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2" />
                     Sign Out

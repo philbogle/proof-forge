@@ -4,10 +4,16 @@ export type User = FirebaseUser;
 
 export type FormalityLevel = 'english' | 'informal' | 'rigorous';
 
+export type TheoremOwner = {
+  id: string;
+  name: string | null;
+};
+
 export type Theorem = {
   id: string;
-  name: string;
+  name:string;
   statement: string;
+  owner: TheoremOwner;
 };
 
 export type GenerateProofInput = {
