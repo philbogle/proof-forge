@@ -42,7 +42,7 @@ export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
   };
 
   return (
-    <header className="mb-4 flex items-center justify-between gap-4 text-center">
+    <header className="mb-2 flex items-center justify-between gap-4 text-center">
       <div className="flex items-center gap-2">
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Proof Forge

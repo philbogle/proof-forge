@@ -99,7 +99,7 @@ export default function ProofExplorer() {
                 onPageChange={handlePageChange}
               />
             </div>
-            <div className="space-y-6">
+            <div className="space-y-4">
               <ProofView
                 proof={
                   isEditing
@@ -123,7 +123,7 @@ export default function ProofExplorer() {
                )}
 
               {isUserAdmin && !isEditing && (
-                <div className="mt-6">
+                <div className="mt-4">
                   <AdvancedSettings
                     user={user}
                     isProofLoading={isProofLoading}
