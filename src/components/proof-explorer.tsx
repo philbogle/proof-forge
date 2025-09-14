@@ -81,7 +81,7 @@ export default function ProofExplorer() {
       <div className="flex h-full min-h-screen w-full flex-col">
         <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
           <AppHeader onToggleEditing={handleToggleEditing} />
-          <div className="space-y-6">
+          <div className="space-y-2">
             <TheoremSelector
               theorems={theorems}
               selectedTheoremId={selectedTheoremId}
