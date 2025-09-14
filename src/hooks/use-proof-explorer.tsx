@@ -59,15 +59,29 @@ export function useProofExplorer() {
 
   const parseProofIntoPages = (fullProof: string) => {
     if (!fullProof) return [];
-    // Split by Markdown headers (### 1. Title)
-    const parts = fullProof.split(/(?=###\s+\d+\.)/);
-    if (parts.length === 0) return [];
-    if (parts.length === 1 && parts[0].trim() === '') return [];
-
-    // The first part is always the theorem statement. The rest are proof steps.
-    const pages = [selectedTheorem.statement, ...parts.map(part => part.trim()).filter(Boolean)];
-    
-    // Filter out any empty pages that might have been created.
+  
+    // Find the index of the first step.
+    const firstStepIndex = fullProof.search(/###\s+1\./);
+  
+    let introPage: string;
+    let proofSteps: string;
+  
+    if (firstStepIndex === -1) {
+      // If no steps are found, the whole proof is the intro.
+      introPage = `${selectedTheorem.statement}\n\n${fullProof}`;
+      proofSteps = '';
+    } else {
+      // Everything before the first step is part of the intro.
+      const introText = fullProof.substring(0, firstStepIndex).trim();
+      introPage = `${selectedTheorem.statement}${introText ? `\n\n${introText}` : ''}`;
+      proofSteps = fullProof.substring(firstStepIndex);
+    }
+  
+    // Split the rest of the proof by Markdown headers (### 2., ### 3., etc.)
+    const stepPages = proofSteps.split(/(?=###\s+\d+\.)/).map(p => p.trim()).filter(Boolean);
+  
+    const pages = [introPage, ...stepPages];
+  
     return pages.filter(p => p.trim() !== '');
   };
 
@@ -274,6 +288,7 @@ export function useProofExplorer() {
   };
 
   const handleFormalityChange = (level: FormalityLevel) => {
+    setCurrentPage(0);
     setFormalityLevel(level);
   };
 
