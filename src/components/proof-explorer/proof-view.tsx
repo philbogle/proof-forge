@@ -32,15 +32,16 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
                 isFading ? 'opacity-0' : 'opacity-100'
               )}
             >
-            {renderMarkdown ? (
+            {!isEditable && renderMarkdown ? (
               <ProofDisplay content={proof} />
-            ) : (
+            ) : isEditable ? (
               <Textarea
                 className="min-h-[400px] text-sm"
                 value={proof}
                 onChange={(e) => onRawProofChange(e.target.value)}
-                readOnly={!isEditable}
               />
+            ) : (
+                <ProofDisplay content={proof} />
             )}
             </div>
           )}

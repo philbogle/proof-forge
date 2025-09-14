@@ -1,4 +1,3 @@
-
 // src/hooks/use-proof-explorer.tsx
 'use client';
 
@@ -43,6 +42,7 @@ export function useProofExplorer() {
     'a college student studying mathematics'
   );
   const [renderMarkdown, setRenderMarkdown] = React.useState(true);
+  const [isEditing, setIsEditing] = React.useState(false);
   
   const isUserAdmin = isAdmin(user);
 
@@ -94,18 +94,19 @@ export function useProofExplorer() {
     setProofPages(pages);
     if (currentPage >= pages.length && pages.length > 0) {
       setCurrentPage(pages.length -1);
-    } else if (pages.length > 0 && currentPage < 0) {
+    } else if (pages.length === 0) {
       setCurrentPage(0);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proof, selectedTheorem.statement]);
 
   React.useEffect(() => {
-    if (!renderMarkdown && isUserAdmin) {
+    if (isEditing) {
       setRawProofEdit(proofPages[currentPage] || '');
+      setRenderMarkdown(false); // Default to edit view when entering editing mode
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [renderMarkdown, isUserAdmin, currentPage, proofPages]);
+  }, [isEditing, currentPage, proofPages]);
 
   const saveProofVersion = React.useCallback(
     async (level: FormalityLevel, newProof: string) => {
@@ -290,15 +291,29 @@ export function useProofExplorer() {
     generateNewProof();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTheoremId, formalityLevel]);
+  
+  const handleToggleEditing = () => {
+    if (!isUserAdmin) return;
+    setIsEditing(prev => !prev);
+  };
+
+  const handleDiscardChanges = () => {
+    setIsEditing(false);
+    setRenderMarkdown(true);
+    // No need to reset rawProofEdit, useEffect handles it
+  };
+
 
   const handleTheoremChange = (theoremId: string) => {
     setCurrentPage(0);
     setSelectedTheoremId(theoremId);
+    setIsEditing(false);
   };
 
   const handleFormalityChange = (level: FormalityLevel) => {
     setCurrentPage(0);
     setFormalityLevel(level);
+    setIsEditing(false);
   };
 
   const handlePageChange = (page: number) => {
@@ -419,12 +434,15 @@ export function useProofExplorer() {
     setProof(newFullProof);
 
     setIsProofLoading(false);
-    setTimeout(() => setIsFading(false), 100);
+    setTimeout(() => {
+        setIsFading(false);
+        setIsEditing(false);
+        setRenderMarkdown(true);
+    }, 100);
     toast({
       title: 'Proof Saved',
       description: 'Your changes have been saved.',
     });
-    setRenderMarkdown(true);
   };
 
   const handleInteraction = async () => {
@@ -523,6 +541,7 @@ export function useProofExplorer() {
   return {
     user,
     isUserAdmin,
+    isEditing,
     selectedTheorem,
     selectedTheoremId,
     formalityLevel,
@@ -543,7 +562,6 @@ export function useProofExplorer() {
     setProof,
     setRawProofEdit,
     setProofPages,
-
     setCurrentPage,
     setIsFading,
     setProofCache,
@@ -562,7 +580,7 @@ export function useProofExplorer() {
     handleInteraction,
     generateNewProof,
     saveProofVersion,
+    handleToggleEditing,
+    handleDiscardChanges,
   };
 }
-
-    

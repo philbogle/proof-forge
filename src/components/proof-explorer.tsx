@@ -13,7 +13,19 @@ import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
 import AdvancedSettings from './proof-explorer/advanced-settings';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Save, X } from 'lucide-react';
+import { MessageSquare, Save, X, View, Pencil } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Accordion,
   AccordionContent,
@@ -31,6 +43,7 @@ export default function ProofExplorer() {
   const {
     user,
     isUserAdmin,
+    isEditing,
     selectedTheorem,
     selectedTheoremId,
     formalityLevel,
@@ -57,13 +70,17 @@ export default function ProofExplorer() {
     handleClearCache,
     setSelectedVersion,
     handleRollback,
+    handleToggleEditing,
+    handleDiscardChanges,
   } = useProofExplorer();
+
+  const [isDiscardAlertOpen, setIsDiscardAlertOpen] = React.useState(false);
 
   return (
     <TooltipProvider>
       <div className="flex h-full min-h-screen w-full flex-col">
         <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
-          <AppHeader />
+          <AppHeader isUserAdmin={isUserAdmin} onToggleEditing={handleToggleEditing} />
           <div className="space-y-6">
             <TheoremSelector
               theorems={theorems}
@@ -85,31 +102,18 @@ export default function ProofExplorer() {
             <div className="space-y-6">
               <ProofView
                 proof={
-                  !renderMarkdown && isUserAdmin
+                  isEditing
                     ? rawProofEdit
                     : proofPages[currentPage] || ''
                 }
                 renderMarkdown={renderMarkdown}
                 isLoading={isProofLoading}
                 isFading={isFading}
-                isEditable={!renderMarkdown && isUserAdmin}
+                isEditable={isEditing && !renderMarkdown}
                 onRawProofChange={setRawProofEdit}
               />
-              <div>
-                <div className="flex w-full items-center justify-between">
-                  <div className="text-sm text-muted-foreground font-body">
-                    {/* The last updated by label was moved to advanced settings. */}
-                  </div>
-                  {!renderMarkdown && isUserAdmin && (
-                    <Button onClick={handleRawProofSave} size="sm">
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Changes
-                    </Button>
-                  )}
-                </div>
-              </div>
 
-              {isUserAdmin && (
+              {isUserAdmin && !isEditing && (
                 <div className="mt-6">
                   <AdvancedSettings
                     user={user}
@@ -121,14 +125,74 @@ export default function ProofExplorer() {
                     selectedVersion={selectedVersion}
                     setSelectedVersion={setSelectedVersion}
                     handleRollback={handleRollback}
-                    renderMarkdown={renderMarkdown}
-                    setRenderMarkdown={setRenderMarkdown}
                   />
                 </div>
               )}
             </div>
           </div>
         </div>
+
+        {isEditing && (
+          <div className="sticky bottom-0 z-20 w-full border-t bg-background/95 backdrop-blur-sm">
+            <div className="max-w-4xl mx-auto flex items-center justify-between p-3">
+              <div className="flex items-center gap-4">
+                <span className="font-semibold text-sm">Editing Mode</span>
+                <div className="flex items-center space-x-2">
+                  <Pencil className="h-4 w-4" />
+                  <Switch
+                    id="edit-mode-toggle"
+                    checked={renderMarkdown}
+                    onCheckedChange={setRenderMarkdown}
+                  />
+                  <View className="h-4 w-4" />
+                  <Label htmlFor="edit-mode-toggle" className="sr-only">
+                    Toggle Markdown Preview
+                  </Label>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDiscardAlertOpen(true)}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Discard
+                </Button>
+                <Button onClick={handleRawProofSave}>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <AlertDialog
+          open={isDiscardAlertOpen}
+          onOpenChange={setIsDiscardAlertOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Discard Changes?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to discard your unsaved changes? This
+                action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  handleDiscardChanges();
+                  setIsDiscardAlertOpen(false);
+                }}
+              >
+                Discard
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <div className="fixed bottom-4 right-4 z-10 w-full max-w-lg">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem
