@@ -22,9 +22,11 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2, Plus, Save, Trash2, Edit, AlertTriangle } from 'lucide-react';
+import { Loader2, Plus, Save, Trash2, Edit, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import type { Theorem, TheoremOwner } from '@/lib/types';
 import { seedTheorems } from '@/lib/theorems';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -74,7 +76,7 @@ export default function AdminPage() {
 
       seedTheorems.forEach((theorem) => {
         const docRef = doc(theoremsCollection); // Firestore will generate a new ID
-        batch.set(docRef, { ...theorem, owner });
+        batch.set(docRef, { ...theorem, owner, adminApproved: true });
       });
 
       await batch.commit();
@@ -99,7 +101,7 @@ export default function AdminPage() {
     if (theorem) {
       setCurrentTheorem(theorem);
     } else {
-      setCurrentTheorem({ name: '', statement: '' });
+      setCurrentTheorem({ name: '', statement: '', adminApproved: true });
     }
     setIsDialogOpen(true);
   };
@@ -130,7 +132,8 @@ export default function AdminPage() {
             await addDoc(collection(db, 'theorems'), {
                 name: currentTheorem.name,
                 statement: currentTheorem.statement,
-                owner: owner
+                owner: owner,
+                adminApproved: true,
             });
             toast({ title: 'Success', description: 'Theorem added successfully.' });
         }
@@ -162,6 +165,23 @@ export default function AdminPage() {
         description: 'Could not delete the theorem.',
       });
       setIsLoading(false);
+    }
+  };
+
+  const handleApprovalChange = async (theoremId: string, approved: boolean) => {
+    try {
+        const theoremRef = doc(db, 'theorems', theoremId);
+        await updateDoc(theoremRef, {
+            adminApproved: approved
+        });
+        toast({ title: 'Success', description: `Theorem approval status updated.`});
+        // Update local state to reflect change immediately
+        setTheorems(theorems => theorems.map(t => 
+            t.id === theoremId ? { ...t, adminApproved: approved } : t
+        ));
+    } catch (error) {
+        console.error("Error updating approval status: ", error);
+        toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update approval status.'});
     }
   };
 
@@ -230,11 +250,33 @@ export default function AdminPage() {
           {theorems.map((theorem) => (
             <Card key={theorem.id}>
               <CardHeader>
-                <CardTitle>{theorem.name}</CardTitle>
-                <CardDescription>Owner: {theorem.owner?.name || theorem.owner?.id || 'Unknown'}</CardDescription>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <CardTitle>{theorem.name}</CardTitle>
+                    <CardDescription>Owner: {theorem.owner?.name || theorem.owner?.id || 'Unknown'}</CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2 pt-1">
+                      <Switch
+                        id={`approved-switch-${theorem.id}`}
+                        checked={theorem.adminApproved}
+                        onCheckedChange={(checked) => handleApprovalChange(theorem.id, checked)}
+                      />
+                      <Label htmlFor={`approved-switch-${theorem.id}`}>Approved</Label>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="line-clamp-3 text-sm">{theorem.statement}</p>
+                <p className="line-clamp-3 text-sm text-muted-foreground">{theorem.statement}</p>
+                 <div className="flex items-center gap-2 mt-4 text-sm">
+                    {theorem.adminApproved ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                    )}
+                    <span className={theorem.adminApproved ? 'text-green-600' : 'text-red-600'}>
+                        {theorem.adminApproved ? 'Visible to all users' : 'Hidden from users'}
+                    </span>
+                 </div>
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
                  <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(theorem)}>

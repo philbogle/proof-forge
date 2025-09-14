@@ -10,7 +10,7 @@ import { editProof } from '@/ai/flows/edit-proof-flow';
 import { classifyIntent } from '@/ai/flows/classify-intent-flow';
 import type { FormalityLevel, ProofVersion, ConversationTurn, Theorem } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { isAdmin } from '@/lib/auth';
 
 const LOADING_INDICATOR_DELAY = 500; // ms
@@ -53,13 +53,23 @@ export function useProofExplorer() {
       setIsProofLoading(true);
       try {
         const theoremsCollection = collection(db, 'theorems');
-        const q = query(theoremsCollection, orderBy('name'));
+        let q;
+        if (isUserAdmin) {
+            // Admin sees all theorems
+            q = query(theoremsCollection, orderBy('name'));
+        } else {
+            // Non-admins only see approved theorems
+            q = query(theoremsCollection, where('adminApproved', '==', true), orderBy('name'));
+        }
         const theoremSnapshot = await getDocs(q);
         const theoremsList = theoremSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Theorem));
         setTheorems(theoremsList);
         if (theoremsList.length > 0) {
-          setSelectedTheoremId(theoremsList[0].id);
+          if (!selectedTheoremId || !theoremsList.find(t => t.id === selectedTheoremId)) {
+            setSelectedTheoremId(theoremsList[0].id);
+          }
         } else {
+          setProof('');
           setIsProofLoading(false);
         }
       } catch (error) {
@@ -74,7 +84,8 @@ export function useProofExplorer() {
     };
 
     fetchTheorems();
-  }, [toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toast, isUserAdmin]); // Re-fetch when admin status changes
 
 
   const selectedTheorem = React.useMemo(
@@ -326,7 +337,7 @@ export function useProofExplorer() {
   );
 
   React.useEffect(() => {
-    if (selectedTheoremId) {
+    if (selectedTheoremId && selectedTheorem) {
       generateNewProof();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

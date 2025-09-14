@@ -14,6 +14,7 @@ export type Theorem = {
   name:string;
   statement: string;
   owner: TheoremOwner;
+  adminApproved: boolean;
 };
 
 export type GenerateProofInput = {
