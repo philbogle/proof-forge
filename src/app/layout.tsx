@@ -5,8 +5,8 @@ import { AuthProvider } from '@/hooks/use-auth';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Proof Explorer',
-  description: 'Explore and understand mathematical proofs interactively.',
+  title: 'The Proof Distillery',
+  description: 'Interactively explore and understand mathematical proofs.',
 };
 
 export default function RootLayout({

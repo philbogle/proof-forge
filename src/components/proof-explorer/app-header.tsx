@@ -41,7 +41,7 @@ export default function AppHeader() {
     <header className="mb-4 flex items-center justify-between gap-4 text-center">
       <div className="flex items-center gap-2">
         <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-          Proof Explorer
+          The Proof Distillery
         </h1>
       </div>
       <div>
