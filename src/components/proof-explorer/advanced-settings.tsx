@@ -47,7 +47,6 @@ export default function AdvancedSettings({
   renderMarkdown,
   setRenderMarkdown,
 }: AdvancedSettingsProps) {
-  const canClearCache = user && user.email === 'philbogle@gmail.com';
   const latestVersion = currentProofHistory[0];
 
   return (
@@ -114,25 +113,23 @@ export default function AdvancedSettings({
                 </Button>
               </div>
 
-              {canClearCache && (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold">Clear Theorem Cache</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Delete all cached proofs for "{selectedTheorem.name}" and
-                      regenerate.
-                    </p>
-                  </div>
-                  <Button
-                    variant="destructive"
-                    onClick={handleClearCache}
-                    size="sm"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Clear
-                  </Button>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold">Clear Theorem Cache</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Delete all cached proofs for "{selectedTheorem.name}" and
+                    regenerate.
+                  </p>
                 </div>
-              )}
+                <Button
+                  variant="destructive"
+                  onClick={handleClearCache}
+                  size="sm"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Clear
+                </Button>
+              </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">

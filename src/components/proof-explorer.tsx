@@ -30,6 +30,7 @@ const formalityLevels: { id: FormalityLevel; name: string }[] = [
 export default function ProofExplorer() {
   const {
     user,
+    isUserAdmin,
     selectedTheorem,
     selectedTheoremId,
     formalityLevel,
@@ -84,14 +85,14 @@ export default function ProofExplorer() {
             <div className="space-y-6">
               <ProofView
                 proof={
-                  !renderMarkdown && user
+                  !renderMarkdown && isUserAdmin
                     ? rawProofEdit
                     : proofPages[currentPage] || ''
                 }
                 renderMarkdown={renderMarkdown}
                 isLoading={isProofLoading}
                 isFading={isFading}
-                isEditable={!renderMarkdown && !!user}
+                isEditable={!renderMarkdown && isUserAdmin}
                 onRawProofChange={setRawProofEdit}
               />
               <div>
@@ -99,7 +100,7 @@ export default function ProofExplorer() {
                   <div className="text-sm text-muted-foreground font-body">
                     {/* The last updated by label was moved to advanced settings. */}
                   </div>
-                  {!renderMarkdown && user && (
+                  {!renderMarkdown && isUserAdmin && (
                     <Button onClick={handleRawProofSave} size="sm">
                       <Save className="mr-2 h-4 w-4" />
                       Save Changes
@@ -108,7 +109,7 @@ export default function ProofExplorer() {
                 </div>
               </div>
 
-              {user && (
+              {isUserAdmin && (
                 <div className="mt-6">
                   <AdvancedSettings
                     user={user}
@@ -147,6 +148,7 @@ export default function ProofExplorer() {
                     isInteractionLoading={isInteractionLoading}
                     conversationHistory={conversationHistory}
                     isUserSignedIn={!!user}
+                    isUserAdmin={isUserAdmin}
                   />
                 </div>
               </AccordionContent>

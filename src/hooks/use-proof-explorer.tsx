@@ -13,6 +13,7 @@ import { theorems } from '@/lib/theorems';
 import type { FormalityLevel, ProofVersion, ConversationTurn } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { isAdmin } from '@/lib/auth';
 
 const LOADING_INDICATOR_DELAY = 500; // ms
 
@@ -42,6 +43,8 @@ export function useProofExplorer() {
     'a college student studying mathematics'
   );
   const [renderMarkdown, setRenderMarkdown] = React.useState(true);
+  
+  const isUserAdmin = isAdmin(user);
 
   const { toast } = useToast();
 
@@ -94,13 +97,15 @@ export function useProofExplorer() {
     } else if (pages.length > 0 && currentPage < 0) {
       setCurrentPage(0);
     }
-  }, [proof, currentPage, selectedTheorem.statement]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proof, selectedTheorem.statement]);
 
   React.useEffect(() => {
-    if (!renderMarkdown && user) {
+    if (!renderMarkdown && isUserAdmin) {
       setRawProofEdit(proofPages[currentPage] || '');
     }
-  }, [renderMarkdown, user, currentPage, proofPages]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renderMarkdown, isUserAdmin, currentPage, proofPages]);
 
   const saveProofVersion = React.useCallback(
     async (level: FormalityLevel, newProof: string) => {
@@ -302,7 +307,7 @@ export function useProofExplorer() {
   };
 
   const handleClearCache = async () => {
-    if (!user) return;
+    if (!isUserAdmin) return;
     const keysToClear = Object.keys(proofCache).filter((key) =>
       key.startsWith(selectedTheorem.id)
     );
@@ -339,7 +344,7 @@ export function useProofExplorer() {
   };
 
   const handleRollback = async () => {
-    if (!user) return;
+    if (!isUserAdmin) return;
     if (!selectedVersion) {
       toast({
         variant: 'destructive',
@@ -393,7 +398,7 @@ export function useProofExplorer() {
   };
 
   const handleRawProofSave = async () => {
-    if (!user) return;
+    if (!isUserAdmin) return;
     setIsFading(true);
     setIsProofLoading(true);
 
@@ -428,15 +433,15 @@ export function useProofExplorer() {
     try {
       const { intent } = await classifyIntent({ text: currentQuestion });
   
-      if (intent === 'edit' && !user) {
+      if (intent === 'edit' && !isUserAdmin) {
         toast({
           variant: 'destructive',
           title: 'Authentication Required',
-          description: 'You must be signed in to request an edit.',
+          description: 'You must be an administrator to request an edit.',
         });
         setConversationHistory(prev => {
           const newHistory = [...prev];
-          newHistory[newHistory.length - 1].answer = "Please sign in to request an edit.";
+          newHistory[newHistory.length - 1].answer = "You must be an administrator to request an edit.";
           return newHistory;
         });
         setIsInteractionLoading(false);
@@ -503,6 +508,7 @@ export function useProofExplorer() {
 
   return {
     user,
+    isUserAdmin,
     selectedTheorem,
     selectedTheoremId,
     formalityLevel,

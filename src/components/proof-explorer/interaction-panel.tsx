@@ -16,6 +16,7 @@ interface InteractionPanelProps {
   isInteractionLoading: boolean;
   conversationHistory: ConversationTurn[];
   isUserSignedIn: boolean;
+  isUserAdmin: boolean;
 }
 
 export default function InteractionPanel({
@@ -25,6 +26,7 @@ export default function InteractionPanel({
   isInteractionLoading,
   conversationHistory,
   isUserSignedIn,
+  isUserAdmin,
 }: InteractionPanelProps) {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
@@ -41,7 +43,10 @@ export default function InteractionPanel({
 
   const getPlaceholderText = () => {
     if (!isUserSignedIn) {
-      return "e.g., What does 'Q.E.D.' mean? Sign in to request edits.";
+      return "e.g., What does 'Q.E.D.' mean? Sign in to ask questions.";
+    }
+    if (!isUserAdmin) {
+        return "Ask a question about the proof...";
     }
     return "Ask a question or request an edit...";
   }
@@ -96,11 +101,11 @@ export default function InteractionPanel({
             value={interactionText}
             onChange={(e) => onInteractionTextChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={isInteractionLoading}
+            disabled={isInteractionLoading || !isUserSignedIn}
           />
           <Button
             onClick={() => onInteract()}
-            disabled={isInteractionLoading || !interactionText.trim()}
+            disabled={isInteractionLoading || !interactionText.trim() || !isUserSignedIn}
           >
             {isInteractionLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -112,7 +117,7 @@ export default function InteractionPanel({
         </div>
         {!isUserSignedIn && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Sign in to request edits and access full capabilities.
+            Sign in to ask questions and interact with the AI assistant.
           </p>
         )}
       </div>
