@@ -11,7 +11,7 @@ import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
 import AdvancedSettings from './proof-explorer/advanced-settings';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Save, X, View, Pencil } from 'lucide-react';
+import { MessageSquare, Save, X, View, Pencil, ChevronRight } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +30,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import Link from 'next/link';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'english', name: 'English' },
@@ -98,7 +99,11 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
           <AppHeader onToggleEditing={handleToggleEditing} />
           <div className="space-y-2">
             <div className='my-4'>
-                <h1 className="text-2xl font-bold tracking-tight">{selectedTheorem?.name}</h1>
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Link href="/" className="hover:text-foreground">All Theorems</Link>
+                  <ChevronRight className="h-4 w-4 mx-1" />
+                  <span className="text-foreground font-medium">{selectedTheorem?.name}</span>
+                </div>
             </div>
             <div className="sticky top-0 z-10 bg-background py-4">
               <ProofControls
