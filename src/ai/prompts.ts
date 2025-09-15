@@ -7,7 +7,7 @@ export const PROOF_FORMATTING_INSTRUCTIONS = `
 - Reserve code blocks (\`\`\`) strictly for programming code implementations, never for displaying mathematical formulas or names.
 - Always use rendered LaTeX for math: $formula$ for inline (using \\mathbf{} for vectors), and $$formula$$ for display equations.
 - Critically, ensure no whitespace exists immediately inside $ or $$ delimiters (use $E=mc^2$, not $ E = mc^2 $). 
-- Add blank lines before leading $$ indicators and a blank line after trailing $$ indicators.
+- **WHITESPACE RULE**: Add blank lines before leading $$ indicators and a blank line after trailing $$ indicators. Crucially, there must be NO space characters (zero indentation) before the opening \`$$\`.
 - When displaying math ($$...$$) appears within lists, start it on a new line with zero leading indentation. Choose inline math for brevity/flow and display math for complex or emphasized equations, maintaining clean separation and standard paragraph spacing (one blank line after display math) for a professional, scientific document style.
 - **ALIGNED EQUATIONS**: For multi-step derivations or a sequence of logical steps, you MUST use the 'aligned' environment within display math blocks. For example:
 $$
