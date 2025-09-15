@@ -15,7 +15,11 @@ import { isAdmin } from '@/lib/auth';
 
 const LOADING_INDICATOR_DELAY = 500; // ms
 
-export function useProofExplorer() {
+interface UseProofExplorerProps {
+  proofViewRef: React.RefObject<HTMLDivElement>;
+}
+
+export function useProofExplorer({ proofViewRef }: UseProofExplorerProps) {
   const { user } = useAuth();
   const [theorems, setTheorems] = React.useState<Theorem[]>([]);
   const [selectedTheoremId, setSelectedTheoremId] = React.useState('');
@@ -354,6 +358,9 @@ export function useProofExplorer() {
 
   const handlePageChange = (page: number) => {
     if (page === currentPage) return;
+    
+    proofViewRef.current?.scrollIntoView({ behavior: 'smooth' });
+
     setIsFading(true);
     setTimeout(() => {
       setCurrentPage(page);

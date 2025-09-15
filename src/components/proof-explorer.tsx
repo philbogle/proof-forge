@@ -39,6 +39,7 @@ const formalityLevels: { id: FormalityLevel; name: string }[] = [
 ];
 
 export default function ProofExplorer() {
+  const proofViewRef = React.useRef<HTMLDivElement>(null);
   const {
     user,
     isUserAdmin,
@@ -72,7 +73,7 @@ export default function ProofExplorer() {
     handleRollback,
     handleToggleEditing,
     handleDiscardChanges,
-  } = useProofExplorer();
+  } = useProofExplorer({ proofViewRef });
 
   const [isDiscardAlertOpen, setIsDiscardAlertOpen] = React.useState(false);
 
@@ -115,6 +116,7 @@ export default function ProofExplorer() {
             </div>
             <div className="space-y-4">
               <ProofView
+                ref={proofViewRef}
                 proof={
                   isEditing
                     ? rawProofEdit
