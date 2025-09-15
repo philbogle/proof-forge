@@ -114,8 +114,8 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   }, [isEditing, currentPage, proofPages]);
 
   const saveProofVersion = React.useCallback(
-    async (level: FormalityLevel, newProof: string) => {
-      if (!selectedTheorem) return;
+    async (level: FormalityLevel, newProof: string): Promise<string> => {
+      if (!selectedTheorem) throw new Error("Theorem not selected");
       
       const formattedProof = formatProof(newProof);
 
@@ -143,6 +143,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       } catch (error) {
         console.error('Firestore cache write failed:', error);
       }
+      return formattedProof;
     },
     [selectedTheorem, proofCache, user]
   );
@@ -160,8 +161,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         structuralProof,
       });
 
-      const formattedProof = formatProof(newProof);
-      await saveProofVersion(level, formattedProof);
+      const formattedProof = await saveProofVersion(level, newProof);
       return formattedProof;
     },
     [selectedTheorem, userBackground, saveProofVersion]
@@ -440,15 +440,9 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   
     const pages = [...proofPages];
     pages[currentPage] = rawProofEdit;
-  
-    // Reconstruct the full proof from all the pages
     const newFullProof = pages.join('\n\n');
   
-    await saveProofVersion(formalityLevel, newFullProof);
-    // We get the formatted proof from the first item in the updated history
-    const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
-    const updatedHistory = proofCache[cacheKey] || [];
-    const formattedProof = updatedHistory.length > 0 ? updatedHistory[0].proof : formatProof(newFullProof);
+    const formattedProof = await saveProofVersion(formalityLevel, newFullProof);
     
     setProof(formattedProof);
   
@@ -525,10 +519,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
           proofSection,
         });
   
-        await saveProofVersion(formalityLevel, editedProof);
-        // We get the formatted proof from the first item in the updated history
-        const updatedHistory = proofCache[cacheKey] || [];
-        const formattedProof = updatedHistory.length > 0 ? updatedHistory[0].proof : formatProof(editedProof);
+        const formattedProof = await saveProofVersion(formalityLevel, editedProof);
 
         setProof(formattedProof);
         setConversationHistory(prev => {
