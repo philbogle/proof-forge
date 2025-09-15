@@ -1,3 +1,4 @@
+
 'use server';
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
@@ -24,6 +25,7 @@ You are an expert mathematician and a skilled teacher. Your task is to generate 
 ${input.userBackground ? `**Target Audience Background:** ${input.userBackground}` : ''}
 
 **Instructions:**
+- You MUST generate a proof for the specified formality level ONLY. Adhere to the instructions for that level.
 - **First Section Requirement:** The title for the first Markdown header (\`### 1. ...\`) MUST be the theorem's name: "${input.theoremName}". The content that follows this header MUST state the theorem, give a brief summary of why it matters, and outline the strategy for proving it. This should be done at the appropriate level of formality.
 - For "english": Provide a step-by-step intuitive explanation. Use absolutely no math notation except very simple things like $x$ and $A(x)$. Explain everything in plain English, to someone with high-school level math background. **When introducing a mathematical term, please provide a brief, one-sentence definition.**
 - For "semiformal": Provide a step-by-step proof but allow for intuition and non-rigorous shortcuts. Use math notation for mathematical concepts where it aids clarity. The formulas should not be overly complex. **When introducing a potentially unfamiliar mathematical term, please provide a brief, one-sentence definition.**
@@ -39,7 +41,7 @@ ${input.structuralProof}
 
 **Formatting Rules:**
 ${PROOF_FORMATTING_INSTRUCTIONS}
-- For "rigorous" proofs, provide a full proof with all steps.
+- For "rigorous" proofs, you must provide a full, complete proof with all necessary steps included.
 `;
 
     const {text} = await ai.generate({
