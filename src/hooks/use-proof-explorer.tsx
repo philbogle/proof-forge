@@ -300,9 +300,12 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   );
 
   React.useEffect(() => {
-    if (selectedTheorem) {
-      generateNewProof();
-    }
+    const run = async () => {
+      if (selectedTheorem) {
+        await generateNewProof();
+      }
+    };
+    run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTheorem, formalityLevel]);
   
@@ -572,23 +575,16 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     setProof,
     setRawProofEdit,
     setProofPages,
-    setCurrentPage,
-    setIsFading,
-    setProofCache,
-    setSelectedVersion,
-    setIsProofLoading,
-    setInteractionText,
-    setConversationHistory,
-    setIsInteractionLoading,
-    setRenderMarkdown,
     handleFormalityChange,
     handlePageChange,
-    handleClearCache,
-    handleRollback,
+    setRenderMarkdown,
     handleRawProofSave,
     handleInteraction,
+    setInteractionText,
     generateNewProof,
-    saveProofVersion,
+    handleClearCache,
+    setSelectedVersion,
+    handleRollback,
     handleToggleEditing,
     handleDiscardChanges,
   };
