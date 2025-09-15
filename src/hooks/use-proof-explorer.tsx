@@ -142,6 +142,9 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         });
       } catch (error) {
         console.error('Firestore cache write failed:', error);
+        // Revert the optimistic update in cache
+        setProofCache((prev) => ({ ...prev, [cacheKey]: proofCache[cacheKey] || [] }));
+        throw error; // re-throw to be caught by the caller
       }
       return formattedProof;
     },
@@ -433,28 +436,35 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     });
   };
 
-  const handleRawProofSave = async () => {
+  const handleRawProofSave = () => {
     if (!isUserAdmin || !selectedTheorem) return;
-    setIsFading(true);
-    setIsProofLoading(true);
+
+    const previousProof = proof;
   
+    // Optimistic UI Update
     const pages = [...proofPages];
     pages[currentPage] = rawProofEdit;
     const newFullProof = pages.join('\n\n');
-  
-    const formattedProof = await saveProofVersion(formalityLevel, newFullProof);
+    const formattedProof = formatProof(newFullProof);
     
     setProof(formattedProof);
-  
-    setIsProofLoading(false);
-    setTimeout(() => {
-      setIsFading(false);
-      setIsEditing(false);
-      setRenderMarkdown(true);
-    }, 100);
+    setIsEditing(false);
+    setRenderMarkdown(true);
     toast({
       title: 'Proof Saved',
       description: 'Your changes have been saved.',
+    });
+
+    // Background save
+    saveProofVersion(formalityLevel, newFullProof).catch((error) => {
+        console.error("Failed to save proof:", error);
+        // Revert UI on failure
+        setProof(previousProof); 
+        toast({
+            variant: "destructive",
+            title: "Save Failed",
+            description: "Could not save your changes. Your view has been reverted."
+        });
     });
   };
 
