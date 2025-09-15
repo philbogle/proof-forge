@@ -44,8 +44,8 @@ export default function PaginationControls({
           '-'
         ) : (
           <>
-            {currentPage}
-            <span className="hidden sm:inline"> / {totalPages - 1}</span>
+            {currentPage + 1}
+            <span className="hidden sm:inline"> / {totalPages}</span>
           </>
         )}
       </span>
