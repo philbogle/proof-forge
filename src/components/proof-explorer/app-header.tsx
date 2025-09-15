@@ -1,4 +1,6 @@
 // src/components/proof-explorer/app-header.tsx
+'use client';
+
 import * as React from 'react';
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { useAuth } from '@/hooks/use-auth';
@@ -18,7 +20,7 @@ import { isAdmin } from '@/lib/auth';
 import Link from 'next/link';
 
 interface AppHeaderProps {
-  onToggleEditing: () => void;
+  onToggleEditing?: () => void;
 }
 
 export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
@@ -47,9 +49,9 @@ export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
   return (
     <header className="mb-2 flex items-center justify-between gap-4 text-center">
       <div className="flex items-center gap-2">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">
+        <Link href="/" className="text-2xl font-bold tracking-tight text-foreground hover:no-underline">
           Proof Forge
-        </h2>
+        </Link>
       </div>
       <div>
         {loading ? (

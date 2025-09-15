@@ -6,7 +6,6 @@ import { useProofExplorer } from '@/hooks/use-proof-explorer';
 import type { FormalityLevel } from '@/lib/types';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import AppHeader from './proof-explorer/app-header';
-import TheoremSelector from './proof-explorer/theorem-selector';
 import ProofControls from './proof-explorer/proof-controls';
 import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
@@ -38,15 +37,17 @@ const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'rigorous', name: 'Rigorous' },
 ];
 
-export default function ProofExplorer() {
+interface ProofExplorerProps {
+    initialTheoremId: string;
+}
+
+export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) {
   const proofViewRef = React.useRef<HTMLDivElement>(null);
   const {
     user,
     isUserAdmin,
     isEditing,
-    theorems,
     selectedTheorem,
-    selectedTheoremId,
     formalityLevel,
     proofPages,
     currentPage,
@@ -59,7 +60,6 @@ export default function ProofExplorer() {
     rawProofEdit,
     currentProofHistory,
     selectedVersion,
-    handleTheoremChange,
     handleFormalityChange,
     handlePageChange,
     setRenderMarkdown,
@@ -73,18 +73,18 @@ export default function ProofExplorer() {
     handleRollback,
     handleToggleEditing,
     handleDiscardChanges,
-  } = useProofExplorer({ proofViewRef });
+  } = useProofExplorer({ proofViewRef, initialTheoremId });
 
   const [isDiscardAlertOpen, setIsDiscardAlertOpen] = React.useState(false);
 
-  if (theorems.length === 0 && !isProofLoading) {
+  if (!selectedTheorem && !isProofLoading) {
     return (
        <div className="flex h-full min-h-screen w-full flex-col">
          <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
            <AppHeader onToggleEditing={handleToggleEditing} />
             <div className="flex flex-col items-center justify-center h-96 border rounded-lg bg-card">
-                <h3 className="text-xl font-semibold">No Theorems Found</h3>
-                <p className="text-muted-foreground">Please go to the admin page to add theorems.</p>
+                <h3 className="text-xl font-semibold">Theorem Not Found</h3>
+                <p className="text-muted-foreground">The requested theorem could not be found or is not available.</p>
             </div>
          </div>
        </div>
@@ -97,11 +97,9 @@ export default function ProofExplorer() {
         <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
           <AppHeader onToggleEditing={handleToggleEditing} />
           <div className="space-y-2">
-            <TheoremSelector
-              theorems={theorems}
-              selectedTheoremId={selectedTheoremId}
-              onTheoremChange={handleTheoremChange}
-            />
+            <div className='my-4'>
+                <h1 className="text-3xl font-bold tracking-tight">{selectedTheorem?.name}</h1>
+            </div>
             <div className="sticky top-0 z-10 bg-background py-4">
               <ProofControls
                 formalityLevels={formalityLevels}

@@ -17,12 +17,12 @@ const LOADING_INDICATOR_DELAY = 500; // ms
 
 interface UseProofExplorerProps {
   proofViewRef: React.RefObject<HTMLDivElement>;
+  initialTheoremId: string;
 }
 
-export function useProofExplorer({ proofViewRef }: UseProofExplorerProps) {
+export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExplorerProps) {
   const { user } = useAuth();
-  const [theorems, setTheorems] = React.useState<Theorem[]>([]);
-  const [selectedTheoremId, setSelectedTheoremId] = React.useState('');
+  const [selectedTheorem, setSelectedTheorem] = React.useState<Theorem | null>(null);
   const [formalityLevel, setFormalityLevel] =
     React.useState<FormalityLevel>('semiformal');
   const [proof, setProof] = React.useState('');
@@ -53,49 +53,33 @@ export function useProofExplorer({ proofViewRef }: UseProofExplorerProps) {
   const loadingTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
-    const fetchTheorems = async () => {
-      setIsProofLoading(true);
-      try {
-        const theoremsCollection = collection(db, 'theorems');
-        let q;
-        if (isUserAdmin) {
-            // Admin sees all theorems
-            q = query(theoremsCollection, orderBy('order'));
-        } else {
-            // Non-admins only see approved theorems
-            q = query(theoremsCollection, where('adminApproved', '==', true), orderBy('order'));
+    const fetchTheorem = async () => {
+        if (!initialTheoremId) return;
+        setIsProofLoading(true);
+        try {
+            const theoremDoc = await getDoc(doc(db, 'theorems', initialTheoremId));
+            if (theoremDoc.exists()) {
+                const theoremData = { id: theoremDoc.id, ...theoremDoc.data() } as Theorem;
+                if (theoremData.adminApproved || isUserAdmin) {
+                    setSelectedTheorem(theoremData);
+                } else {
+                    setSelectedTheorem(null);
+                }
+            } else {
+                setSelectedTheorem(null);
+            }
+        } catch (error) {
+            console.error("Error fetching theorem:", error);
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Could not fetch the specified theorem.",
+            });
         }
-        const theoremSnapshot = await getDocs(q);
-        const theoremsList = theoremSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Theorem));
-        setTheorems(theoremsList);
-        if (theoremsList.length > 0) {
-          if (!selectedTheoremId || !theoremsList.find(t => t.id === selectedTheoremId)) {
-            setSelectedTheoremId(theoremsList[0].id);
-          }
-        } else {
-          setProof('');
-          setIsProofLoading(false);
-        }
-      } catch (error) {
-        console.error("Error fetching theorems: ", error);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Could not fetch the list of theorems.',
-        });
-        setIsProofLoading(false);
-      }
     };
+    fetchTheorem();
+  }, [initialTheoremId, isUserAdmin, toast]);
 
-    fetchTheorems();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast, isUserAdmin]); // Re-fetch when admin status changes
-
-
-  const selectedTheorem = React.useMemo(
-    () => theorems.find((t) => t.id === selectedTheoremId) || null,
-    [selectedTheoremId, theorems]
-  );
 
   const currentProofHistory = React.useMemo(() => {
     if (!selectedTheorem) return [];
@@ -185,10 +169,7 @@ export function useProofExplorer({ proofViewRef }: UseProofExplorerProps) {
   const generateNewProof = React.useCallback(
     async (forceRefresh = false) => {
       if (!selectedTheorem) {
-         if (theorems.length > 0) {
-            setIsProofLoading(false); // Theorems are loaded but none selected yet.
-         }
-         // if no theorems at all, loading is handled by fetchTheorems
+         setIsProofLoading(false);
          return;
       }
       setIsFading(true);
@@ -316,16 +297,15 @@ export function useProofExplorer({ proofViewRef }: UseProofExplorerProps) {
       proof,
       generateSingleProof,
       isUserAdmin,
-      theorems,
     ]
   );
 
   React.useEffect(() => {
-    if (selectedTheoremId && selectedTheorem) {
+    if (selectedTheorem) {
       generateNewProof();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTheoremId, formalityLevel]);
+  }, [selectedTheorem, formalityLevel]);
   
   const handleToggleEditing = () => {
     if (!isUserAdmin) return;
@@ -338,15 +318,6 @@ export function useProofExplorer({ proofViewRef }: UseProofExplorerProps) {
     // No need to reset rawProofEdit, useEffect handles it
   };
 
-
-  const handleTheoremChange = (theoremId: string) => {
-    if (isEditing) {
-      handleDiscardChanges();
-    }
-    setCurrentPage(0);
-    setSelectedTheoremId(theoremId);
-    setIsEditing(false);
-  };
 
   const handleFormalityChange = (level: FormalityLevel) => {
     if (isEditing) {
@@ -583,9 +554,7 @@ export function useProofExplorer({ proofViewRef }: UseProofExplorerProps) {
     user,
     isUserAdmin,
     isEditing,
-    theorems,
     selectedTheorem,
-    selectedTheoremId,
     formalityLevel,
     proof,
     proofPages,
@@ -613,7 +582,6 @@ export function useProofExplorer({ proofViewRef }: UseProofExplorerProps) {
     setConversationHistory,
     setIsInteractionLoading,
     setRenderMarkdown,
-    handleTheoremChange,
     handleFormalityChange,
     handlePageChange,
     handleClearCache,
