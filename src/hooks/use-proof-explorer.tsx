@@ -14,7 +14,7 @@ import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query, wh
 import { isAdmin } from '@/lib/auth';
 import { formatProof } from '@/lib/proof-formatting';
 
-const LOADING_INDICATOR_DELAY = 1000; // ms
+const LOADING_INDICATOR_DELAY = 500; // ms
 
 
 export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExplorerProps) {
@@ -604,5 +604,3 @@ interface UseProofExplorerProps {
     proofViewRef: React.RefObject<HTMLDivElement>;
     initialTheoremId: string;
 }
-
-    
