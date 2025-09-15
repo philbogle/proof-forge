@@ -1,0 +1,18 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow public read access to theorems that are admin-approved
+    match /theorems/{theoremId} {
+      allow read: if resource.data.adminApproved == true;
+      // Allow writes only by the admin user
+      allow write: if request.auth != null && request.auth.token.email == 'philbogle@gmail.com';
+    }
+
+    // Proofs can be read and written by any authenticated user.
+    // More restrictive rules could be applied here if needed.
+    match /proofs/{proofId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
