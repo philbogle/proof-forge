@@ -20,6 +20,22 @@ interface UseProofExplorerProps {
   initialTheoremId: string;
 }
 
+/**
+ * A post-processing function to ensure $$ delimiters are correctly formatted.
+ * It ensures that each $$ is preceded and followed by exactly one newline,
+ * and removes any other leading/trailing whitespace on that line.
+ * @param proofText The raw markdown proof text.
+ * @returns The formatted proof text.
+ */
+function formatProof(proofText: string): string {
+  if (!proofText) return '';
+  // This regex finds all occurrences of $$...$$ blocks, trims whitespace around them,
+  // and ensures they are separated by a single newline.
+  // It handles cases where there might be no newlines, multiple newlines, or just spaces.
+  return proofText.replace(/\s*\$\$\s*([\s\S]*?)\s*\$\$\s*/g, '\n\n$$\n$1\n$$\n\n').trim();
+}
+
+
 export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExplorerProps) {
   const { user } = useAuth();
   const [selectedTheorem, setSelectedTheorem] = React.useState<Theorem | null>(null);
@@ -119,9 +135,12 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const saveProofVersion = React.useCallback(
     async (level: FormalityLevel, newProof: string) => {
       if (!selectedTheorem) return;
+      
+      const formattedProof = formatProof(newProof);
+
       const cacheKey = `${selectedTheorem.id}-${level}`;
       const newVersion: ProofVersion = {
-        proof: newProof,
+        proof: formattedProof,
         timestamp: new Date().toISOString(),
       };
 
@@ -160,8 +179,9 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         structuralProof,
       });
 
-      await saveProofVersion(level, newProof);
-      return newProof;
+      const formattedProof = formatProof(newProof);
+      await saveProofVersion(level, formattedProof);
+      return formattedProof;
     },
     [selectedTheorem, userBackground, saveProofVersion]
   );
@@ -444,7 +464,12 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     const newFullProof = pages.join('\n\n');
   
     await saveProofVersion(formalityLevel, newFullProof);
-    setProof(newFullProof);
+    // We get the formatted proof from the first item in the updated history
+    const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
+    const updatedHistory = proofCache[cacheKey] || [];
+    const formattedProof = updatedHistory.length > 0 ? updatedHistory[0].proof : formatProof(newFullProof);
+    
+    setProof(formattedProof);
   
     setIsProofLoading(false);
     setTimeout(() => {
@@ -520,7 +545,11 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         });
   
         await saveProofVersion(formalityLevel, editedProof);
-        setProof(editedProof);
+        // We get the formatted proof from the first item in the updated history
+        const updatedHistory = proofCache[cacheKey] || [];
+        const formattedProof = updatedHistory.length > 0 ? updatedHistory[0].proof : formatProof(editedProof);
+
+        setProof(formattedProof);
         setConversationHistory(prev => {
            const newHistory = [...prev];
            newHistory[newHistory.length - 1].answer = summary;
