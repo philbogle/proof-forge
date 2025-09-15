@@ -29,10 +29,28 @@ interface UseProofExplorerProps {
  */
 function formatProof(proofText: string): string {
   if (!proofText) return '';
-  // This regex finds all occurrences of $$...$$ blocks, trims whitespace around them,
-  // and ensures they are separated by a single newline.
-  // It handles cases where there might be no newlines, multiple newlines, or just spaces.
-  return proofText.replace(/\s*\$\$\s*([\s\S]*?)\s*\$\$\s*/g, '\n\n$$\n$1\n$$\n\n').trim();
+  
+  // Trim the whole text first
+  let formattedText = proofText.trim();
+  
+  // Ensure $$ blocks are on their own lines, correctly spaced.
+  // This looks for $$ delimiters, optionally surrounded by whitespace (\s*),
+  // and replaces it to ensure there is exactly one newline before and after.
+  // It handles space before/after the $$ on the same line.
+  formattedText = formattedText.replace(/\s*\$\$\s*/g, '\n$$$$$$\n');
+  
+  // The above creates a unique marker. Now, split by it and process.
+  // This helps to manage the content inside vs. outside the blocks.
+  const parts = formattedText.split('$$$$$$');
+  
+  return parts.map((part, index) => {
+    // Content *inside* a $$...$$ block
+    if (index % 2 === 1) {
+      return `$$\n${part.trim()}\n$$`;
+    }
+    // Content *outside* a $$...$$ block
+    return part;
+  }).join('\n\n').trim();
 }
 
 
@@ -590,7 +608,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     proof,
     proofPages,
     currentPage,
-    isFading,
+isFading,
     proofCache,
     selectedVersion,
     isProofLoading,
