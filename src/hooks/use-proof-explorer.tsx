@@ -14,7 +14,7 @@ import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query, wh
 import { isAdmin } from '@/lib/auth';
 import { formatProof } from '@/lib/proof-formatting';
 
-const LOADING_INDICATOR_DELAY = 500; // ms
+const LOADING_INDICATOR_DELAY = 1000; // ms
 
 
 export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExplorerProps) {
@@ -228,7 +228,9 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       
       // If we've reached here, we need to generate a new proof, so ensure the loader is showing
       if (!isProofLoading && !loadingTimerRef.current) {
-         setIsProofLoading(true);
+         loadingTimerRef.current = setTimeout(() => {
+            setIsProofLoading(true);
+         }, LOADING_INDICATOR_DELAY);
       }
       if (proof) setProof('');
 
