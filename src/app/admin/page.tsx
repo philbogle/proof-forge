@@ -190,25 +190,32 @@ export default function AdminPage() {
       return;
     }
 
-    const currentTheorem = theorems[currentIndex];
-    const otherTheorem = theorems[newIndex];
+    const newTheorems = [...theorems];
+    const currentTheorem = newTheorems[currentIndex];
+    const otherTheorem = newTheorems[newIndex];
 
     try {
       await runTransaction(db, async (transaction) => {
         const currentRef = doc(db, 'theorems', currentTheorem.id);
         const otherRef = doc(db, 'theorems', otherTheorem.id);
 
+        // The transaction swaps the order values in Firestore
         transaction.update(currentRef, { order: otherTheorem.order });
         transaction.update(otherRef, { order: currentTheorem.order });
       });
-
-      // Optimistically update UI
-      const newTheorems = [...theorems];
-      [newTheorems[currentIndex], newTheorems[newIndex]] = [newTheorems[newIndex], newTheorems[currentIndex]];
-      newTheorems[currentIndex].order = otherTheorem.order;
-      newTheorems[newIndex].order = currentTheorem.order;
-      setTheorems(newTheorems.sort((a,b) => a.order - b.order));
       
+      // Optimistically update UI state
+      // Swap the order properties locally
+      const tempOrder = currentTheorem.order;
+      currentTheorem.order = otherTheorem.order;
+      otherTheorem.order = tempOrder;
+      
+      // Now swap their positions in the array
+      [newTheorems[currentIndex], newTheorems[newIndex]] = [newTheorems[newIndex], newTheorems[currentIndex]];
+      
+      // Set the state with the correctly reordered array
+      setTheorems(newTheorems);
+
       toast({ title: 'Success', description: 'Theorem order updated.' });
     } catch (error) {
       console.error('Error reordering theorems:', error);
