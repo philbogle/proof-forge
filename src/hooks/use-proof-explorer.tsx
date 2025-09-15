@@ -56,10 +56,10 @@ export function useProofExplorer() {
         let q;
         if (isUserAdmin) {
             // Admin sees all theorems
-            q = query(theoremsCollection, orderBy('name'));
+            q = query(theoremsCollection, orderBy('order'));
         } else {
             // Non-admins only see approved theorems
-            q = query(theoremsCollection, where('adminApproved', '==', true), orderBy('name'));
+            q = query(theoremsCollection, where('adminApproved', '==', true), orderBy('order'));
         }
         const theoremSnapshot = await getDocs(q);
         const theoremsList = theoremSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Theorem));

@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, writeBatch, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, writeBatch, query, orderBy, runTransaction } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2, Plus, Save, Trash2, Edit, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, Plus, Save, Trash2, Edit, AlertTriangle, CheckCircle, XCircle, ArrowUp, ArrowDown } from 'lucide-react';
 import type { Theorem, TheoremOwner } from '@/lib/types';
 import { seedTheorems } from '@/lib/theorems';
 import { Label } from '@/components/ui/label';
@@ -43,7 +43,7 @@ export default function AdminPage() {
     setIsLoading(true);
     try {
       const theoremsCollection = collection(db, 'theorems');
-       const q = query(theoremsCollection, orderBy('name'));
+       const q = query(theoremsCollection, orderBy('order'));
       const theoremSnapshot = await getDocs(q);
       const theoremsList = theoremSnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -101,7 +101,8 @@ export default function AdminPage() {
     if (theorem) {
       setCurrentTheorem(theorem);
     } else {
-      setCurrentTheorem({ name: '', statement: '', adminApproved: true });
+      const nextOrder = theorems.length > 0 ? Math.max(...theorems.map(t => t.order)) + 1 : 0;
+      setCurrentTheorem({ name: '', statement: '', adminApproved: true, order: nextOrder });
     }
     setIsDialogOpen(true);
   };
@@ -134,6 +135,7 @@ export default function AdminPage() {
                 statement: currentTheorem.statement,
                 owner: owner,
                 adminApproved: true,
+                order: currentTheorem.order,
             });
             toast({ title: 'Success', description: 'Theorem added successfully.' });
         }
@@ -182,6 +184,39 @@ export default function AdminPage() {
     } catch (error) {
         console.error("Error updating approval status: ", error);
         toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update approval status.'});
+    }
+  };
+
+  const handleReorder = async (currentIndex: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= theorems.length) {
+      return;
+    }
+
+    const currentTheorem = theorems[currentIndex];
+    const otherTheorem = theorems[newIndex];
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        const currentRef = doc(db, 'theorems', currentTheorem.id);
+        const otherRef = doc(db, 'theorems', otherTheorem.id);
+
+        transaction.update(currentRef, { order: otherTheorem.order });
+        transaction.update(otherRef, { order: currentTheorem.order });
+      });
+
+      // Optimistically update UI
+      const newTheorems = [...theorems];
+      [newTheorems[currentIndex], newTheorems[newIndex]] = [newTheorems[newIndex], newTheorems[currentIndex]];
+      newTheorems[currentIndex].order = otherTheorem.order;
+      newTheorems[newIndex].order = currentTheorem.order;
+      setTheorems(newTheorems.sort((a,b) => a.order - b.order));
+      
+      toast({ title: 'Success', description: 'Theorem order updated.' });
+    } catch (error) {
+      console.error('Error reordering theorems:', error);
+      toast({ variant: 'destructive', title: 'Reorder Failed', description: 'Could not update theorem order.' });
+      fetchTheorems(); // Refetch to correct any optimistic UI errors
     }
   };
 
@@ -247,13 +282,23 @@ export default function AdminPage() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {theorems.map((theorem) => (
+          {theorems.map((theorem, index) => (
             <Card key={theorem.id}>
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <CardTitle>{theorem.name}</CardTitle>
-                    <CardDescription>Owner: {theorem.owner?.name || theorem.owner?.id || 'Unknown'}</CardDescription>
+                  <div className="flex items-start gap-2">
+                    <div className="flex flex-col gap-1">
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleReorder(index, 'up')} disabled={index === 0}>
+                        <ArrowUp className="h-4 w-4"/>
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleReorder(index, 'down')} disabled={index === theorems.length - 1}>
+                        <ArrowDown className="h-4 w-4"/>
+                      </Button>
+                    </div>
+                    <div>
+                      <CardTitle>{theorem.name}</CardTitle>
+                      <CardDescription>Owner: {theorem.owner?.name || theorem.owner?.id || 'Unknown'} | Order: {theorem.order}</CardDescription>
+                    </div>
                   </div>
                   <div className="flex items-center space-x-2 pt-1">
                       <Switch
