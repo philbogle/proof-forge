@@ -12,46 +12,9 @@ import type { FormalityLevel, ProofVersion, ConversationTurn, Theorem } from '@/
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { isAdmin } from '@/lib/auth';
+import { formatProof } from '@/lib/proof-formatting';
 
 const LOADING_INDICATOR_DELAY = 500; // ms
-
-interface UseProofExplorerProps {
-  proofViewRef: React.RefObject<HTMLDivElement>;
-  initialTheoremId: string;
-}
-
-/**
- * A post-processing function to ensure $$ delimiters are correctly formatted.
- * It ensures that each $$ is preceded and followed by exactly one newline,
- * and removes any other leading/trailing whitespace on that line.
- * @param proofText The raw markdown proof text.
- * @returns The formatted proof text.
- */
-function formatProof(proofText: string): string {
-  if (!proofText) return '';
-  
-  // Trim the whole text first
-  let formattedText = proofText.trim();
-  
-  // Ensure $$ blocks are on their own lines, correctly spaced.
-  // This looks for $$ delimiters, optionally surrounded by whitespace (\s*),
-  // and replaces it to ensure there is exactly one newline before and after.
-  // It handles space before/after the $$ on the same line.
-  formattedText = formattedText.replace(/\s*\$\$\s*/g, '\n$$$$$$\n');
-  
-  // The above creates a unique marker. Now, split by it and process.
-  // This helps to manage the content inside vs. outside the blocks.
-  const parts = formattedText.split('$$$$$$');
-  
-  return parts.map((part, index) => {
-    // Content *inside* a $$...$$ block
-    if (index % 2 === 1) {
-      return `$$\n${part.trim()}\n$$`;
-    }
-    // Content *outside* a $$...$$ block
-    return part;
-  }).join('\n\n').trim();
-}
 
 
 export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExplorerProps) {
@@ -636,3 +599,9 @@ isFading,
     handleDiscardChanges,
   };
 }
+interface UseProofExplorerProps {
+    proofViewRef: React.RefObject<HTMLDivElement>;
+    initialTheoremId: string;
+}
+
+    
