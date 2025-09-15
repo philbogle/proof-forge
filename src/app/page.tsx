@@ -33,7 +33,6 @@ export default async function Home() {
                 <Card className="h-full hover:border-primary/50 hover:shadow-md transition-all duration-200">
                   <CardHeader>
                     <CardTitle>{theorem.name}</CardTitle>
-                    <CardDescription>Explore the proof for this fundamental theorem.</CardDescription>
                   </CardHeader>
                 </Card>
               </Link>
