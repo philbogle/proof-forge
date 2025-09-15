@@ -359,7 +359,7 @@ export function useProofExplorer({ proofViewRef }: UseProofExplorerProps) {
   const handlePageChange = (page: number) => {
     if (page === currentPage) return;
     
-    proofViewRef.current?.scrollIntoView({ behavior: 'smooth' });
+    proofViewRef.current?.scrollIntoView();
 
     setIsFading(true);
     setTimeout(() => {
