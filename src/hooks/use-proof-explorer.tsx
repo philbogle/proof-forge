@@ -286,7 +286,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       } finally {
         if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
         setIsProofLoading(false);
-        setTimeout(() => setIsFading(false), 100);
+        setIsFading(false);
       }
     },
     [
@@ -423,7 +423,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       console.error('Firestore cache write failed during rollback:', error);
     }
 
-    setTimeout(() => setIsFading(false), 100);
+    setIsFading(false);
 
     toast({
       title: 'Rollback Successful',
@@ -536,7 +536,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         });
   
         setIsProofLoading(false);
-        setTimeout(() => setIsFading(false), 100);
+        setIsFading(false);
       }
     } catch (error: any) {
       console.error(`Error during interaction:`, error);
@@ -601,3 +601,5 @@ interface UseProofExplorerProps {
     proofViewRef: React.RefObject<HTMLDivElement>;
     initialTheoremId: string;
 }
+
+    
