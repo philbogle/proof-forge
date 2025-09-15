@@ -221,8 +221,6 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         }
       }
       
-      if (proof) setProof('');
-
       // If we've reached here, it's a force refresh or not in any cache.
       // Start the timer to show the spinner ONLY for the slow AI generation.
       if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
@@ -294,7 +292,6 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       toast,
       selectedTheorem,
       proofCache,
-      proof,
       generateSingleProof,
       isUserAdmin,
     ]
