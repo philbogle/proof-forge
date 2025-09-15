@@ -22,7 +22,7 @@ const AnswerQuestionInputSchema = z.object({
   theoremText: z.string().describe('The text of the theorem.'),
   question: z.string().describe('The user question about the theorem.'),
   formalityLevel: z
-    .enum(['english', 'informal', 'rigorous'])
+    .enum(['english', 'semiformal', 'rigorous'])
     .describe('The current formality level of the proof.'),
   proofSection: z.string().optional().describe('The specific section of the proof the user is currently viewing. This should be considered the primary context for the question.'),
   history: z.array(ConversationTurnSchema).optional().describe('The history of the conversation so far.'),

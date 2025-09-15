@@ -2,7 +2,7 @@ import type { User as FirebaseUser, Auth } from 'firebase/auth';
 
 export type User = FirebaseUser;
 
-export type FormalityLevel = 'english' | 'informal' | 'rigorous';
+export type FormalityLevel = 'english' | 'semiformal' | 'rigorous';
 
 export type TheoremOwner = {
   id: string;

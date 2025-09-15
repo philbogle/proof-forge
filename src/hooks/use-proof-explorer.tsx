@@ -20,7 +20,7 @@ export function useProofExplorer() {
   const [theorems, setTheorems] = React.useState<Theorem[]>([]);
   const [selectedTheoremId, setSelectedTheoremId] = React.useState('');
   const [formalityLevel, setFormalityLevel] =
-    React.useState<FormalityLevel>('informal');
+    React.useState<FormalityLevel>('semiformal');
   const [proof, setProof] = React.useState('');
   const [rawProofEdit, setRawProofEdit] = React.useState('');
   const [proofPages, setProofPages] = React.useState<string[]>([]);
@@ -267,10 +267,10 @@ export function useProofExplorer() {
       try {
         const structuralProofLevels: FormalityLevel[] =
           formalityLevel === 'english'
-            ? ['informal', 'rigorous']
-            : formalityLevel === 'informal'
+            ? ['semiformal', 'rigorous']
+            : formalityLevel === 'semiformal'
             ? ['english', 'rigorous']
-            : ['informal', 'english'];
+            : ['semiformal', 'english'];
 
         let structuralProof: string | undefined;
 
@@ -300,9 +300,9 @@ export function useProofExplorer() {
         }
 
         let newProof;
-        if (!structuralProof && formalityLevel !== 'informal') {
-          const informalProof = await generateSingleProof('informal');
-          newProof = await generateSingleProof(formalityLevel, informalProof);
+        if (!structuralProof && formalityLevel !== 'semiformal') {
+          const semiformalProof = await generateSingleProof('semiformal');
+          newProof = await generateSingleProof(formalityLevel, semiformalProof);
         } else {
           newProof = await generateSingleProof(formalityLevel, structuralProof);
         }
@@ -390,7 +390,7 @@ export function useProofExplorer() {
     try {
       const deletePromises = [
         deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-english`)),
-        deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-informal`)),
+        deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-semiformal`)),
         deleteDoc(doc(db, 'proofs', `${selectedTheorem.id}-rigorous`)),
       ];
       await Promise.all(deletePromises);

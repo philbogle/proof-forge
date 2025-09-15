@@ -34,7 +34,7 @@ import {
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'english', name: 'English' },
-  { id: 'informal', name: 'Informal' },
+  { id: 'semiformal', name: 'Semiformal' },
   { id: 'rigorous', name: 'Rigorous' },
 ];
 
