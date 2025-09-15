@@ -192,7 +192,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         setProof(proofToSet);
         if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
         setIsProofLoading(false);
-        setTimeout(() => setIsFading(false), 100);
+        setIsFading(false);
       };
 
       if (
@@ -221,14 +221,14 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         }
       }
       
-      // If we've reached here, we need to generate a new proof.
-      // Start the timer to show the spinner only if generation takes a while.
+      if (proof) setProof('');
+
+      // If we've reached here, it's a force refresh or not in any cache.
+      // Start the timer to show the spinner ONLY for the slow AI generation.
       if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
       loadingTimerRef.current = setTimeout(() => {
         setIsProofLoading(true);
       }, LOADING_INDICATOR_DELAY);
-
-      if (proof) setProof('');
 
 
       try {
