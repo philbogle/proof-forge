@@ -12,7 +12,6 @@ export type TheoremOwner = {
 export type Theorem = {
   id: string;
   name:string;
-  statement: string;
   owner: TheoremOwner;
   adminApproved: boolean;
   order: number;
@@ -20,7 +19,6 @@ export type Theorem = {
 
 export type GenerateProofInput = {
   theoremName: string;
-  theoremStatement: string;
   formality: FormalityLevel;
   userBackground?: string;
   structuralProof?: string;

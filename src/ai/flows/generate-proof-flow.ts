@@ -20,7 +20,6 @@ const generateProofFlow = ai.defineFlow(
 You are an expert mathematician and a skilled teacher. Your task is to generate a proof for the given theorem at the specified level of formality.
 
 **Theorem Name:** ${input.theoremName}
-**Theorem Statement:** ${input.theoremStatement}
 **Formality Level:** ${input.formality}
 ${input.userBackground ? `**Target Audience Background:** ${input.userBackground}` : ''}
 

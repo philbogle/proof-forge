@@ -102,27 +102,8 @@ export function useProofExplorer() {
   const parseProofIntoPages = (fullProof: string) => {
     if (!fullProof || !selectedTheorem) return [];
   
-    // Find the index of the first step.
-    const firstStepIndex = fullProof.search(/###\s+1\./);
-  
-    let introPage: string;
-    let proofSteps: string;
-  
-    if (firstStepIndex === -1) {
-      // If no steps are found, the whole proof is the intro.
-      introPage = `${selectedTheorem.statement}\n\n${fullProof}`;
-      proofSteps = '';
-    } else {
-      // Everything before the first step is part of the intro.
-      const introText = fullProof.substring(0, firstStepIndex).trim();
-      introPage = `${selectedTheorem.statement}${introText ? `\n\n${introText}` : ''}`;
-      proofSteps = fullProof.substring(firstStepIndex);
-    }
-  
-    // Split the rest of the proof by Markdown headers (### 2., ### 3., etc.)
-    const stepPages = proofSteps.split(/(?=###\s+\d+\.)/).map(p => p.trim()).filter(Boolean);
-  
-    const pages = [introPage, ...stepPages];
+    // Split the proof by Markdown headers (### 1., ### 2., etc.)
+    const pages = fullProof.split(/(?=###\s+\d+\.)/).map(p => p.trim()).filter(Boolean);
   
     return pages.filter(p => p.trim() !== '');
   };
@@ -186,7 +167,6 @@ export function useProofExplorer() {
       if (!selectedTheorem) throw new Error("No theorem selected");
       const { proof: newProof } = await generateProof({
         theoremName: selectedTheorem.name,
-        theoremStatement: selectedTheorem.statement,
         formality: level,
         userBackground,
         structuralProof,
@@ -356,12 +336,18 @@ export function useProofExplorer() {
 
 
   const handleTheoremChange = (theoremId: string) => {
+    if (isEditing) {
+      handleDiscardChanges();
+    }
     setCurrentPage(0);
     setSelectedTheoremId(theoremId);
     setIsEditing(false);
   };
 
   const handleFormalityChange = (level: FormalityLevel) => {
+    if (isEditing) {
+      handleDiscardChanges();
+    }
     setFormalityLevel(level);
     setIsEditing(false);
   };
@@ -470,24 +456,21 @@ export function useProofExplorer() {
     if (!isUserAdmin || !selectedTheorem) return;
     setIsFading(true);
     setIsProofLoading(true);
-
+  
     const pages = [...proofPages];
     pages[currentPage] = rawProofEdit;
-
-    // Reconstruct the full proof from the pages array
-    const introContent = pages[0]?.replace(selectedTheorem.statement, '').trim() || '';
-    const stepContent = pages.slice(1).join('\n\n');
-    const newFullProof = [introContent, stepContent].filter(Boolean).join('\n\n');
-
-
+  
+    // Reconstruct the full proof from all the pages
+    const newFullProof = pages.join('\n\n');
+  
     await saveProofVersion(formalityLevel, newFullProof);
     setProof(newFullProof);
-
+  
     setIsProofLoading(false);
     setTimeout(() => {
-        setIsFading(false);
-        setIsEditing(false);
-        setRenderMarkdown(true);
+      setIsFading(false);
+      setIsEditing(false);
+      setRenderMarkdown(true);
     }, 100);
     toast({
       title: 'Proof Saved',

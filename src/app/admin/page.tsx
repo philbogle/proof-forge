@@ -8,7 +8,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import {
   AlertDialog,
@@ -102,7 +101,7 @@ export default function AdminPage() {
       setCurrentTheorem(theorem);
     } else {
       const nextOrder = theorems.length > 0 ? Math.max(...theorems.map(t => t.order)) + 1 : 0;
-      setCurrentTheorem({ name: '', statement: '', adminApproved: true, order: nextOrder });
+      setCurrentTheorem({ name: '', adminApproved: true, order: nextOrder });
     }
     setIsDialogOpen(true);
   };
@@ -112,8 +111,8 @@ export default function AdminPage() {
         toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in.' });
         return;
     }
-    if (!currentTheorem.name || !currentTheorem.statement) {
-        toast({ variant: 'destructive', title: 'Validation Error', description: 'Name and statement are required.' });
+    if (!currentTheorem.name) {
+        toast({ variant: 'destructive', title: 'Validation Error', description: 'Name is required.' });
         return;
     }
 
@@ -124,7 +123,6 @@ export default function AdminPage() {
             const theoremRef = doc(db, 'theorems', currentTheorem.id);
             await updateDoc(theoremRef, {
                 name: currentTheorem.name,
-                statement: currentTheorem.statement,
             });
             toast({ title: 'Success', description: 'Theorem updated successfully.' });
         } else {
@@ -132,7 +130,6 @@ export default function AdminPage() {
             const owner: TheoremOwner = { id: user.uid, name: user.displayName };
             await addDoc(collection(db, 'theorems'), {
                 name: currentTheorem.name,
-                statement: currentTheorem.statement,
                 owner: owner,
                 adminApproved: true,
                 order: currentTheorem.order,
@@ -241,12 +238,6 @@ export default function AdminPage() {
                 value={currentTheorem.name || ''}
                 onChange={(e) => setCurrentTheorem({ ...currentTheorem, name: e.target.value })}
               />
-              <Textarea
-                placeholder="Theorem Statement"
-                value={currentTheorem.statement || ''}
-                onChange={(e) => setCurrentTheorem({ ...currentTheorem, statement: e.target.value })}
-                className="min-h-[200px]"
-              />
             </div>
              <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
@@ -311,7 +302,6 @@ export default function AdminPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="line-clamp-3 text-sm text-muted-foreground">{theorem.statement}</p>
                  <div className="flex items-center gap-2 mt-4 text-sm">
                     {theorem.adminApproved ? (
                         <CheckCircle className="h-4 w-4 text-green-500" />
