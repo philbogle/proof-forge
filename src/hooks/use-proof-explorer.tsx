@@ -273,13 +273,12 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         }
 
         setProof(newProof);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error generating proof:', error);
         toast({
           variant: 'destructive',
-          title: 'Error',
-          description:
-            'Could not generate the proof. Please check the console for details.',
+          title: 'Proof Generation Error',
+          description: `An error occurred: ${error.message}`,
         });
         setProof('Failed to generate proof.');
       } finally {
@@ -528,13 +527,13 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         setIsProofLoading(false);
         setTimeout(() => setIsFading(false), 100);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error during interaction:`, error);
       const errorMessage = "I'm sorry, I couldn't process your request. Please try again.";
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: `Could not process your request. Please check the console for details.`,
+        title: 'Interaction Error',
+        description: `An error occurred: ${error.message}`,
       });
       setConversationHistory(prev => {
         const newHistory = [...prev];
