@@ -192,12 +192,10 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
       
       const handleCachedProof = (proofToSet: string) => {
-        setTimeout(() => {
-          setProof(proofToSet);
-          if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
-          setIsProofLoading(false);
-          setTimeout(() => setIsFading(false), 100);
-        }, 300);
+        setProof(proofToSet);
+        if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+        setIsProofLoading(false);
+        setTimeout(() => setIsFading(false), 100);
       };
 
       if (
