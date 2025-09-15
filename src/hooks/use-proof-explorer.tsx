@@ -362,7 +362,6 @@ export function useProofExplorer() {
   };
 
   const handleFormalityChange = (level: FormalityLevel) => {
-    setCurrentPage(0);
     setFormalityLevel(level);
     setIsEditing(false);
   };
