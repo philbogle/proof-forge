@@ -177,10 +177,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
          return;
       }
       setIsFading(true);
-      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
-      loadingTimerRef.current = setTimeout(() => {
-        setIsProofLoading(true);
-      }, LOADING_INDICATOR_DELAY);
+      
       const initialMessage = isUserAdmin
         ? "I am an AI assistant. Feel free to ask me any questions about this proof, or request an edit by describing the change you'd like to see (e.g., 'Make the base case more detailed' or 'Fix the typo in step 2')."
         : "I am an AI assistant. You can ask me any questions about this proof to help you understand it better.";
@@ -224,12 +221,13 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         }
       }
       
-      // If we've reached here, we need to generate a new proof, so ensure the loader is showing
-      if (!isProofLoading && !loadingTimerRef.current) {
-         loadingTimerRef.current = setTimeout(() => {
-            setIsProofLoading(true);
-         }, LOADING_INDICATOR_DELAY);
-      }
+      // If we've reached here, we need to generate a new proof.
+      // Start the timer to show the spinner only if generation takes a while.
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+      loadingTimerRef.current = setTimeout(() => {
+        setIsProofLoading(true);
+      }, LOADING_INDICATOR_DELAY);
+
       if (proof) setProof('');
 
 
@@ -296,7 +294,6 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       toast,
       selectedTheorem,
       proofCache,
-      isProofLoading,
       proof,
       generateSingleProof,
       isUserAdmin,
