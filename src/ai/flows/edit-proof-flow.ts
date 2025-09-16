@@ -59,8 +59,9 @@ ${input.proof}
 1.  **Incorporate the Edit:** Read the original proof and the user's request carefully. Generate a new version of the **entire proof** that incorporates the requested changes.
 2.  **Preserve Headers:** You MUST preserve the Markdown headers (e.g., \`### N. Step Title\`) from the original proof. Do not add new ones, renumber them, or remove them. This is critical for navigation.
 3.  **Maintain Formatting:** Your output must be in Markdown format, following the same styling and LaTeX conventions as the original proof.
-4.  **Generate Summary:** After generating the proof, create a brief, one or two-sentence summary of the edit you performed and its likely benefit to the user. For example: "I've expanded on the explanation for the base case to make the induction clearer." or "I've corrected the algebraic manipulation in step 3 to ensure the derivation is accurate."
-5.  **Output JSON:** Your final output must be a single JSON object with two keys: "editedProof" (containing the full new proof text) and "summary" (containing your summary sentence). Do not add any other commentary.
+4.  **Handle Long Definitions:** If you are adding or expanding on a definition and it becomes lengthy (more than a sentence or two), use the HTML <details> and <summary> tags to create a collapsible block. The <summary> should contain the term being defined.
+5.  **Generate Summary:** After generating the proof, create a brief, one or two-sentence summary of the edit you performed and its likely benefit to the user. For example: "I've expanded on the explanation for the base case to make the induction clearer." or "I've corrected the algebraic manipulation in step 3 to ensure the derivation is accurate."
+6.  **Output JSON:** Your final output must be a single JSON object with two keys: "editedProof" (containing the full new proof text) and "summary" (containing your summary sentence). Do not add any other commentary.
 
 **Formatting Rules for the Proof:**
 ${PROOF_FORMATTING_INSTRUCTIONS}
