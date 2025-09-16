@@ -13,6 +13,7 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { isAdmin } from '@/lib/auth';
 import { formatProof } from '@/lib/proof-formatting';
+import { useIsMobile } from './use-mobile';
 
 const LOADING_INDICATOR_DELAY = 500; // ms
 
@@ -44,6 +45,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const [isEditing, setIsEditing] = React.useState(false);
   
   const isUserAdmin = isAdmin(user);
+  const isMobile = useIsMobile();
 
   const { toast } = useToast();
 
@@ -330,7 +332,9 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const handlePageChange = (page: number) => {
     if (page === currentPage) return;
     
-    proofViewRef.current?.scrollIntoView();
+    if (isMobile) {
+      proofViewRef.current?.scrollIntoView();
+    }
 
     setIsFading(true);
     setTimeout(() => {
