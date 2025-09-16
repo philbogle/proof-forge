@@ -41,7 +41,6 @@ export const wellKnownTheorems = [
 
     // Algebra
     'Binomial Theorem',
-    'Cayley-Hamilton Theorem',
     'Lagrange\'s Theorem (Group Theory)',
     'Sylow Theorems',
     'Isomorphism Theorems',
@@ -92,3 +91,4 @@ export const wellKnownTheorems = [
     'Quantum Threshold Theorem',
     'Solovay-Kitaev Theorem',
 ] as const;
+
