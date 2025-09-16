@@ -16,14 +16,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { AlertCircle, Trash2, History, RefreshCw } from 'lucide-react';
+import { AlertCircle, Trash2, History } from 'lucide-react';
 import type { Theorem, ProofVersion, User } from '@/lib/types';
-import { Switch } from '../ui/switch';
 
 interface AdvancedSettingsProps {
   user: User | null;
   isProofLoading: boolean;
-  generateNewProof: (forceRefresh?: boolean) => void;
   selectedTheorem: Theorem | null;
   handleClearCache: () => void;
   currentProofHistory: ProofVersion[];
@@ -35,7 +33,6 @@ interface AdvancedSettingsProps {
 export default function AdvancedSettings({
   user,
   isProofLoading,
-  generateNewProof,
   selectedTheorem,
   handleClearCache,
   currentProofHistory,
@@ -71,26 +68,7 @@ export default function AdvancedSettings({
                     </span>
                  </div>
                 )}
-              <div className="space-y-2">
-                <h4 className="font-semibold">Refresh and Regenerate Proof</h4>
-                <p className="text-sm text-muted-foreground">
-                  Force a new proof to be generated, ignoring the current cache.
-                  This will be attributed to you.
-                </p>
-                <Button
-                  variant="secondary"
-                  onClick={() => generateNewProof(true)}
-                  disabled={isProofLoading}
-                >
-                  <RefreshCw
-                    className={`mr-2 h-4 w-4 ${
-                      isProofLoading ? 'animate-spin' : ''
-                    }`}
-                  />
-                  {isProofLoading ? 'Refreshing...' : 'Refresh Proof'}
-                </Button>
-              </div>
-
+              
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-semibold">Clear Theorem Cache</h4>

@@ -1,18 +1,14 @@
 // src/components/proof-explorer/proof-controls.tsx
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
 import type { FormalityLevel } from '@/lib/types';
 import PaginationControls from './pagination-controls';
-import { Switch } from '../ui/switch';
-import { Label } from '../ui/label';
 
 interface ProofControlsProps {
   formalityLevels: { id: FormalityLevel; name: string }[];
   formalityLevel: FormalityLevel;
   isProofLoading: boolean;
   onFormalityChange: (level: FormalityLevel) => void;
-  onRefresh: () => void;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -23,7 +19,6 @@ export default function ProofControls({
   formalityLevel,
   isProofLoading,
   onFormalityChange,
-  onRefresh,
   currentPage,
   totalPages,
   onPageChange,

@@ -11,7 +11,7 @@ import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
 import AdvancedSettings from './proof-explorer/advanced-settings';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Save, X, View, Pencil, ChevronRight } from 'lucide-react';
+import { MessageSquare, Save, X, View, Pencil, ChevronRight, Sparkles } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -111,7 +111,6 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                 formalityLevel={formalityLevel}
                 isProofLoading={isProofLoading}
                 onFormalityChange={handleFormalityChange}
-                onRefresh={() => generateNewProof(true)}
                 currentPage={currentPage}
                 totalPages={proofPages.length}
                 onPageChange={handlePageChange}
@@ -133,7 +132,11 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
               />
 
               {isUserAdmin && !isEditing && (
-                 <div className="flex justify-end">
+                 <div className="flex justify-end gap-2">
+                   <Button variant="outline" onClick={() => generateNewProof(true)} disabled={isProofLoading}>
+                     <Sparkles className={`mr-2 h-4 w-4 ${isProofLoading ? 'animate-pulse' : ''}`} />
+                     {isProofLoading ? 'Recreating...' : 'Recreate Proof'}
+                   </Button>
                    <Button variant="ghost" onClick={handleToggleEditing}>
                      <Pencil className="mr-2 h-4 w-4" />
                      Edit Proof
@@ -146,7 +149,6 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                   <AdvancedSettings
                     user={user}
                     isProofLoading={isProofLoading}
-                    generateNewProof={generateNewProof}
                     selectedTheorem={selectedTheorem}
                     handleClearCache={handleClearCache}
                     currentProofHistory={currentProofHistory}

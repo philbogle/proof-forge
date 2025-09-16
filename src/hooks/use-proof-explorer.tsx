@@ -560,7 +560,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     proof,
     proofPages,
     currentPage,
-isFading,
+    isFading,
     proofCache,
     selectedVersion,
     isProofLoading,
