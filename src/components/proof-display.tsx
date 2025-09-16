@@ -14,7 +14,7 @@ export function ProofDisplay({ content }: { content: string }) {
     <ReactMarkdown
       className="prose prose-blue dark:prose-invert max-w-none font-body text-base leading-relaxed"
       remarkPlugins={[remarkMath]}
-      rehypePlugins={[rehypeKatex, rehypeRaw]}
+      rehypePlugins={[rehypeRaw, rehypeKatex]}
     >
       {content}
     </ReactMarkdown>
