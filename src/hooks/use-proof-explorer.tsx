@@ -467,18 +467,8 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   };
 
   const handleInteraction = async () => {
-    if (!interactionText.trim()) return;
+    if (!interactionText.trim() || !selectedTheorem) return;
 
-    if (!user) {
-        toast({
-            variant: 'destructive',
-            title: 'Sign In Required',
-            description: 'Please sign in to interact with the AI assistant.',
-        });
-        return;
-    }
-  
-    if (!selectedTheorem) return;
     setIsInteractionLoading(true);
     const currentQuestion = interactionText;
     setInteractionText('');
@@ -492,7 +482,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       const { intent } = await classifyIntent({ text: currentQuestion });
   
       if (intent === 'edit' && !isUserAdmin) {
-        const adminMessage = "I'm sorry, you must be an administrator to request an edit. You can ask questions about the proof to understand it better.";
+        const adminMessage = "I'm sorry, you must be an administrator to request an edit. You can still ask questions about the proof to understand it better.";
         setConversationHistory(prev => {
           const newHistory = [...prev];
           newHistory[newHistory.length - 1].answer = adminMessage;

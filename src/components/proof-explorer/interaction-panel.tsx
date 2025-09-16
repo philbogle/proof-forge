@@ -42,9 +42,6 @@ export default function InteractionPanel({
   };
 
   const getPlaceholderText = () => {
-    if (!isUserSignedIn) {
-      return "Sign in to ask questions about the proof...";
-    }
     if (isUserAdmin) {
         return "Ask a question or request an edit...";
     }
@@ -117,9 +114,9 @@ export default function InteractionPanel({
             <span className="sr-only">Submit</span>
           </Button>
         </div>
-        {!isUserSignedIn && (
+        {!isUserSignedIn && !isUserAdmin && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Sign in to ask questions and interact with the AI assistant.
+            Sign in as an administrator to request edits.
           </p>
         )}
       </div>
