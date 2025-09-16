@@ -2,6 +2,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, writeBatch, query, orderBy, runTransaction } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
@@ -21,7 +22,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2, Plus, Save, Trash2, Edit, AlertTriangle, CheckCircle, XCircle, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loader2, Plus, Save, Trash2, Edit, AlertTriangle, CheckCircle, XCircle, ArrowUp, ArrowDown, Eye } from 'lucide-react';
 import type { Theorem, TheoremOwner } from '@/lib/types';
 import { seedTheorems, wellKnownTheorems } from '@/lib/theorems';
 import { Label } from '@/components/ui/label';
@@ -341,6 +342,11 @@ export default function AdminPage() {
                  </div>
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
+                 <Link href={`/proof/${theorem.id}`} passHref>
+                    <Button variant="outline" size="sm" asChild>
+                        <a><Eye className="mr-2 h-4 w-4" /> View Proof</a>
+                    </Button>
+                 </Link>
                  <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(theorem)}>
                    <Edit className="mr-2 h-4 w-4" /> Edit
                  </Button>
