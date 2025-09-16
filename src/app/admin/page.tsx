@@ -27,6 +27,7 @@ import { seedTheorems, wellKnownTheorems } from '@/lib/theorems';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Combobox } from '@/components/ui/combobox';
+import { Badge } from '@/components/ui/badge';
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -251,7 +252,9 @@ export default function AdminPage() {
                 <Combobox
                     options={wellKnownTheorems}
                     value={currentTheorem.name || ''}
-                    onChange={(value) => setCurrentTheorem({ ...currentTheorem, name: value })}
+                    onChange={(value) => {
+                        setCurrentTheorem({ ...currentTheorem, name: value });
+                    }}
                     placeholder="Select a theorem..."
                     searchPlaceholder="Search for a theorem..."
                     emptyMessage="No matching theorem found."
@@ -306,7 +309,12 @@ export default function AdminPage() {
                       </Button>
                     </div>
                     <div>
-                      <CardTitle>{theorem.name}</CardTitle>
+                      <div className='flex items-center gap-2'>
+                        <CardTitle>{theorem.name}</CardTitle>
+                        {!theorem.adminApproved && (
+                          <Badge variant="secondary">Unapproved</Badge>
+                        )}
+                      </div>
                       <CardDescription>Owner: {theorem.owner?.name || theorem.owner?.id || 'Unknown'} | Order: {theorem.order}</CardDescription>
                     </div>
                   </div>
