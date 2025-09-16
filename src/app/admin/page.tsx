@@ -23,9 +23,10 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Loader2, Plus, Save, Trash2, Edit, AlertTriangle, CheckCircle, XCircle, ArrowUp, ArrowDown } from 'lucide-react';
 import type { Theorem, TheoremOwner } from '@/lib/types';
-import { seedTheorems } from '@/lib/theorems';
+import { seedTheorems, wellKnownTheorems } from '@/lib/theorems';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Combobox } from '@/components/ui/combobox';
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -240,11 +241,22 @@ export default function AdminPage() {
               <DialogTitle>{currentTheorem.id ? 'Edit Theorem' : 'Add New Theorem'}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <Input
-                placeholder="Theorem Name"
-                value={currentTheorem.name || ''}
-                onChange={(e) => setCurrentTheorem({ ...currentTheorem, name: e.target.value })}
-              />
+              {currentTheorem.id ? (
+                <Input
+                    placeholder="Theorem Name"
+                    value={currentTheorem.name || ''}
+                    onChange={(e) => setCurrentTheorem({ ...currentTheorem, name: e.target.value })}
+                />
+              ) : (
+                <Combobox
+                    options={wellKnownTheorems}
+                    value={currentTheorem.name || ''}
+                    onChange={(value) => setCurrentTheorem({ ...currentTheorem, name: value })}
+                    placeholder="Select a theorem..."
+                    searchPlaceholder="Search for a theorem..."
+                    emptyMessage="No matching theorem found."
+                />
+              )}
             </div>
              <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
