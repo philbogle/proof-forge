@@ -30,7 +30,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {theorems.map((theorem) => (
               <Link href={`/proof/${theorem.id}`} key={theorem.id} className="block hover:no-underline">
-                <Card className="h-full hover:border-primary/50 hover:shadow-md transition-all duration-200">
+                <Card className="h-full flex flex-col justify-center hover:border-primary/50 hover:shadow-md transition-all duration-200">
                   <CardHeader>
                     <CardTitle>{theorem.name}</CardTitle>
                   </CardHeader>
