@@ -344,7 +344,7 @@ export default function AdminPage() {
               <CardFooter className="flex justify-end gap-2">
                  <Link href={`/proof/${theorem.id}`} passHref>
                     <Button variant="outline" size="sm" asChild>
-                        <a><Eye className="mr-2 h-4 w-4" /> View Proof</a>
+                        <span><Eye className="mr-2 h-4 w-4" /> View Proof</span>
                     </Button>
                  </Link>
                  <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(theorem)}>
