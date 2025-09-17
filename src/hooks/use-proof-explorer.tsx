@@ -43,6 +43,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   );
   const [renderMarkdown, setRenderMarkdown] = React.useState(true);
   const [isEditing, setIsEditing] = React.useState(false);
+  const [isChatOpen, setIsChatOpen] = React.useState(false);
   
   const isUserAdmin = isAdmin(user);
   const isMobile = useIsMobile();
@@ -578,6 +579,8 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     renderMarkdown,
     rawProofEdit,
     currentProofHistory,
+    isChatOpen,
+    setIsChatOpen,
     setProof,
     setRawProofEdit,
     setProofPages,
@@ -599,5 +602,3 @@ interface UseProofExplorerProps {
     proofViewRef: React.RefObject<HTMLDivElement>;
     initialTheoremId: string;
 }
-
-    

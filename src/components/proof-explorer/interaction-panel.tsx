@@ -4,10 +4,11 @@
 import * as React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, User, Bot, MessageSquare, Send } from 'lucide-react';
+import { Loader2, User, Bot, MessageSquare, Send, X } from 'lucide-react';
 import { ProofDisplay } from '@/components/proof-display';
 import type { ConversationTurn } from '@/lib/types';
 import { ScrollArea } from '../ui/scroll-area';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface InteractionPanelProps {
   interactionText: string;
@@ -17,6 +18,7 @@ interface InteractionPanelProps {
   conversationHistory: ConversationTurn[];
   isUserSignedIn: boolean;
   isUserAdmin: boolean;
+  onClose?: () => void;
 }
 
 export default function InteractionPanel({
@@ -27,8 +29,10 @@ export default function InteractionPanel({
   conversationHistory,
   isUserSignedIn,
   isUserAdmin,
+  onClose,
 }: InteractionPanelProps) {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -49,10 +53,17 @@ export default function InteractionPanel({
   }
 
   return (
-    <div className="flex h-[80vh] flex-col p-4">
-      <div className="mb-4 flex items-center gap-2">
-        <MessageSquare className="h-6 w-6" />
-        <h2 className="text-xl font-semibold">AI Assistant</h2>
+    <div className="flex h-full flex-col p-4">
+       <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-6 w-6" />
+          <h2 className="text-xl font-semibold">AI Assistant</h2>
+        </div>
+        {isMobile && onClose && (
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+            <X className="h-5 w-5" />
+          </Button>
+        )}
       </div>
       <ScrollArea className="flex-1 pr-4 -mr-4">
         <div className="space-y-4">
@@ -123,5 +134,3 @@ export default function InteractionPanel({
     </div>
   );
 }
-
-    

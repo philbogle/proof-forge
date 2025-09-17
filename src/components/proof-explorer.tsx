@@ -31,6 +31,8 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import Link from 'next/link';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'english', name: 'English' },
@@ -61,6 +63,8 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
     rawProofEdit,
     currentProofHistory,
     selectedVersion,
+    isChatOpen,
+    setIsChatOpen,
     handleFormalityChange,
     handlePageChange,
     setRenderMarkdown,
@@ -77,6 +81,21 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
   } = useProofExplorer({ proofViewRef, initialTheoremId });
 
   const [isDiscardAlertOpen, setIsDiscardAlertOpen] = React.useState(false);
+  const isMobile = useIsMobile();
+
+  const interactionPanel = (
+    <InteractionPanel
+      interactionText={interactionText}
+      onInteractionTextChange={setInteractionText}
+      onInteract={handleInteraction}
+      isInteractionLoading={isInteractionLoading}
+      conversationHistory={conversationHistory}
+      isUserSignedIn={!!user}
+      isUserAdmin={isUserAdmin}
+      onClose={() => setIsChatOpen(false)}
+    />
+  );
+
 
   if (!selectedTheorem && !isProofLoading) {
     return (
@@ -223,32 +242,37 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
           </AlertDialogContent>
         </AlertDialog>
 
-        <div className="fixed bottom-4 right-4 z-10 w-full max-w-lg">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem
-              value="item-1"
-              className="border-none flex flex-col items-end"
-            >
-              <AccordionTrigger className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-12 rounded-full p-0 shadow-lg flex items-center justify-center hover:no-underline group">
-                <MessageSquare className="h-6 w-6 group-data-[state=open]:hidden" />
-                <X className="h-6 w-6 group-data-[state=closed]:hidden" />
-              </AccordionTrigger>
-              <AccordionContent className="w-full">
-                <div className="mt-2 rounded-lg border bg-card shadow-xl">
-                  <InteractionPanel
-                    interactionText={interactionText}
-                    onInteractionTextChange={setInteractionText}
-                    onInteract={handleInteraction}
-                    isInteractionLoading={isInteractionLoading}
-                    conversationHistory={conversationHistory}
-                    isUserSignedIn={!!user}
-                    isUserAdmin={isUserAdmin}
-                  />
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
+        {isMobile ? (
+          <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
+            <SheetTrigger asChild>
+               <Button className="fixed bottom-4 right-4 z-10 h-12 w-12 rounded-full shadow-lg">
+                <MessageSquare className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[90vh] p-0 border-t">
+                {interactionPanel}
+            </SheetContent>
+          </Sheet>
+        ) : (
+          <div className="fixed bottom-4 right-4 z-10 w-full max-w-lg">
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem
+                value="item-1"
+                className="border-none flex flex-col items-end"
+              >
+                <AccordionTrigger className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-12 rounded-full p-0 shadow-lg flex items-center justify-center hover:no-underline group">
+                  <MessageSquare className="h-6 w-6 group-data-[state=open]:hidden" />
+                  <X className="h-6 w-6 group-data-[state=closed]:hidden" />
+                </AccordionTrigger>
+                <AccordionContent className="w-full">
+                  <div className="mt-2 rounded-lg border bg-card shadow-xl">
+                    {interactionPanel}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   );
