@@ -16,6 +16,7 @@ import { Loader2, Plus, Save } from 'lucide-react';
 import { wellKnownTheorems } from '@/lib/theorems';
 import { Combobox } from '@/components/ui/combobox';
 import { Separator } from '@/components/ui/separator';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 function TheoremCard({ theorem }: { theorem: Theorem }) {
   return (
@@ -39,6 +40,7 @@ export default function Home() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
   const [newTheoremName, setNewTheoremName] = React.useState('');
+  const isMobile = useIsMobile();
 
   const fetchTheorems = React.useCallback(async () => {
     setIsLoading(true);
@@ -131,7 +133,7 @@ export default function Home() {
                 <h1 className="text-4xl font-bold tracking-tight">Welcome to Proof Forge</h1>
                 <p className="mt-2 text-lg text-muted-foreground">Select a theorem below to begin your exploration.</p>
             </div>
-            {user && !authLoading && (
+            {user && !authLoading && !isMobile && (
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                         <Button>
