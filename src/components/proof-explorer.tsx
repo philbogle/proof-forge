@@ -11,7 +11,7 @@ import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
 import AdvancedSettings from './proof-explorer/advanced-settings';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Save, X, View, Pencil, ChevronRight, Sparkles } from 'lucide-react';
+import { MessageSquare, Save, X, View, Pencil, ChevronRight, Sparkles, Bot } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/accordion';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'english', name: 'English' },
@@ -83,8 +83,9 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
   const [isDiscardAlertOpen, setIsDiscardAlertOpen] = React.useState(false);
   const isMobile = useIsMobile();
 
-  const interactionPanel = (
+  const interactionPanel = (showTitle: boolean) => (
     <InteractionPanel
+      showTitle={showTitle}
       interactionText={interactionText}
       onInteractionTextChange={setInteractionText}
       onInteract={handleInteraction}
@@ -249,8 +250,18 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                 <MessageSquare className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-[90vh] p-0 border-t">
-                {interactionPanel}
+            <SheetContent side="bottom" className="h-[90vh] p-0 border-t flex flex-col">
+                <SheetHeader className="p-4 border-b">
+                    <SheetTitle>
+                        <div className="flex items-center gap-2">
+                            <Bot className="h-6 w-6" />
+                            <span className="text-xl font-semibold">AI Assistant</span>
+                        </div>
+                    </SheetTitle>
+                </SheetHeader>
+                <div className="flex-1 overflow-y-auto">
+                    {interactionPanel(false)}
+                </div>
             </SheetContent>
           </Sheet>
         ) : (
@@ -266,7 +277,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                 </AccordionTrigger>
                 <AccordionContent className="w-full">
                   <div className="mt-2 rounded-lg border bg-card shadow-xl">
-                    {interactionPanel}
+                    {interactionPanel(true)}
                   </div>
                 </AccordionContent>
               </AccordionItem>
