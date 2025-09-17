@@ -59,10 +59,17 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
             const theoremDoc = await getDoc(doc(db, 'theorems', initialTheoremId));
             if (theoremDoc.exists()) {
                 const theoremData = { id: theoremDoc.id, ...theoremDoc.data() } as Theorem;
-                if (theoremData.adminApproved || isUserAdmin) {
+                // Allow access if theorem is approved OR the user is an admin OR the user is the owner
+                const isOwner = user ? theoremData.owner.id === user.uid : false;
+                if (theoremData.adminApproved || isUserAdmin || isOwner) {
                     setSelectedTheorem(theoremData);
                 } else {
                     setSelectedTheorem(null);
+                    toast({
+                        variant: "destructive",
+                        title: "Access Denied",
+                        description: "You do not have permission to view this theorem.",
+                    });
                 }
             } else {
                 setSelectedTheorem(null);
@@ -77,7 +84,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         }
     };
     fetchTheorem();
-  }, [initialTheoremId, isUserAdmin, toast]);
+  }, [initialTheoremId, isUserAdmin, user, toast]);
 
 
   const currentProofHistory = React.useMemo(() => {
