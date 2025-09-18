@@ -14,7 +14,7 @@ import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query, wh
 import { isAdmin } from '@/lib/auth';
 import { formatProof } from '@/lib/proof-formatting';
 import { useIsMobile } from './use-mobile';
-import { readStreamableValue } from 'ai/rsc';
+import { readStreamableValue } from '@ai-sdk/rsc';
 
 const LOADING_INDICATOR_DELAY = 500; // ms
 

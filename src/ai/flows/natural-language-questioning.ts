@@ -11,8 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import {FormalityLevel} from '@/lib/types';
-import {createStreamableValue} from 'ai/rsc';
-import {StreamablePromise} from 'ai/rsc';
+import {createStreamableValue, StreamablePromise} from '@ai-sdk/rsc';
 
 const ConversationTurnSchema = z.object({
   question: z.string(),
