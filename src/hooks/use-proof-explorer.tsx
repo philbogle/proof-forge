@@ -55,7 +55,16 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
 
   React.useEffect(() => {
     const fetchTheorem = async () => {
-        if (!initialTheoremId) return;
+        if (!initialTheoremId || !user) {
+            if (!user) {
+                // If user is not loaded yet, wait. If it's null, they are logged out.
+                // We'll let the effect re-run when user state changes.
+                return;
+            }
+            setIsProofLoading(false); // No ID, so nothing to load
+            return;
+        };
+
         setIsProofLoading(true);
         try {
             const theoremDocRef = doc(db, 'theorems', initialTheoremId);
@@ -63,34 +72,31 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
 
             if (theoremDoc.exists()) {
                 const theoremData = { id: theoremDoc.id, ...theoremDoc.data() } as Theorem;
-                // Client-side check for immediate feedback for admins/owners on already fetched data
-                const isOwner = user ? theoremData.owner.id === user.uid : false;
-                if (theoremData.adminApproved || isUserAdmin || isOwner) {
-                    setSelectedTheorem(theoremData);
-                } else {
-                    // If the client-side check fails, it implies a permissions issue.
-                    setSelectedTheorem(null);
-                     toast({
-                        variant: "destructive",
-                        title: "Access Denied",
-                        description: "You do not have permission to view this theorem.",
-                    });
-                }
+                // Security rules handle access. If getDoc succeeds, the user has permission.
+                setSelectedTheorem(theoremData);
             } else {
                 setSelectedTheorem(null);
+                toast({
+                    variant: "destructive",
+                    title: "Not Found",
+                    description: "The requested theorem does not exist.",
+                });
             }
         } catch (error) {
             console.error("Error fetching theorem:", error);
+            setSelectedTheorem(null);
             // This will catch permission errors from Firestore security rules
             toast({
                 variant: "destructive",
-                title: "Error",
-                description: "Could not fetch the specified theorem or you lack permissions.",
+                title: "Access Denied",
+                description: "You do not have permission to view this theorem.",
             });
+        } finally {
+            setIsProofLoading(false);
         }
     };
     fetchTheorem();
-  }, [initialTheoremId, isUserAdmin, user, toast]);
+  }, [initialTheoremId, user, toast]);
 
 
   const currentProofHistory = React.useMemo(() => {
