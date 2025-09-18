@@ -44,9 +44,7 @@ export default function Home() {
 
   const fetchTheorems = React.useCallback(async () => {
     setIsLoading(true);
-    setApprovedTheorems([]);
-    setUserTheorems([]);
-
+    
     // 1. Fetch all approved theorems
     try {
       const approvedQuery = query(collection(db, 'theorems'), where('adminApproved', '==', true), orderBy('order'));
@@ -84,6 +82,9 @@ export default function Home() {
                 description: 'Could not fetch your submitted theorems. This might be a database permissions issue.',
             });
         }
+    } else {
+      // Clear user theorems if user is logged out
+      setUserTheorems([]);
     }
     
     setIsLoading(false);
@@ -159,7 +160,7 @@ export default function Home() {
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleAddTheorem} disabled={isSaving}>
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                Save Theorem
+                Add Theorem
                 </Button>
             </div>
         </DialogContent>
