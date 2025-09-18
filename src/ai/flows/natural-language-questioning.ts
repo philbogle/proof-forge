@@ -11,6 +11,8 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import {FormalityLevel} from '@/lib/types';
+import {createStreamableValue} from 'ai/rsc';
+import {StreamablePromise} from 'ai/rsc';
 
 const ConversationTurnSchema = z.object({
   question: z.string(),
@@ -36,14 +38,21 @@ export type AnswerQuestionOutput = z.infer<typeof AnswerQuestionOutputSchema>;
 
 export async function answerQuestion(
   input: AnswerQuestionInput
-): Promise<AnswerQuestionOutput> {
-  return answerQuestionFlow(input);
+): Promise<StreamablePromise<string>> {
+  const stream = createStreamableValue();
+  (async () => {
+    const result = await answerQuestionFlow(input);
+    for await (const chunk of result.stream) {
+      stream.update(chunk.text());
+    }
+    stream.done();
+  })();
+  return stream.value;
 }
 
 const prompt = ai.definePrompt({
   name: 'answerQuestionPrompt',
   input: {schema: AnswerQuestionInputSchema},
-  output: {schema: AnswerQuestionOutputSchema},
   prompt: `You are an expert mathematician and a helpful AI assistant. Your goal is to answer the user's questions about a mathematical proof.
 
 You should use the provided proof text and conversation history as the primary context. However, you are encouraged to draw upon your broad mathematical knowledge to provide deeper insights, clarify concepts, and offer explanations that may go beyond the literal text of the proof.
@@ -79,10 +88,8 @@ const answerQuestionFlow = ai.defineFlow(
   {
     name: 'answerQuestionFlow',
     inputSchema: AnswerQuestionInputSchema,
-    outputSchema: AnswerQuestionOutputSchema,
   },
   async (input) => {
-    const {output} = await prompt(input);
-    return output!;
+    return await prompt.stream(input);
   }
 );

@@ -14,6 +14,7 @@ import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query, wh
 import { isAdmin } from '@/lib/auth';
 import { formatProof } from '@/lib/proof-formatting';
 import { useIsMobile } from './use-mobile';
+import { readStreamableValue } from 'ai/rsc';
 
 const LOADING_INDICATOR_DELAY = 500; // ms
 
@@ -500,7 +501,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       }
   
       if (intent === 'question') {
-        const result = await answerQuestion({
+        const stream = await answerQuestion({
           theoremName: selectedTheorem.name,
           theoremText: latestProof,
           question: currentQuestion,
@@ -508,11 +509,13 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
           proofSection,
           history: conversationHistory.slice(0, -1), // Don't include the current question
         });
-        setConversationHistory(prev => {
-          const newHistory = [...prev];
-          newHistory[newHistory.length - 1].answer = result.answer;
-          return newHistory;
-        });
+        for await (const chunk of readStreamableValue(stream)) {
+          setConversationHistory(prev => {
+            const newHistory = [...prev];
+            newHistory[newHistory.length - 1].answer = chunk as string;
+            return newHistory;
+          });
+        }
       } else if (intent === 'edit') {
         setIsFading(true);
         setIsProofLoading(true);
