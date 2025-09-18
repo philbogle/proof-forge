@@ -10,16 +10,18 @@ import { editProof } from '@/ai/flows/edit-proof-flow';
 import { classifyIntent } from '@/ai/flows/classify-intent-flow';
 import type { FormalityLevel, ProofVersion, ConversationTurn, Theorem } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query, where, QueryConstraint } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { isAdmin } from '@/lib/auth';
 import { formatProof } from '@/lib/proof-formatting';
 import { useIsMobile } from './use-mobile';
+import { useRouter } from 'next/navigation';
 
 const LOADING_INDICATOR_DELAY = 300; // ms
 
 
 export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExplorerProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const [selectedTheorem, setSelectedTheorem] = React.useState<Theorem | null>(null);
   const [formalityLevel, setFormalityLevel] =
     React.useState<FormalityLevel>('semiformal');
@@ -47,20 +49,16 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const [isChatOpen, setIsChatOpen] = React.useState(false);
   
   const isUserAdmin = isAdmin(user);
+  const isOwner = user?.uid === selectedTheorem?.owner?.id;
   const isMobile = useIsMobile();
 
   const { toast } = useToast();
 
-  const loadingTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const loadingTimerRef = React. useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
     const fetchTheorem = async () => {
-        if (!initialTheoremId || !user) {
-            if (!user) {
-                // If user is not loaded yet, wait. If it's null, they are logged out.
-                // We'll let the effect re-run when user state changes.
-                return;
-            }
+        if (!initialTheoremId) {
             setIsProofLoading(false); // No ID, so nothing to load
             return;
         };
@@ -88,15 +86,15 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
             // This will catch permission errors from Firestore security rules
             toast({
                 variant: "destructive",
-                title: "Access Denied",
-                description: "You do not have permission to view this theorem.",
+                title: "Error",
+                description: "You might not have permission to view this theorem or it does not exist.",
             });
         } finally {
             setIsProofLoading(false);
         }
     };
     fetchTheorem();
-  }, [initialTheoremId, user, toast]);
+  }, [initialTheoremId, toast]);
 
 
   const currentProofHistory = React.useMemo(() => {
@@ -128,11 +126,11 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
 
   React.useEffect(() => {
     if (isEditing) {
-      setRawProofEdit(proofPages[currentPage] || '');
+      setRawProofEdit(proof); // Start editing with the full proof
       setRenderMarkdown(false); // Default to edit view when entering editing mode
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditing, currentPage, proofPages]);
+  }, [isEditing]);
 
   const saveProofVersion = React.useCallback(
     async (level: FormalityLevel, newProof: string): Promise<string> => {
@@ -329,14 +327,14 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   }, [selectedTheorem, formalityLevel]);
   
   const handleToggleEditing = () => {
-    if (!isUserAdmin) return;
+    if (!isUserAdmin && !isOwner) return;
     setIsEditing(prev => !prev);
   };
 
   const handleDiscardChanges = () => {
     setIsEditing(false);
     setRenderMarkdown(true);
-    // No need to reset rawProofEdit, useEffect handles it
+    setRawProofEdit(proof);
   };
 
 
@@ -399,6 +397,22 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     generateNewProof(true);
   };
 
+  const handleDeleteTheorem = async () => {
+    if (!selectedTheorem || (!isUserAdmin && !isOwner)) {
+        toast({variant: 'destructive', title: 'Error', description: 'You do not have permission to delete this theorem.'});
+        return;
+    }
+    try {
+        await deleteDoc(doc(db, 'theorems', selectedTheorem.id));
+        await handleClearCache(); // Also clear proofs from cache and DB
+        toast({ title: 'Success', description: 'Theorem has been deleted.' });
+        router.push('/');
+    } catch (error) {
+        console.error('Error deleting theorem:', error);
+        toast({variant: 'destructive', title: 'Deletion Failed', description: 'Could not delete the theorem.'});
+    }
+  };
+
   const handleRollback = async () => {
     if (!isUserAdmin || !selectedTheorem) return;
     if (!selectedVersion) {
@@ -454,15 +468,11 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   };
 
   const handleRawProofSave = () => {
-    if (!isUserAdmin || !selectedTheorem) return;
+    if (!isUserAdmin && !isOwner || !selectedTheorem) return;
 
     const previousProof = proof;
   
-    // Optimistic UI Update
-    const pages = [...proofPages];
-    pages[currentPage] = rawProofEdit;
-    const newFullProof = pages.join('\n\n');
-    const formattedProof = formatProof(newFullProof);
+    const formattedProof = formatProof(rawProofEdit);
     
     setProof(formattedProof);
     setIsEditing(false);
@@ -473,7 +483,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     });
 
     // Background save
-    saveProofVersion(formalityLevel, newFullProof).catch((error) => {
+    saveProofVersion(formalityLevel, formattedProof).catch((error) => {
         console.error("Failed to save proof:", error);
         // Revert UI on failure
         setProof(previousProof); 
@@ -496,15 +506,16 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     const proofSection = proofPages[currentPage] || '';
     const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
     const latestProof = proofCache[cacheKey]?.[0]?.proof || proof;
+    const canEdit = isUserAdmin || (isOwner && !selectedTheorem.adminApproved);
   
     try {
       const { intent } = await classifyIntent({ text: currentQuestion });
   
-      if (intent === 'edit' && !isUserAdmin) {
-        const adminMessage = "I'm sorry, you must be an administrator to request an edit. You can still ask questions about the proof to understand it better.";
+      if (intent === 'edit' && !canEdit) {
+        const message = isUserAdmin ? "You can only edit a theorem once it's been approved." : "You can only edit your own theorems before they have been approved. You can still ask questions about the proof.";
         setConversationHistory(prev => {
           const newHistory = [...prev];
-          newHistory[newHistory.length - 1].answer = adminMessage;
+          newHistory[newHistory.length - 1].answer = message;
           return newHistory;
         });
         setIsInteractionLoading(false);
@@ -573,6 +584,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   return {
     user,
     isUserAdmin,
+    isOwner,
     isEditing,
     selectedTheorem,
     formalityLevel,
@@ -604,6 +616,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     setInteractionText,
     generateNewProof,
     handleClearCache,
+    handleDeleteTheorem,
     setSelectedVersion,
     handleRollback,
     handleToggleEditing,

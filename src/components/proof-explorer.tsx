@@ -49,6 +49,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
   const {
     user,
     isUserAdmin,
+    isOwner,
     isEditing,
     selectedTheorem,
     formalityLevel,
@@ -79,6 +80,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
     handleRollback,
     handleToggleEditing,
     handleDiscardChanges,
+    handleDeleteTheorem,
   } = useProofExplorer({ proofViewRef, initialTheoremId });
 
   const [isDiscardAlertOpen, setIsDiscardAlertOpen] = React.useState(false);
@@ -112,6 +114,8 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
        </div>
     )
   }
+
+  const canEdit = isUserAdmin || (isOwner && !selectedTheorem?.adminApproved);
 
   return (
     <TooltipProvider>
@@ -152,7 +156,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                 onRawProofChange={setRawProofEdit}
               />
 
-              {isUserAdmin && !isEditing && (
+              {canEdit && !isEditing && (
                  <div className="flex justify-end gap-2">
                    <Button variant="outline" onClick={() => generateNewProof(true)} disabled={isProofLoading || isGenerating}>
                      <Sparkles className={`mr-2 h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`} />
@@ -165,7 +169,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                  </div>
                )}
 
-              {isUserAdmin && !isEditing && (
+              {(isUserAdmin || isOwner) && !isEditing && (
                 <div className="mt-4">
                   <AdvancedSettings
                     user={user}
@@ -176,6 +180,9 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                     selectedVersion={selectedVersion}
                     setSelectedVersion={setSelectedVersion}
                     handleRollback={handleRollback}
+                    handleDeleteTheorem={handleDeleteTheorem}
+                    showAdminControls={isUserAdmin}
+                    showOwnerControls={isOwner}
                   />
                 </div>
               )}
@@ -183,7 +190,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
           </div>
         </div>
 
-        {isEditing && (
+        {isEditing && canEdit && (
           <div className="sticky bottom-0 z-20 w-full border-t bg-background/95 backdrop-blur-sm">
             <div className="max-w-4xl mx-auto flex items-center justify-between p-3">
               <div className="flex items-center gap-4">

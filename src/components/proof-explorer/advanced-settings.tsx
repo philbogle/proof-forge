@@ -18,6 +18,17 @@ import {
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Trash2, History } from 'lucide-react';
 import type { Theorem, ProofVersion, User } from '@/lib/types';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog';
 
 interface AdvancedSettingsProps {
   user: User | null;
@@ -28,6 +39,9 @@ interface AdvancedSettingsProps {
   selectedVersion: string;
   setSelectedVersion: (version: string) => void;
   handleRollback: () => void;
+  handleDeleteTheorem: () => void;
+  showAdminControls: boolean;
+  showOwnerControls: boolean;
 }
 
 export default function AdvancedSettings({
@@ -39,6 +53,9 @@ export default function AdvancedSettings({
   selectedVersion,
   setSelectedVersion,
   handleRollback,
+  handleDeleteTheorem,
+  showAdminControls,
+  showOwnerControls,
 }: AdvancedSettingsProps) {
   const latestVersion = currentProofHistory[0];
 
@@ -69,71 +86,107 @@ export default function AdvancedSettings({
                  </div>
                 )}
               
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold">Clear Theorem Cache</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Delete all cached proofs for "{selectedTheorem.name}" and
-                    regenerate.
-                  </p>
-                </div>
-                <Button
-                  variant="destructive"
-                  onClick={handleClearCache}
-                  size="sm"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Clear
-                </Button>
-              </div>
-
-              <div className="space-y-2">
+              {showAdminControls && (
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold">Proof Version History</h4>
+                    <div>
+                    <h4 className="font-semibold">Clear Theorem Cache</h4>
                     <p className="text-sm text-muted-foreground">
-                      Rollback to a previous version of the proof for the current
-                      formality level.
+                        Delete all cached proofs for "{selectedTheorem.name}" and
+                        regenerate.
                     </p>
-                  </div>
-                </div>
-                {currentProofHistory.length > 0 ? (
-                  <div className="flex items-end gap-2">
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label htmlFor="version-select">Select Version</Label>
-                      <Select
-                        onValueChange={setSelectedVersion}
-                        value={selectedVersion}
-                      >
-                        <SelectTrigger id="version-select">
-                          <SelectValue placeholder="Select a version to restore" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {currentProofHistory.map((version) => (
-                            <SelectItem
-                              key={version.timestamp}
-                              value={version.timestamp}
-                            >
-                              {new Date(
-                                version.timestamp
-                              ).toLocaleString()}{' '}
-                              {version.user?.name && `by ${version.user.name}`}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     </div>
-                    <Button onClick={handleRollback} disabled={!selectedVersion}>
-                      <History className="mr-2 h-4 w-4" />
-                      Rollback
+                    <Button
+                    variant="destructive"
+                    onClick={handleClearCache}
+                    size="sm"
+                    >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Clear
                     </Button>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No history available for this proof and formality level.
-                  </p>
-                )}
-              </div>
+                </div>
+              )}
+
+              {showAdminControls && (
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                    <div>
+                        <h4 className="font-semibold">Proof Version History</h4>
+                        <p className="text-sm text-muted-foreground">
+                        Rollback to a previous version of the proof for the current
+                        formality level.
+                        </p>
+                    </div>
+                    </div>
+                    {currentProofHistory.length > 0 ? (
+                    <div className="flex items-end gap-2">
+                        <div className="grid w-full max-w-sm items-center gap-1.5">
+                        <Label htmlFor="version-select">Select Version</Label>
+                        <Select
+                            onValueChange={setSelectedVersion}
+                            value={selectedVersion}
+                        >
+                            <SelectTrigger id="version-select">
+                            <SelectValue placeholder="Select a version to restore" />
+                            </SelectTrigger>
+                            <SelectContent>
+                            {currentProofHistory.map((version) => (
+                                <SelectItem
+                                key={version.timestamp}
+                                value={version.timestamp}
+                                >
+                                {new Date(
+                                    version.timestamp
+                                ).toLocaleString()}{' '}
+                                {version.user?.name && `by ${version.user.name}`}
+                                </SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        </div>
+                        <Button onClick={handleRollback} disabled={!selectedVersion}>
+                        <History className="mr-2 h-4 w-4" />
+                        Rollback
+                        </Button>
+                    </div>
+                    ) : (
+                    <p className="text-sm text-muted-foreground">
+                        No history available for this proof and formality level.
+                    </p>
+                    )}
+                </div>
+              )}
+
+            {(showAdminControls || showOwnerControls) && (
+                 <div className="flex items-center justify-between rounded-lg border border-destructive/50 p-4">
+                    <div>
+                        <h4 className="font-semibold text-destructive">Delete Theorem</h4>
+                        <p className="text-sm text-muted-foreground">
+                        Permanently delete this theorem and all its associated proofs. This action cannot be undone.
+                        </p>
+                    </div>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will permanently delete the theorem "{selectedTheorem.name}" and all of its associated proof versions. This action cannot be undone.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteTheorem}>
+                                Yes, delete theorem
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                 </div>
+            )}
             </CardContent>
           </Card>
         </AccordionContent>
