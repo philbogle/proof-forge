@@ -56,6 +56,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
     currentPage,
     isFading,
     isProofLoading,
+    isGenerating,
     interactionText,
     conversationHistory,
     isInteractionLoading,
@@ -129,7 +130,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
               <ProofControls
                 formalityLevels={formalityLevels}
                 formalityLevel={formalityLevel}
-                isProofLoading={isProofLoading}
+                isProofLoading={isProofLoading || isGenerating}
                 onFormalityChange={handleFormalityChange}
                 currentPage={currentPage}
                 totalPages={proofPages.length}
@@ -145,7 +146,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                     : proofPages[currentPage] || ''
                 }
                 renderMarkdown={renderMarkdown}
-                isLoading={isProofLoading}
+                isLoading={isProofLoading || isGenerating}
                 isFading={isFading}
                 isEditable={isEditing && !renderMarkdown}
                 onRawProofChange={setRawProofEdit}
@@ -153,9 +154,9 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
 
               {isUserAdmin && !isEditing && (
                  <div className="flex justify-end gap-2">
-                   <Button variant="outline" onClick={() => generateNewProof(true)} disabled={isProofLoading}>
-                     <Sparkles className={`mr-2 h-4 w-4 ${isProofLoading ? 'animate-pulse' : ''}`} />
-                     {isProofLoading ? 'Recreating...' : 'Recreate Proof'}
+                   <Button variant="outline" onClick={() => generateNewProof(true)} disabled={isProofLoading || isGenerating}>
+                     <Sparkles className={`mr-2 h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`} />
+                     {isGenerating ? 'Generating...' : 'Recreate Proof'}
                    </Button>
                    <Button variant="ghost" onClick={handleToggleEditing}>
                      <Pencil className="mr-2 h-4 w-4" />
@@ -168,7 +169,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                 <div className="mt-4">
                   <AdvancedSettings
                     user={user}
-                    isProofLoading={isProofLoading}
+                    isProofLoading={isProofLoading || isGenerating}
                     selectedTheorem={selectedTheorem}
                     handleClearCache={handleClearCache}
                     currentProofHistory={currentProofHistory}

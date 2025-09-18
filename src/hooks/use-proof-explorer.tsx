@@ -15,7 +15,7 @@ import { isAdmin } from '@/lib/auth';
 import { formatProof } from '@/lib/proof-formatting';
 import { useIsMobile } from './use-mobile';
 
-const LOADING_INDICATOR_DELAY = 500; // ms
+const LOADING_INDICATOR_DELAY = 300; // ms
 
 
 export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExplorerProps) {
@@ -35,6 +35,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const [selectedVersion, setSelectedVersion] = React.useState<string>('');
 
   const [isProofLoading, setIsProofLoading] = React.useState(true);
+  const [isGenerating, setIsGenerating] = React.useState(false);
   const [interactionText, setInteractionText] = React.useState('');
   const [conversationHistory, setConversationHistory] = React.useState<ConversationTurn[]>([]);
   const [isInteractionLoading, setIsInteractionLoading] = React.useState(false);
@@ -208,15 +209,20 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         setIsProofLoading(false);
         setIsFading(false);
       };
-
+      
       if (
         !forceRefresh &&
         proofCache[cacheKey] &&
         proofCache[cacheKey].length > 0
-      ) {
+        ) {
         handleCachedProof(proofCache[cacheKey][0].proof);
         return;
       }
+      
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+      loadingTimerRef.current = setTimeout(() => {
+        setIsProofLoading(true);
+      }, LOADING_INDICATOR_DELAY);
 
       if (!forceRefresh) {
         try {
@@ -235,13 +241,9 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         }
       }
       
-      // If we've reached here, it's a force refresh or not in any cache.
-      // Start the timer to show the spinner ONLY for the slow AI generation.
       if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
-      loadingTimerRef.current = setTimeout(() => {
-        setIsProofLoading(true);
-      }, LOADING_INDICATOR_DELAY);
-
+      setIsProofLoading(false);
+      setIsGenerating(true);
 
       try {
         const structuralProofLevels: FormalityLevel[] =
@@ -296,8 +298,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         });
         setProof('Failed to generate proof.');
       } finally {
-        if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
-        setIsProofLoading(false);
+        setIsGenerating(false);
         setIsFading(false);
       }
     },
@@ -520,7 +521,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         });
       } else if (intent === 'edit') {
         setIsFading(true);
-        setIsProofLoading(true);
+        setIsGenerating(true);
         const { editedProof, summary } = await editProof({
           proof: latestProof,
           request: currentQuestion,
@@ -538,7 +539,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
            return newHistory;
         });
   
-        setIsProofLoading(false);
+        setIsGenerating(false);
         setIsFading(false);
       }
     } catch (error: any) {
@@ -554,8 +555,8 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         newHistory[newHistory.length - 1].answer = errorMessage;
         return newHistory;
       });
-       if (isProofLoading) {
-        setIsProofLoading(false);
+       if (isGenerating) {
+        setIsGenerating(false);
         setIsFading(false);
        }
     } finally {
@@ -576,6 +577,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     proofCache,
     selectedVersion,
     isProofLoading,
+    isGenerating,
     interactionText,
     conversationHistory,
     isInteractionLoading,
