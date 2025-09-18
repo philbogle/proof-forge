@@ -44,8 +44,6 @@ export default function Home() {
 
   const fetchTheorems = React.useCallback(async () => {
     setIsLoading(true);
-
-    // Reset states
     setApprovedTheorems([]);
     setUserTheorems([]);
 
@@ -70,17 +68,21 @@ export default function Home() {
             const userQuery = query(
               collection(db, 'theorems'),
               where('owner.id', '==', user.uid),
-              where('adminApproved', '==', false)
+              where('adminApproved', '==', false),
+              orderBy('order')
             );
             const userSnapshot = await getDocs(userQuery);
             const userList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Theorem));
-            // Sort client-side to avoid needing a composite index for this query
-            userList.sort((a, b) => a.order - b.order);
             setUserTheorems(userList);
         } catch (error) {
             console.error("Error fetching user's theorems:", error);
-            // Don't show a toast for this, as it's an expected error for users without the index
-            // and doesn't prevent the main content from loading.
+            // This toast is for debugging and might indicate a missing index.
+            // It won't show for most users unless there's a real problem.
+            toast({
+                variant: 'destructive',
+                title: 'Error Fetching Your Theorems',
+                description: 'Could not fetch your submitted theorems. This might be a database permissions issue.',
+            });
         }
     }
     
