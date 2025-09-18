@@ -159,24 +159,24 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
               />
 
               {!isEditing && (
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end items-center gap-2">
                   {isUserAdmin && (
-                    <Button variant="outline" onClick={() => generateNewProof(true)} disabled={isProofLoading || isGenerating}>
+                    <Button variant="outline" size="sm" onClick={() => generateNewProof(true)} disabled={isProofLoading || isGenerating}>
                       <Sparkles className={`mr-2 h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`} />
-                      {isGenerating ? 'Generating...' : 'Recreate Proof'}
+                      {isGenerating ? 'Generating...' : 'Recreate'}
                     </Button>
                   )}
                   {canEdit && (
-                    <Button variant="ghost" onClick={handleToggleEditing}>
+                    <Button variant="ghost" size="sm" onClick={handleToggleEditing}>
                       <Pencil className="mr-2 h-4 w-4" />
-                      Edit Proof
+                      Edit
                     </Button>
                   )}
                   {canDelete && selectedTheorem && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="sm">
-                          <Trash2 className="mr-2 h-4 w-4" /> Delete Theorem
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
