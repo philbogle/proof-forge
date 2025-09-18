@@ -1,21 +1,13 @@
 // src/components/proof-loading-indicator.tsx
 'use client';
 
-import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2 } from 'lucide-react';
 
 export function ProofLoadingIndicator() {
   return (
-    <div className="space-y-6">
-      <Skeleton className="h-8 w-3/4 rounded-lg" />
-      <div className="space-y-3">
-        <Skeleton className="h-4 w-full rounded" />
-        <Skeleton className="h-4 w-full rounded" />
-        <Skeleton className="h-4 w-5/6 rounded" />
-      </div>
-      <div className="space-y-3">
-        <Skeleton className="h-4 w-full rounded" />
-        <Skeleton className="h-4 w-1/2 rounded" />
-      </div>
+    <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground">
+      <Loader2 className="h-12 w-12 animate-spin" />
+      <p className="text-lg font-medium">Generating Proof...</p>
     </div>
   );
 }
