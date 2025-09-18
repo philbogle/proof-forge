@@ -158,43 +158,44 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                 onRawProofChange={setRawProofEdit}
               />
 
-              {canEdit && !isEditing && (
-                 <div className="flex justify-end gap-2">
-                   <Button variant="outline" onClick={() => generateNewProof(true)} disabled={isProofLoading || isGenerating}>
-                     <Sparkles className={`mr-2 h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`} />
-                     {isGenerating ? 'Generating...' : 'Recreate Proof'}
-                   </Button>
-                   <Button variant="ghost" onClick={handleToggleEditing}>
-                     <Pencil className="mr-2 h-4 w-4" />
-                     Edit Proof
-                   </Button>
-                 </div>
-               )}
-               
-              {canDelete && !isEditing && selectedTheorem && (
-                 <div className="flex justify-end gap-2 mt-2">
+              {!isEditing && (
+                <div className="flex justify-end gap-2">
+                  {isUserAdmin && (
+                    <Button variant="outline" onClick={() => generateNewProof(true)} disabled={isProofLoading || isGenerating}>
+                      <Sparkles className={`mr-2 h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`} />
+                      {isGenerating ? 'Generating...' : 'Recreate Proof'}
+                    </Button>
+                  )}
+                  {canEdit && (
+                    <Button variant="ghost" onClick={handleToggleEditing}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Edit Proof
+                    </Button>
+                  )}
+                  {canDelete && selectedTheorem && (
                     <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm">
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete Theorem
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This will permanently delete the theorem "{selectedTheorem.name}" and all of its associated proof versions. This action cannot be undone.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDeleteTheorem}>
-                                Yes, delete theorem
-                            </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete Theorem
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete the theorem "{selectedTheorem.name}" and all of its associated proof versions. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteTheorem}>
+                            Yes, delete theorem
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
                     </AlertDialog>
-                 </div>
+                  )}
+                </div>
               )}
 
 
