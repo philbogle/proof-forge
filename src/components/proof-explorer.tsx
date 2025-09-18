@@ -171,7 +171,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                  </div>
                )}
                
-              {canDelete && !isEditing && (
+              {canDelete && !isEditing && selectedTheorem && (
                  <div className="flex justify-end gap-2 mt-2">
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -209,7 +209,6 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                     selectedVersion={selectedVersion}
                     setSelectedVersion={setSelectedVersion}
                     handleRollback={handleRollback}
-                    handleDeleteTheorem={handleDeleteTheorem}
                     showAdminControls={isUserAdmin}
                     showOwnerControls={isOwner}
                   />

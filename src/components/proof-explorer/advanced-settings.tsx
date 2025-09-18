@@ -18,17 +18,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Trash2, History } from 'lucide-react';
 import type { Theorem, ProofVersion, User } from '@/lib/types';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '../ui/alert-dialog';
 
 interface AdvancedSettingsProps {
   user: User | null;
@@ -39,7 +28,6 @@ interface AdvancedSettingsProps {
   selectedVersion: string;
   setSelectedVersion: (version: string) => void;
   handleRollback: () => void;
-  handleDeleteTheorem: () => void;
   showAdminControls: boolean;
   showOwnerControls: boolean;
 }
@@ -53,7 +41,6 @@ export default function AdvancedSettings({
   selectedVersion,
   setSelectedVersion,
   handleRollback,
-  handleDeleteTheorem,
   showAdminControls,
   showOwnerControls,
 }: AdvancedSettingsProps) {
