@@ -11,7 +11,7 @@ import ProofView from './proof-explorer/proof-view';
 import InteractionPanel from './proof-explorer/interaction-panel';
 import AdvancedSettings from './proof-explorer/advanced-settings';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Save, X, View, Pencil, ChevronRight, Sparkles, Bot } from 'lucide-react';
+import { MessageSquare, Save, X, View, Pencil, ChevronRight, Sparkles, Bot, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -116,6 +116,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
   }
 
   const canEdit = isUserAdmin || (isOwner && !selectedTheorem?.adminApproved);
+  const canDelete = isUserAdmin || isOwner;
 
   return (
     <TooltipProvider>
@@ -168,6 +169,33 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                    </Button>
                  </div>
                )}
+               
+              {canDelete && !isEditing && (
+                 <div className="flex justify-end gap-2 mt-2">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete Theorem
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will permanently delete the theorem "{selectedTheorem.name}" and all of its associated proof versions. This action cannot be undone.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteTheorem}>
+                                Yes, delete theorem
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                 </div>
+              )}
+
 
               {(isUserAdmin || isOwner) && !isEditing && (
                 <div className="mt-4">

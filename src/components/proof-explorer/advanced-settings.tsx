@@ -155,38 +155,6 @@ export default function AdvancedSettings({
                     )}
                 </div>
               )}
-
-            {(showAdminControls || showOwnerControls) && (
-                 <div className="flex items-center justify-between rounded-lg border border-destructive/50 p-4">
-                    <div>
-                        <h4 className="font-semibold text-destructive">Delete Theorem</h4>
-                        <p className="text-sm text-muted-foreground">
-                        Permanently delete this theorem and all its associated proofs. This action cannot be undone.
-                        </p>
-                    </div>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm">
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This will permanently delete the theorem "{selectedTheorem.name}" and all of its associated proof versions. This action cannot be undone.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDeleteTheorem}>
-                                Yes, delete theorem
-                            </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                 </div>
-            )}
             </CardContent>
           </Card>
         </AccordionContent>
