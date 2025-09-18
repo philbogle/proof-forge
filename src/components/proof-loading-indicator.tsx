@@ -13,6 +13,26 @@ const generationSteps = [
   'Arguing with Fermat...',
   'Checking for paradoxes...',
   'Adding Q.E.D. with a flourish...',
+  'Reticulating splines...',
+  'Aligning axioms...',
+  'Herding infinite monkeys...',
+  'Verifying the Riemann Hypothesis (just for fun)...',
+  'Constructing additional pylons...',
+  'Searching for a counter-example...',
+  'Calibrating the logic gates...',
+  'Inverting the matrix...',
+  'Proving P=NP (just kidding... unless?)...',
+  'Dusting off the Principia Mathematica...',
+  'Applying the pigeonhole principle...',
+  'Wrestling with transfinite numbers...',
+  'Building a bridge to infinity...',
+  'Taking the limit...',
+  'Factoring really, really large numbers...',
+  'Drawing Venn diagrams...',
+  'Sharpening the pencils...',
+  'Erasing the blackboard...',
+  'Synthesizing epicycles...',
+  'Finalizing the lemma...',
 ];
 
 function ProofGenerationAnimator() {
@@ -27,7 +47,7 @@ function ProofGenerationAnimator() {
   }, []);
 
   return (
-    <div className="relative h-8 w-full max-w-xs overflow-hidden">
+    <div className="relative h-16 w-full max-w-xs overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
