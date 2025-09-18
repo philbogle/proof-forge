@@ -27,7 +27,8 @@ const ShouldIncludeInformationOutputSchema = z.object({
 export type ShouldIncludeInformationOutput = z.infer<typeof ShouldIncludeInformationOutputSchema>;
 
 export async function shouldIncludeInformation(input: ShouldIncludeInformationInput): Promise<ShouldIncludeInformationOutput> {
-  return shouldIncludeInformationFlow(input);
+  const result = await shouldIncludeInformationFlow(input);
+  return { include: result.include, reason: result.reason };
 }
 
 const prompt = ai.definePrompt({

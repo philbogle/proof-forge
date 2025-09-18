@@ -37,7 +37,8 @@ export type AnswerQuestionOutput = z.infer<typeof AnswerQuestionOutputSchema>;
 export async function answerQuestion(
   input: AnswerQuestionInput
 ): Promise<AnswerQuestionOutput> {
-  return answerQuestionFlow(input);
+  const result = await answerQuestionFlow(input);
+  return { answer: result.answer };
 }
 
 const prompt = ai.definePrompt({

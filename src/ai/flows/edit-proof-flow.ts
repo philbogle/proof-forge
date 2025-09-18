@@ -96,5 +96,5 @@ export async function editProof(
   input: EditProofInput
 ): Promise<EditProofOutput> {
   const result = await editProofFlow(input);
-  return result;
+  return { editedProof: result.editedProof, summary: result.summary };
 }

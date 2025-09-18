@@ -55,5 +55,5 @@ export async function classifyIntent(
   input: ClassifyIntentInput
 ): Promise<ClassifyIntentOutput> {
   const result = await classifyIntentFlow(input);
-  return result;
+  return { intent: result.intent };
 }
