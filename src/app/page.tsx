@@ -70,11 +70,12 @@ export default function Home() {
             const userQuery = query(
               collection(db, 'theorems'),
               where('owner.id', '==', user.uid),
-              where('adminApproved', '==', false),
-              orderBy('order')
+              where('adminApproved', '==', false)
             );
             const userSnapshot = await getDocs(userQuery);
             const userList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Theorem));
+            // Sort client-side to avoid needing a composite index for this query
+            userList.sort((a, b) => a.order - b.order);
             setUserTheorems(userList);
         } catch (error) {
             console.error("Error fetching user's theorems:", error);

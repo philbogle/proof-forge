@@ -10,7 +10,7 @@ import { editProof } from '@/ai/flows/edit-proof-flow';
 import { classifyIntent } from '@/ai/flows/classify-intent-flow';
 import type { FormalityLevel, ProofVersion, ConversationTurn, Theorem } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, orderBy, query, where, QueryConstraint } from 'firebase/firestore';
 import { isAdmin } from '@/lib/auth';
 import { formatProof } from '@/lib/proof-formatting';
 import { useIsMobile } from './use-mobile';
@@ -57,16 +57,19 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         if (!initialTheoremId) return;
         setIsProofLoading(true);
         try {
-            const theoremDoc = await getDoc(doc(db, 'theorems', initialTheoremId));
+            const theoremDocRef = doc(db, 'theorems', initialTheoremId);
+            const theoremDoc = await getDoc(theoremDocRef);
+
             if (theoremDoc.exists()) {
                 const theoremData = { id: theoremDoc.id, ...theoremDoc.data() } as Theorem;
-                // Allow access if theorem is approved OR the user is an admin OR the user is the owner
+                // Client-side check for immediate feedback for admins/owners on already fetched data
                 const isOwner = user ? theoremData.owner.id === user.uid : false;
                 if (theoremData.adminApproved || isUserAdmin || isOwner) {
                     setSelectedTheorem(theoremData);
                 } else {
+                    // If the client-side check fails, it implies a permissions issue.
                     setSelectedTheorem(null);
-                    toast({
+                     toast({
                         variant: "destructive",
                         title: "Access Denied",
                         description: "You do not have permission to view this theorem.",
@@ -77,10 +80,11 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
             }
         } catch (error) {
             console.error("Error fetching theorem:", error);
+            // This will catch permission errors from Firestore security rules
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: "Could not fetch the specified theorem.",
+                description: "Could not fetch the specified theorem or you lack permissions.",
             });
         }
     };
