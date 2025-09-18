@@ -44,39 +44,48 @@ export default function Home() {
 
   const fetchTheorems = React.useCallback(async () => {
     setIsLoading(true);
+
+    // Reset states
+    setApprovedTheorems([]);
+    setUserTheorems([]);
+
+    // 1. Fetch all approved theorems
     try {
-      // 1. Fetch all approved theorems
       const approvedQuery = query(collection(db, 'theorems'), where('adminApproved', '==', true), orderBy('order'));
       const approvedSnapshot = await getDocs(approvedQuery);
       const approvedList = approvedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Theorem));
       setApprovedTheorems(approvedList);
-
-      // 2. Fetch user's unapproved theorems
-      if (user) {
-        const userQuery = query(
-          collection(db, 'theorems'),
-          where('owner.id', '==', user.uid),
-          where('adminApproved', '==', false)
-        );
-        const userSnapshot = await getDocs(userQuery);
-        const userList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Theorem));
-        // Sort on the client side
-        userList.sort((a, b) => a.order - b.order);
-        setUserTheorems(userList);
-      } else {
-        setUserTheorems([]);
-      }
-
     } catch (error) {
-      console.error("Error fetching theorems:", error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not fetch theorems from the database.',
-      });
-    } finally {
-      setIsLoading(false);
+        console.error("Error fetching approved theorems:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Could not fetch approved theorems from the database.',
+        });
     }
+
+    // 2. Fetch user's unapproved theorems
+    if (user) {
+        try {
+            const userQuery = query(
+              collection(db, 'theorems'),
+              where('owner.id', '==', user.uid),
+              where('adminApproved', '==', false)
+            );
+            const userSnapshot = await getDocs(userQuery);
+            const userList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Theorem));
+            // Sort on the client side
+            userList.sort((a, b) => a.order - b.order);
+            setUserTheorems(userList);
+        } catch (error) {
+            console.error("Error fetching user's theorems:", error);
+            // Don't show a toast for this, as it's an expected error for users without the index
+            // and doesn't prevent the main content from loading.
+        }
+    }
+    
+    setIsLoading(false);
+
   }, [user, toast]);
 
   React.useEffect(() => {
