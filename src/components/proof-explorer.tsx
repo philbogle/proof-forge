@@ -77,11 +77,11 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
     setInteractionText,
     generateNewProof,
     handleClearCache,
+    handleDeleteTheorem,
     setSelectedVersion,
     handleRollback,
     handleToggleEditing,
     handleDiscardChanges,
-    handleDeleteTheorem,
   } = useProofExplorer({ proofViewRef, initialTheoremId });
 
   const [isDiscardAlertOpen, setIsDiscardAlertOpen] = React.useState(false);
@@ -166,11 +166,17 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                       {isGenerating ? 'Generating...' : 'Recreate'}
                     </Button>
                   )}
-                  {canEdit && (
-                    <Button variant="ghost" size="sm" onClick={handleToggleEditing}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Edit
-                    </Button>
+                   {canEdit && (
+                    <>
+                      <Button variant="outline" size="sm" onClick={() => setIsChatOpen(true)}>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        AI Edit
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={handleToggleEditing}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
+                    </>
                   )}
                   {canDelete && selectedTheorem && (
                     <AlertDialog>
@@ -303,9 +309,9 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
           </Sheet>
         ) : (
           <div className="fixed bottom-4 right-4 z-10 w-full max-w-lg">
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion type="single" collapsible value={isChatOpen ? "chat" : ""} onValueChange={(value) => setIsChatOpen(value === "chat")}>
               <AccordionItem
-                value="item-1"
+                value="chat"
                 className="border-none flex flex-col items-end"
               >
                 <AccordionTrigger className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-12 rounded-full p-0 shadow-lg flex items-center justify-center hover:no-underline group">

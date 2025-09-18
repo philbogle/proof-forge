@@ -70,8 +70,13 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
 
             if (theoremDoc.exists()) {
                 const theoremData = { id: theoremDoc.id, ...theoremDoc.data() } as Theorem;
-                // Security rules handle access. If getDoc succeeds, the user has permission.
-                setSelectedTheorem(theoremData);
+                // Unauthenticated users can only see approved theorems.
+                if (!theoremData.adminApproved && !user) {
+                    setSelectedTheorem(null);
+                } else {
+                    // Security rules handle the rest of the access control.
+                    setSelectedTheorem(theoremData);
+                }
             } else {
                 setSelectedTheorem(null);
                 toast({
@@ -94,7 +99,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         }
     };
     fetchTheorem();
-  }, [initialTheoremId, toast]);
+  }, [initialTheoremId, toast, user]);
 
 
   const currentProofHistory = React.useMemo(() => {
