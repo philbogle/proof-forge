@@ -134,6 +134,38 @@ export default function Home() {
     }
   };
 
+  const addTheoremDialog = (
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+            <Button>
+                <Plus className="mr-2 h-4 w-4" /> Add Theorem
+            </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+                <DialogTitle>Add New Theorem</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <Combobox
+                    options={wellKnownTheorems}
+                    value={newTheoremName}
+                    onChange={setNewTheoremName}
+                    placeholder="Select a theorem..."
+                    searchPlaceholder="Search for a theorem..."
+                    emptyMessage="No matching theorem found."
+                />
+            </div>
+            <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddTheorem} disabled={isSaving}>
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                Save Theorem
+                </Button>
+            </div>
+        </DialogContent>
+    </Dialog>
+  );
+
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
@@ -145,35 +177,7 @@ export default function Home() {
                 <p className="mt-2 text-lg text-muted-foreground">Select a theorem below to begin your exploration.</p>
             </div>
             {user && !authLoading && !isMobile && (
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" /> Add Theorem
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px]">
-                        <DialogHeader>
-                            <DialogTitle>Add New Theorem</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <Combobox
-                                options={wellKnownTheorems}
-                                value={newTheoremName}
-                                onChange={setNewTheoremName}
-                                placeholder="Select a theorem..."
-                                searchPlaceholder="Search for a theorem..."
-                                emptyMessage="No matching theorem found."
-                            />
-                        </div>
-                        <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                            <Button onClick={handleAddTheorem} disabled={isSaving}>
-                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                            Save Theorem
-                            </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                addTheoremDialog
             )}
         </div>
         
@@ -211,6 +215,12 @@ export default function Home() {
                   </div>
                 )}
             </>
+        )}
+
+        {user && !authLoading && (
+            <div className="mt-12 flex justify-center">
+                {addTheoremDialog}
+            </div>
         )}
       </main>
     </div>
