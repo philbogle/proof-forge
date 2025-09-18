@@ -27,7 +27,7 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
 
     return (
       <Card ref={ref} className='p-6 scroll-mt-32'>
-        <CardContent className={cn("min-h-[450px] p-0", (isLoading || isGenerating) && "flex items-center justify-center")}>
+        <CardContent className={cn("min-h-[450px] p-0", isGenerating && "flex items-center justify-center")}>
           {isGenerating ? (
             <ProofLoadingIndicator />
           ) : showLoadingSkeleton ? (
@@ -38,11 +38,11 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-11/12" />
                 </div>
-                <div className="space-y-3">
+                 <div className="space-y-3">
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-10/12" />
                 </div>
-                <div className="space-y-3">
+                 <div className="space-y-3">
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-full" />
