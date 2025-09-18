@@ -8,23 +8,35 @@ import { ProofLoadingIndicator } from '@/components/proof-loading-indicator';
 import { ProofDisplay } from '@/components/proof-display';
 import { cn } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
+import { Skeleton } from '../ui/skeleton';
 
 interface ProofViewProps {
   proof: string;
   renderMarkdown: boolean;
   isLoading: boolean;
+  isGenerating: boolean;
   isFading: boolean;
   isEditable: boolean;
   onRawProofChange: (newProof: string) => void;
 }
 
 const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
-  ({ proof, renderMarkdown, isLoading, isFading, isEditable, onRawProofChange }, ref) => {
+  ({ proof, renderMarkdown, isLoading, isGenerating, isFading, isEditable, onRawProofChange }, ref) => {
+
+    const showLoadingSkeleton = isLoading && !isGenerating;
+
     return (
       <Card ref={ref} className='p-6 scroll-mt-32'>
-        <CardContent className={cn("min-h-[250px] p-0", isLoading && "flex items-center justify-center")}>
-          {isLoading ? (
+        <CardContent className={cn("min-h-[450px] p-0", (isLoading || isGenerating) && "flex items-center justify-center")}>
+          {isGenerating ? (
             <ProofLoadingIndicator />
+          ) : showLoadingSkeleton ? (
+             <div className="space-y-4 w-full">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-full" />
+             </div>
           ) : (
              <div
               className={cn(

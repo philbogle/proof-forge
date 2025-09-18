@@ -517,7 +517,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       const { intent } = await classifyIntent({ text: currentQuestion });
   
       if (intent === 'edit' && !canEdit) {
-        const message = isUserAdmin ? "You can only edit a theorem once it's been approved." : "You can only edit your own theorems before they have been approved. You can still ask questions about the proof.";
+        const message = isOwner ? "You can only edit a theorem once it's been approved." : "You can only edit your own theorems before they have been approved. You can still ask questions about the proof.";
         setConversationHistory(prev => {
           const newHistory = [...prev];
           newHistory[newHistory.length - 1].answer = message;

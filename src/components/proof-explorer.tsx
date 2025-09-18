@@ -152,7 +152,8 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                     : proofPages[currentPage] || ''
                 }
                 renderMarkdown={renderMarkdown}
-                isLoading={isProofLoading || isGenerating}
+                isLoading={isProofLoading}
+                isGenerating={isGenerating}
                 isFading={isFading}
                 isEditable={isEditing && !renderMarkdown}
                 onRawProofChange={setRawProofEdit}
@@ -163,7 +164,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                   {isUserAdmin && (
                     <Button variant="outline" size="sm" onClick={() => generateNewProof(true)} disabled={isProofLoading || isGenerating}>
                       <Sparkles className={`mr-2 h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`} />
-                      {isGenerating ? 'Generating...' : 'Recreate'}
+                      Recreate
                     </Button>
                   )}
                    {canEdit && (
