@@ -2,32 +2,82 @@
 'use client';
 
 import * as React from 'react';
-import { collection, getDocs, query, where, orderBy, addDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Theorem, TheoremOwner } from '@/lib/types';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
 import AppHeader from '@/components/proof-explorer/app-header';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2, Plus, Save } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Loader2, Plus, Save, Edit, Trash2 } from 'lucide-react';
 import { wellKnownTheorems } from '@/lib/theorems';
 import { Combobox } from '@/components/ui/combobox';
 import { Separator } from '@/components/ui/separator';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Input } from '@/components/ui/input';
 
-function TheoremCard({ theorem }: { theorem: Theorem }) {
-  return (
-    <Link href={`/proof/${theorem.id}`} key={theorem.id} className="block hover:no-underline">
-      <Card className="h-full flex flex-col justify-center hover:border-primary/50 hover:shadow-md transition-all duration-200">
+interface TheoremCardProps {
+  theorem: Theorem;
+  showControls?: boolean;
+  onEdit?: (theorem: Theorem) => void;
+  onDelete?: (theoremId: string) => void;
+}
+
+function TheoremCard({ theorem, showControls, onEdit, onDelete }: TheoremCardProps) {
+  const cardContent = (
+    <Card className="h-full flex flex-col justify-between hover:border-primary/50 hover:shadow-md transition-all duration-200">
+      <Link href={`/proof/${theorem.id}`} className="block hover:no-underline flex-grow">
         <CardHeader>
           <CardTitle>{theorem.name}</CardTitle>
+          {!theorem.adminApproved && <CardDescription>Pending approval</CardDescription>}
         </CardHeader>
-      </Card>
-    </Link>
+      </Link>
+      {showControls && (
+        <CardFooter className="flex justify-end gap-2 border-t pt-4 mt-auto">
+          <Button variant="ghost" size="sm" onClick={() => onEdit?.(theorem)}>
+            <Edit className="mr-2 h-4 w-4" /> Edit
+          </Button>
+          <AlertDialog>
+              <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                  <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the theorem and all associated proof versions.
+                  </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDelete?.(theorem.id)}>
+                      Continue
+                  </AlertDialogAction>
+                  </AlertDialogFooter>
+              </AlertDialogContent>
+          </AlertDialog>
+        </CardFooter>
+      )}
+    </Card>
   );
+
+  return showControls ? cardContent : cardContent;
 }
 
 export default function Home() {
@@ -37,9 +87,12 @@ export default function Home() {
   const [userTheorems, setUserTheorems] = React.useState<Theorem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
   const [newTheoremName, setNewTheoremName] = React.useState('');
+  const [currentTheorem, setCurrentTheorem] = React.useState<Partial<Theorem>>({});
+
   const isMobile = useIsMobile();
 
   const fetchTheorems = React.useCallback(async () => {
@@ -74,16 +127,8 @@ export default function Home() {
             setUserTheorems(userList);
         } catch (error) {
             console.error("Error fetching user's theorems:", error);
-            // This toast is for debugging and might indicate a missing index.
-            // It won't show for most users unless there's a real problem.
-            toast({
-                variant: 'destructive',
-                title: 'Error Fetching Your Theorems',
-                description: 'Could not fetch your submitted theorems. This might be a database permissions issue.',
-            });
         }
     } else {
-      // Clear user theorems if user is logged out
       setUserTheorems([]);
     }
     
@@ -119,14 +164,14 @@ export default function Home() {
         await addDoc(collection(db, 'theorems'), {
             name: newTheoremName,
             owner: owner,
-            adminApproved: false, // Always false for user-added theorems
+            adminApproved: false,
             order: maxOrder + 1,
         });
         toast({ title: 'Success', description: 'Theorem added and is pending approval.' });
         
-        setIsDialogOpen(false);
+        setIsAddDialogOpen(false);
         setNewTheoremName('');
-        fetchTheorems(); // Refresh the lists
+        fetchTheorems();
     } catch(error) {
          console.error('Error saving theorem:', error);
          toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save the theorem.'});
@@ -135,8 +180,49 @@ export default function Home() {
     }
   };
 
+  const handleOpenEditDialog = (theorem: Theorem) => {
+    setCurrentTheorem(theorem);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveChanges = async () => {
+    if (!user || !currentTheorem.id) return;
+    if (!currentTheorem.name) {
+      toast({ variant: 'destructive', title: 'Validation Error', description: 'Name is required.' });
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const theoremRef = doc(db, 'theorems', currentTheorem.id);
+      await updateDoc(theoremRef, { name: currentTheorem.name });
+      toast({ title: 'Success', description: 'Theorem updated.' });
+      setIsEditDialogOpen(false);
+      setCurrentTheorem({});
+      fetchTheorems();
+    } catch(e) {
+      console.error('Error updating theorem', e);
+      toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update theorem.'});
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteTheorem = async (theoremId: string) => {
+    setIsLoading(true);
+    try {
+      await deleteDoc(doc(db, 'theorems', theoremId));
+      toast({ title: 'Success', description: 'Theorem deleted.' });
+      fetchTheorems();
+    } catch (e) {
+      console.error('Error deleting theorem', e);
+      toast({ variant: 'destructive', title: 'Deletion Failed', description: 'Could not delete theorem.'});
+      setIsLoading(false);
+    }
+  };
+
+
   const addTheoremDialog = (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogTrigger asChild>
             <Button>
                 <Plus className="mr-2 h-4 w-4" /> Add Theorem
@@ -157,7 +243,7 @@ export default function Home() {
                 />
             </div>
             <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleAddTheorem} disabled={isSaving}>
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 Add Theorem
@@ -167,10 +253,36 @@ export default function Home() {
     </Dialog>
   );
 
+  const editTheoremDialog = (
+     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+                <DialogTitle>Edit Theorem</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+               <Input
+                  id="name"
+                  value={currentTheorem.name || ''}
+                  onChange={(e) => setCurrentTheorem({...currentTheorem, name: e.target.value})}
+                  className="col-span-3"
+                />
+            </div>
+            <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleSaveChanges} disabled={isSaving}>
+                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  Save Changes
+                </Button>
+            </div>
+        </DialogContent>
+     </Dialog>
+  )
+
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
       <AppHeader />
+      {editTheoremDialog}
       <main className="mt-6">
         <div className="flex items-center justify-between mb-8">
             <div className="text-left">
@@ -191,7 +303,13 @@ export default function Home() {
                 {approvedTheorems.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {approvedTheorems.map((theorem) => (
-                      <TheoremCard key={theorem.id} theorem={theorem} />
+                      <TheoremCard
+                        key={theorem.id}
+                        theorem={theorem}
+                        showControls={user?.uid === theorem.owner.id}
+                        onEdit={handleOpenEditDialog}
+                        onDelete={handleDeleteTheorem}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -210,7 +328,13 @@ export default function Home() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                        {userTheorems.map((theorem) => (
-                         <TheoremCard key={theorem.id} theorem={theorem} />
+                         <TheoremCard
+                            key={theorem.id}
+                            theorem={theorem}
+                            showControls={true}
+                            onEdit={handleOpenEditDialog}
+                            onDelete={handleDeleteTheorem}
+                          />
                        ))}
                     </div>
                   </div>
@@ -218,7 +342,7 @@ export default function Home() {
             </>
         )}
 
-        {user && !authLoading && (
+        {user && !authLoading && isMobile && (
             <div className="mt-12 flex justify-center">
                 {addTheoremDialog}
             </div>
