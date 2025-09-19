@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
     ],
   },
   serverActions: {
-    timeout: 120, // 2 minutes
+    timeout: 300, // 5 minutes
   },
 };
 
