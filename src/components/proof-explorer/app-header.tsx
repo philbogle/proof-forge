@@ -14,7 +14,7 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogIn, LogOut, Shield, ChevronDown, Info, User } from 'lucide-react';
+import { LogIn, LogOut, Shield, ChevronDown, HelpCircle, User } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { isAdmin } from '@/lib/auth';
 import Link from 'next/link';
@@ -97,9 +97,9 @@ export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
                             </DropdownMenuItem>
                         )}
                         <DropdownMenuItem asChild>
-                            <Link href="/about">
-                                <Info className="mr-2 h-4 w-4" />
-                                <span>About</span>
+                            <Link href="/help">
+                                <HelpCircle className="mr-2 h-4 w-4" />
+                                <span>Help</span>
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -115,9 +115,9 @@ export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
                             <span>Sign In</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                            <Link href="/about">
-                                <Info className="mr-2 h-4 w-4" />
-                                <span>About</span>
+                            <Link href="/help">
+                                <HelpCircle className="mr-2 h-4 w-4" />
+                                <span>Help</span>
                             </Link>
                         </DropdownMenuItem>
                     </>
