@@ -53,12 +53,16 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} />
+        <Command shouldFilter={false}>
+          <CommandInput 
+            placeholder={searchPlaceholder}
+            value={value}
+            onValueChange={onChange}
+           />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
             <ScrollArea className="h-72">
                 <CommandGroup>
-                {options.map((option) => (
+                {options.filter(option => option.toLowerCase().includes(value.toLowerCase())).map((option) => (
                     <CommandItem
                     key={option}
                     value={option}

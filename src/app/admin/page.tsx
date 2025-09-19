@@ -131,8 +131,10 @@ export default function AdminPage() {
         } else {
             // Add new theorem
             const owner: TheoremOwner = { id: user.uid, name: user.displayName };
+            const finalTheoremName = currentTheorem.name?.endsWith('.') ? currentTheorem.name.slice(0, -1) : currentTheorem.name;
+
             await addDoc(collection(db, 'theorems'), {
-                name: currentTheorem.name,
+                name: finalTheoremName,
                 owner: owner,
                 adminApproved: true,
                 order: currentTheorem.order,
@@ -243,24 +245,16 @@ export default function AdminPage() {
               <DialogTitle>{currentTheorem.id ? 'Edit Theorem' : 'Add New Theorem'}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              {currentTheorem.id ? (
-                <Input
-                    placeholder="Theorem Name"
-                    value={currentTheorem.name || ''}
-                    onChange={(e) => setCurrentTheorem({ ...currentTheorem, name: e.target.value })}
-                />
-              ) : (
-                <Combobox
-                    options={wellKnownTheorems}
-                    value={currentTheorem.name || ''}
-                    onChange={(value) => {
-                        setCurrentTheorem({ ...currentTheorem, name: value });
-                    }}
-                    placeholder="Select a theorem..."
-                    searchPlaceholder="Search for a theorem..."
-                    emptyMessage="No matching theorem found."
-                />
-              )}
+              <Combobox
+                  options={wellKnownTheorems}
+                  value={currentTheorem.name || ''}
+                  onChange={(value) => {
+                      setCurrentTheorem({ ...currentTheorem, name: value });
+                  }}
+                  placeholder="Select or type a theorem..."
+                  searchPlaceholder="Search or type a theorem..."
+                  emptyMessage="No matching theorem found."
+              />
             </div>
              <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
@@ -352,7 +346,7 @@ export default function AdminPage() {
                  </Button>
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
+                        <Button variant="ghost" size="sm">
                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                         </Button>
                     </AlertDialogTrigger>

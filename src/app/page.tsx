@@ -123,8 +123,10 @@ export default function Home() {
           -1
         );
         
+        const finalTheoremName = newTheoremName.endsWith('.') ? newTheoremName.slice(0, -1) : newTheoremName;
+
         await addDoc(collection(db, 'theorems'), {
-            name: newTheoremName,
+            name: finalTheoremName,
             owner: owner,
             adminApproved: false,
             order: maxOrder + 1,
@@ -158,8 +160,8 @@ export default function Home() {
                     options={wellKnownTheorems}
                     value={newTheoremName}
                     onChange={setNewTheoremName}
-                    placeholder="Select a theorem..."
-                    searchPlaceholder="Search for a theorem..."
+                    placeholder="Select or type a theorem..."
+                    searchPlaceholder="Search or type a theorem..."
                     emptyMessage="No matching theorem found."
                 />
             </div>
