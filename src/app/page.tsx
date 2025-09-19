@@ -16,7 +16,6 @@ import { Loader2, Plus, Save } from 'lucide-react';
 import { wellKnownTheorems } from '@/lib/theorems';
 import { Combobox } from '@/components/ui/combobox';
 import { Separator } from '@/components/ui/separator';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
@@ -54,8 +53,6 @@ export default function Home() {
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
   const [newTheoremName, setNewTheoremName] = React.useState('');
-
-  const isMobile = useIsMobile();
 
   const fetchTheorems = React.useCallback(async () => {
     setIsLoading(true);
@@ -181,11 +178,7 @@ export default function Home() {
     <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
       <AppHeader />
       <main className="mt-6">
-        <div className="flex items-center justify-end mb-8">
-            {user && !authLoading && !isMobile && (
-                addTheoremDialog
-            )}
-        </div>
+        <div className="mb-8"></div>
         
         {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
