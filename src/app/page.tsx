@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2, Plus, Save } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { wellKnownTheorems } from '@/lib/theorems';
 import { Combobox } from '@/components/ui/combobox';
 import { Separator } from '@/components/ui/separator';
@@ -101,12 +101,12 @@ export default function Home() {
     }
   }, [authLoading, fetchTheorems]);
 
-  const handleAddTheorem = async () => {
+  const handleAddTheorem = React.useCallback(async (name: string) => {
     if (!user) {
         toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to add a theorem.' });
         return;
     }
-    if (!newTheoremName) {
+    if (!name) {
         toast({ variant: 'destructive', title: 'Validation Error', description: 'Theorem name is required.' });
         return;
     }
@@ -120,7 +120,7 @@ export default function Home() {
           -1
         );
         
-        const finalTheoremName = newTheoremName.endsWith('.') ? newTheoremName.slice(0, -1) : newTheoremName;
+        const finalTheoremName = name.endsWith('.') ? name.slice(0, -1) : name;
 
         await addDoc(collection(db, 'theorems'), {
             name: finalTheoremName,
@@ -139,36 +139,41 @@ export default function Home() {
     } finally {
         setIsSaving(false);
     }
+  }, [user, toast, approvedTheorems, userTheorems, fetchTheorems]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTheorem(newTheoremName);
+    }
   };
 
   const addTheoremDialog = (
-    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+    <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => {
+        setIsAddDialogOpen(isOpen);
+        if (!isOpen) {
+            setNewTheoremName('');
+        }
+    }}>
         <DialogTrigger asChild>
             <Button>
                 <Plus className="mr-2 h-4 w-4" /> Add Theorem
             </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
+        <DialogContent className="sm:max-w-[600px] p-0" onKeyDown={handleKeyDown}>
+            <DialogHeader className='p-6 pb-0'>
                 <DialogTitle>Add New Theorem</DialogTitle>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-                <Combobox
-                    options={wellKnownTheorems}
-                    value={newTheoremName}
-                    onChange={setNewTheoremName}
-                    placeholder="Select or type a theorem..."
-                    searchPlaceholder="Search or type a theorem..."
-                    emptyMessage="No matching theorem found."
-                />
-            </div>
-            <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddTheorem} disabled={isSaving}>
-                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                Add Theorem
-                </Button>
-            </div>
+            <Combobox
+                options={wellKnownTheorems}
+                value={newTheoremName}
+                onValueChange={setNewTheoremName}
+                onSelect={(value) => handleAddTheorem(value)}
+                placeholder="Select or type a theorem..."
+                searchPlaceholder="Search or type a theorem..."
+                emptyMessage="No matching theorem found."
+                className='border-none shadow-none'
+            />
         </DialogContent>
     </Dialog>
   );

@@ -8,7 +8,6 @@ import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, writeBatch, que
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import {
   AlertDialog,
@@ -22,7 +21,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2, Plus, Save, Trash2, Edit, AlertTriangle, CheckCircle, XCircle, ArrowUp, ArrowDown, Eye } from 'lucide-react';
+import { Loader2, Plus, Trash2, Edit, AlertTriangle, CheckCircle, XCircle, ArrowUp, ArrowDown, Eye } from 'lucide-react';
 import type { Theorem, TheoremOwner } from '@/lib/types';
 import { seedTheorems, wellKnownTheorems } from '@/lib/theorems';
 import { Label } from '@/components/ui/label';
@@ -41,6 +40,7 @@ export default function AdminPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [currentTheorem, setCurrentTheorem] = React.useState<Partial<Theorem>>({});
   const [isSaving, setIsSaving] = React.useState(false);
+  const [comboboxValue, setComboboxValue] = React.useState('');
 
   const fetchTheorems = React.useCallback(async () => {
     setIsLoading(true);
@@ -103,19 +103,21 @@ export default function AdminPage() {
   const handleOpenDialog = (theorem?: Theorem) => {
     if (theorem) {
       setCurrentTheorem(theorem);
+      setComboboxValue(theorem.name || '');
     } else {
       const nextOrder = theorems.length > 0 ? Math.max(...theorems.map(t => t.order)) + 1 : 0;
       setCurrentTheorem({ name: '', adminApproved: true, order: nextOrder });
+      setComboboxValue('');
     }
     setIsDialogOpen(true);
   };
   
-  const handleSaveChanges = async () => {
+  const handleSaveChanges = React.useCallback(async (name: string) => {
     if (!user) {
         toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in.' });
         return;
     }
-    if (!currentTheorem.name) {
+    if (!name) {
         toast({ variant: 'destructive', title: 'Validation Error', description: 'Name is required.' });
         return;
     }
@@ -126,13 +128,13 @@ export default function AdminPage() {
             // Update existing theorem
             const theoremRef = doc(db, 'theorems', currentTheorem.id);
             await updateDoc(theoremRef, {
-                name: currentTheorem.name,
+                name: name,
             });
             toast({ title: 'Success', description: 'Theorem updated successfully.' });
         } else {
             // Add new theorem
             const owner: TheoremOwner = { id: user.uid, name: user.displayName };
-            const finalTheoremName = currentTheorem.name?.endsWith('.') ? currentTheorem.name.slice(0, -1) : currentTheorem.name;
+            const finalTheoremName = name.endsWith('.') ? name.slice(0, -1) : name;
 
             await addDoc(collection(db, 'theorems'), {
                 name: finalTheoremName,
@@ -144,12 +146,20 @@ export default function AdminPage() {
         }
         setIsDialogOpen(false);
         setCurrentTheorem({});
+        setComboboxValue('');
         fetchTheorems();
     } catch(error) {
          console.error('Error saving theorem:', error);
          toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save the theorem.'});
     } finally {
         setIsSaving(false);
+    }
+  }, [user, currentTheorem, toast, fetchTheorems]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveChanges(comboboxValue);
     }
   };
 
@@ -242,29 +252,20 @@ export default function AdminPage() {
               <Plus className="mr-2 h-4 w-4" /> Add Theorem
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
+          <DialogContent className="sm:max-w-[600px] p-0" onKeyDown={handleKeyDown}>
+            <DialogHeader className='p-6 pb-0'>
               <DialogTitle>{currentTheorem.id ? 'Edit Theorem' : 'Add New Theorem'}</DialogTitle>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <Combobox
-                  options={wellKnownTheorems}
-                  value={currentTheorem.name || ''}
-                  onChange={(value) => {
-                      setCurrentTheorem({ ...currentTheorem, name: value });
-                  }}
-                  placeholder="Select or type a theorem..."
-                  searchPlaceholder="Search or type a theorem..."
-                  emptyMessage="No matching theorem found."
-              />
-            </div>
-             <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleSaveChanges} disabled={isSaving}>
-                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                  Save Changes
-                </Button>
-              </div>
+            <Combobox
+                options={wellKnownTheorems}
+                value={comboboxValue}
+                onValueChange={setComboboxValue}
+                onSelect={(value) => handleSaveChanges(value)}
+                placeholder="Select or type a theorem..."
+                searchPlaceholder="Search or type a theorem..."
+                emptyMessage="No matching theorem found."
+                className='border-none shadow-none'
+            />
           </DialogContent>
         </Dialog>
       </div>
