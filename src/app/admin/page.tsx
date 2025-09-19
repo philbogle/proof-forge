@@ -29,6 +29,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Combobox } from '@/components/ui/combobox';
 import { Badge } from '@/components/ui/badge';
+import AppHeader from '@/components/proof-explorer/app-header';
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -232,7 +233,8 @@ export default function AdminPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-6">
-      <div className="flex items-center justify-between mb-6">
+      <AppHeader />
+      <div className="flex items-center justify-between my-6">
         <h1 className="text-3xl font-bold">Manage Theorems</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
