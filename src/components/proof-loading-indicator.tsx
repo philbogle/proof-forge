@@ -47,7 +47,7 @@ function ProofGenerationAnimator() {
   }, []);
 
   return (
-    <div className="relative h-16 w-full max-w-xs overflow-hidden">
+    <div className="relative h-20 w-full max-w-xs overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
