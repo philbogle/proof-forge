@@ -17,6 +17,7 @@ import { wellKnownTheorems } from '@/lib/theorems';
 import { Combobox } from '@/components/ui/combobox';
 import { Separator } from '@/components/ui/separator';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 function TheoremCard({ theorem }: { theorem: Theorem }) {
@@ -30,6 +31,17 @@ function TheoremCard({ theorem }: { theorem: Theorem }) {
       </Card>
     </Link>
   );
+}
+
+function TheoremCardSkeleton() {
+    return (
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+            </CardHeader>
+        </Card>
+    )
 }
 
 export default function Home() {
@@ -178,8 +190,8 @@ export default function Home() {
         </div>
         
         {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => <TheoremCardSkeleton key={i} />)}
             </div>
         ) : (
             <>
