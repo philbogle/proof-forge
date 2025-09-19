@@ -62,6 +62,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
     interactionText,
     conversationHistory,
     isInteractionLoading,
+    isEditingProof,
     renderMarkdown,
     rawProofEdit,
     currentProofHistory,
@@ -94,6 +95,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
       onInteractionTextChange={setInteractionText}
       onInteract={handleInteraction}
       isInteractionLoading={isInteractionLoading}
+      isEditingProof={isEditingProof}
       conversationHistory={conversationHistory}
       isUserSignedIn={!!user}
       isUserAdmin={isUserAdmin}
@@ -136,7 +138,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
               <ProofControls
                 formalityLevels={formalityLevels}
                 formalityLevel={formalityLevel}
-                isProofLoading={isProofLoading || isGenerating}
+                isProofLoading={isProofLoading || isGenerating || isEditingProof}
                 onFormalityChange={handleFormalityChange}
                 currentPage={currentPage}
                 totalPages={proofPages.length}
@@ -153,7 +155,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                 }
                 renderMarkdown={renderMarkdown}
                 isLoading={isProofLoading}
-                isGenerating={isGenerating}
+                isGenerating={isGenerating || isEditingProof}
                 isFading={isFading}
                 isEditable={isEditing && !renderMarkdown}
                 onRawProofChange={setRawProofEdit}

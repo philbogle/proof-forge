@@ -16,6 +16,7 @@ interface InteractionPanelProps {
   onInteractionTextChange: (text: string) => void;
   onInteract: () => void;
   isInteractionLoading: boolean;
+  isEditingProof: boolean;
   conversationHistory: ConversationTurn[];
   isUserSignedIn: boolean;
   isUserAdmin: boolean;
@@ -28,6 +29,7 @@ export default function InteractionPanel({
   onInteractionTextChange,
   onInteract,
   isInteractionLoading,
+  isEditingProof,
   conversationHistory,
   isUserSignedIn,
   isUserAdmin,
@@ -118,6 +120,11 @@ export default function InteractionPanel({
                     />
                   ))}
                 </div>
+                {isEditingProof && (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                        Editing the proof, this may take a moment...
+                    </p>
+                )}
               </div>
             </div>
           )}

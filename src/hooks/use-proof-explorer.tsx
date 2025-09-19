@@ -41,6 +41,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const [interactionText, setInteractionText] = React.useState('');
   const [conversationHistory, setConversationHistory] = React.useState<ConversationTurn[]>([]);
   const [isInteractionLoading, setIsInteractionLoading] = React.useState(false);
+  const [isEditingProof, setIsEditingProof] = React.useState(false);
   const [userBackground] = React.useState(
     'a college student studying mathematics'
   );
@@ -542,8 +543,9 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
           return newHistory;
         });
       } else if (intent === 'edit') {
+        setIsEditingProof(true);
         setIsFading(true);
-        setIsGenerating(true);
+        // Do not set isGenerating, as it shows a different loading indicator
         const { editedProof, summary } = await editProof({
           proof: latestProof,
           request: currentQuestion,
@@ -561,7 +563,6 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
            return newHistory;
         });
   
-        setIsGenerating(false);
         setIsFading(false);
       }
     } catch (error: any) {
@@ -577,12 +578,9 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         newHistory[newHistory.length - 1].answer = errorMessage;
         return newHistory;
       });
-       if (isGenerating) {
-        setIsGenerating(false);
-        setIsFading(false);
-       }
     } finally {
       setIsInteractionLoading(false);
+      setIsEditingProof(false);
     }
   };
 
@@ -604,6 +602,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     interactionText,
     conversationHistory,
     isInteractionLoading,
+    isEditingProof,
     userBackground,
     renderMarkdown,
     rawProofEdit,
