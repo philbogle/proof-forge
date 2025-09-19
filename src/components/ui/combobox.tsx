@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Check } from "lucide-react"
+import { PlusCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   Command,
@@ -19,6 +19,7 @@ interface ComboboxProps {
     value: string;
     onValueChange: (value: string) => void;
     onSelect: (value: string) => void;
+    onAddNew?: (value: string) => void;
     placeholder?: string;
     searchPlaceholder?: string;
     emptyMessage?: string;
@@ -30,6 +31,7 @@ export function Combobox({
     value, 
     onValueChange,
     onSelect,
+    onAddNew,
     placeholder = "Select an option...",
     searchPlaceholder = "Search...",
     emptyMessage = "No option found.",
@@ -57,7 +59,20 @@ export function Combobox({
         onValueChange={onValueChange}
       />
       <CommandList>
-        <CommandEmpty>{emptyMessage}</CommandEmpty>
+        <CommandEmpty>
+            {onAddNew && value ? (
+                <CommandItem
+                    value={value}
+                    onSelect={() => onAddNew(value)}
+                    className="flex items-center gap-2 cursor-pointer"
+                >
+                    <PlusCircle className="h-4 w-4" />
+                    Add "{value}"
+                </CommandItem>
+            ) : (
+                <div className="py-6 text-center text-sm">{emptyMessage}</div>
+            )}
+        </CommandEmpty>
         <ScrollArea className="h-72">
           <CommandGroup>
             {filteredOptions.map((option) => (

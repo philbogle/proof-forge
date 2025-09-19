@@ -169,6 +169,7 @@ export default function Home() {
                 value={newTheoremName}
                 onValueChange={setNewTheoremName}
                 onSelect={(value) => handleAddTheorem(value)}
+                onAddNew={(value) => handleAddTheorem(value)}
                 placeholder="Select or type a theorem..."
                 searchPlaceholder="Search or type a theorem..."
                 emptyMessage="No matching theorem found."

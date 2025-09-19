@@ -261,6 +261,7 @@ export default function AdminPage() {
                 value={comboboxValue}
                 onValueChange={setComboboxValue}
                 onSelect={(value) => handleSaveChanges(value)}
+                onAddNew={(value) => handleSaveChanges(value)}
                 placeholder="Select or type a theorem..."
                 searchPlaceholder="Search or type a theorem..."
                 emptyMessage="No matching theorem found."
