@@ -37,22 +37,12 @@ export function Combobox({
     emptyMessage = "No option found.",
     className,
 }: ComboboxProps) {
-  const [filteredOptions, setFilteredOptions] = React.useState<readonly string[]>(options);
-
-  React.useEffect(() => {
-    if (value) {
-      setFilteredOptions(
-        options.filter(option => 
-          option.toLowerCase().includes(value.toLowerCase())
-        )
-      );
-    } else {
-      setFilteredOptions(options);
-    }
-  }, [value, options]);
 
   return (
-    <Command className={cn("rounded-lg border shadow-md", className)} shouldFilter={false}>
+    <Command className={cn("rounded-lg border shadow-md", className)} filter={(optionValue, search) => {
+        if (optionValue.toLowerCase().includes(search.toLowerCase())) return 1
+        return 0
+    }}>
       <CommandInput 
         placeholder={searchPlaceholder}
         value={value}
@@ -75,7 +65,7 @@ export function Combobox({
         </CommandEmpty>
         <ScrollArea className="h-72">
           <CommandGroup>
-            {filteredOptions.map((option) => (
+            {options.map((option) => (
               <CommandItem
                 key={option}
                 value={option}

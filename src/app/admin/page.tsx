@@ -158,6 +158,11 @@ export default function AdminPage() {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter') {
+      // Check if there's a highlighted item in the combobox, if so, let the select handler work
+      const activeElement = document.activeElement;
+      if (activeElement?.closest('[role="listbox"]')?.contains(activeElement) && activeElement.getAttribute('aria-selected') === 'true') {
+        return;
+      }
       e.preventDefault();
       handleSaveChanges(comboboxValue);
     }
