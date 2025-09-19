@@ -294,7 +294,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                 <MessageSquare className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-[80vh] p-0 border-t flex flex-col">
+            <SheetContent side="bottom" className="h-full p-0 border-t flex flex-col">
                 <SheetHeader className="p-4 border-b">
                     <SheetTitle>
                         <div className="flex items-center gap-2">

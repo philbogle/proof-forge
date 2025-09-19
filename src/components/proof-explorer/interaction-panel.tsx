@@ -45,17 +45,6 @@ export default function InteractionPanel({
     }
   };
 
-  const handleInputFocus = (event: React.FocusEvent<HTMLInputElement>) => {
-    // A short delay can sometimes help ensure the keyboard is up
-    // before the scroll happens, especially on iOS.
-    setTimeout(() => {
-      event.target.scrollIntoView({
-        behavior: 'smooth', // Makes the scroll animated and less jarring
-        block: 'center',    // Tries to vertically center the input in the viewport
-      });
-    }, 100);
-  };
-
   const getPlaceholderText = () => {
     if (isUserAdmin) {
         return "Ask a question or request an edit...";
@@ -119,7 +108,6 @@ export default function InteractionPanel({
             value={interactionText}
             onChange={(e) => onInteractionTextChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            onFocus={handleInputFocus}
             disabled={isInteractionLoading}
           />
           <Button
