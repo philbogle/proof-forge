@@ -10,7 +10,7 @@ import { editProof } from '@/ai/flows/edit-proof-flow';
 import { classifyIntent } from '@/ai/flows/classify-intent-flow';
 import type { FormalityLevel, ProofVersion, ConversationTurn, Theorem } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { isAdmin } from '@/lib/auth';
 import { formatProof } from '@/lib/proof-formatting';
 import { useIsMobile } from './use-mobile';
@@ -48,6 +48,8 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const [renderMarkdown, setRenderMarkdown] = React.useState(true);
   const [isEditing, setIsEditing] = React.useState(false);
   const [isChatOpen, setIsChatOpen] = React.useState(false);
+  const [isTitleEditDialogOpen, setIsTitleEditDialogOpen] = React.useState(false);
+  const [newTheoremTitle, setNewTheoremTitle] = React.useState('');
   
   const isUserAdmin = isAdmin(user);
   const isOwner = user?.uid === selectedTheorem?.owner?.id;
@@ -77,6 +79,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
                 } else {
                     // Security rules handle the rest of the access control.
                     setSelectedTheorem(theoremData);
+                    setNewTheoremTitle(theoremData.name);
                 }
             } else {
                 setSelectedTheorem(null);
@@ -501,6 +504,35 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     });
   };
 
+  const handleSaveTitle = async () => {
+    if (!selectedTheorem || !(isUserAdmin || isOwner)) {
+      toast({ variant: 'destructive', title: 'Permission Denied', description: 'You cannot edit this theorem\'s title.' });
+      return;
+    }
+    if (!newTheoremTitle.trim()) {
+      toast({ variant: 'destructive', title: 'Validation Error', description: 'Title cannot be empty.' });
+      return;
+    }
+
+    const oldTitle = selectedTheorem.name;
+    const finalNewTitle = newTheoremTitle.trim();
+
+    // Optimistic UI update
+    setSelectedTheorem(prev => prev ? { ...prev, name: finalNewTitle } : null);
+    setIsTitleEditDialogOpen(false);
+    toast({ title: 'Success', description: 'Theorem title updated successfully.' });
+
+    try {
+      const theoremRef = doc(db, 'theorems', selectedTheorem.id);
+      await updateDoc(theoremRef, { name: finalNewTitle });
+    } catch (error) {
+      console.error('Error updating theorem title:', error);
+      // Revert optimistic update on failure
+      setSelectedTheorem(prev => prev ? { ...prev, name: oldTitle } : null);
+      toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update the theorem title.' });
+    }
+  };
+
   const handleInteraction = async () => {
     if (!interactionText.trim() || !selectedTheorem) return;
 
@@ -609,6 +641,11 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     currentProofHistory,
     isChatOpen,
     setIsChatOpen,
+    isTitleEditDialogOpen,
+    setIsTitleEditDialogOpen,
+    newTheoremTitle,
+    setNewTheoremTitle,
+    handleSaveTitle,
     setProof,
     setRawProofEdit,
     setProofPages,

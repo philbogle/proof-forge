@@ -66,8 +66,10 @@ export default function AdminPage() {
   }, [toast]);
 
   React.useEffect(() => {
-    fetchTheorems();
-  }, [fetchTheorems]);
+    if (user) {
+      fetchTheorems();
+    }
+  }, [fetchTheorems, user]);
 
   const handleSeedDatabase = async () => {
     if (!user) return;
@@ -135,12 +137,14 @@ export default function AdminPage() {
             // Add new theorem
             const owner: TheoremOwner = { id: user.uid, name: user.displayName };
             const finalTheoremName = name.endsWith('.') ? name.slice(0, -1) : name;
+            const maxOrder = theorems.length > 0 ? Math.max(...theorems.map(t => t.order), -1) + 1 : 0;
+
 
             await addDoc(collection(db, 'theorems'), {
                 name: finalTheoremName,
                 owner: owner,
                 adminApproved: true,
-                order: currentTheorem.order,
+                order: currentTheorem.order ?? maxOrder,
             });
             toast({ title: 'Success', description: 'Theorem added successfully.' });
         }
@@ -154,7 +158,7 @@ export default function AdminPage() {
     } finally {
         setIsSaving(false);
     }
-  }, [user, currentTheorem, toast, fetchTheorems]);
+  }, [user, currentTheorem, toast, fetchTheorems, theorems]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter') {

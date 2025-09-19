@@ -34,6 +34,8 @@ import {
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Input } from './ui/input';
 
 const formalityLevels: { id: FormalityLevel; name: string }[] = [
   { id: 'english', name: 'English' },
@@ -83,6 +85,11 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
     handleRollback,
     handleToggleEditing,
     handleDiscardChanges,
+    isTitleEditDialogOpen,
+    setIsTitleEditDialogOpen,
+    newTheoremTitle,
+    setNewTheoremTitle,
+    handleSaveTitle,
   } = useProofExplorer({ proofViewRef, initialTheoremId });
 
   const [isDiscardAlertOpen, setIsDiscardAlertOpen] = React.useState(false);
@@ -120,6 +127,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
 
   const canEdit = isUserAdmin || (isOwner && !selectedTheorem?.adminApproved);
   const canDelete = isUserAdmin || isOwner;
+  const canEditTitle = isUserAdmin || isOwner;
 
   return (
     <TooltipProvider>
@@ -133,6 +141,35 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                   <ChevronRight className="h-4 w-4 mx-1" />
                   <span className="text-foreground font-medium">{selectedTheorem?.name}</span>
                 </div>
+                {canEditTitle && (
+                  <Dialog open={isTitleEditDialogOpen} onOpenChange={setIsTitleEditDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="link" className="p-1 h-auto -ml-1 text-muted-foreground hover:text-primary">
+                        <Pencil className="h-3 w-3 mr-1" />
+                        Edit Title
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Edit Theorem Title</DialogTitle>
+                        <DialogDescription>
+                          Change the name of the theorem. This will be updated across the application.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="py-4">
+                        <Input
+                          value={newTheoremTitle}
+                          onChange={(e) => setNewTheoremTitle(e.target.value)}
+                          placeholder="Enter new theorem title"
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsTitleEditDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleSaveTitle} disabled={!newTheoremTitle || newTheoremTitle === selectedTheorem?.name}>Save</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
             </div>
             <div className="sticky top-0 z-10 bg-background py-4">
               <ProofControls
