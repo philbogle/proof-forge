@@ -33,6 +33,7 @@ export default function InteractionPanel({
   onClose,
 }: InteractionPanelProps) {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -43,6 +44,13 @@ export default function InteractionPanel({
       e.preventDefault();
       onInteract();
     }
+  };
+
+  const handleFocus = () => {
+    // Small delay to allow the keyboard to start appearing
+    setTimeout(() => {
+      inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
   };
 
   const getPlaceholderText = () => {
@@ -104,10 +112,12 @@ export default function InteractionPanel({
       <div className="mt-auto border-t pt-4">
         <div className="flex gap-2">
           <Input
+            ref={inputRef}
             placeholder={getPlaceholderText()}
             value={interactionText}
             onChange={(e) => onInteractionTextChange(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={handleFocus}
             disabled={isInteractionLoading}
           />
           <Button
