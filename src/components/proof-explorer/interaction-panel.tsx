@@ -2,6 +2,7 @@
 'use client';
 
 import * as React from 'react';
+import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, User, Bot, Send } from 'lucide-react';
@@ -102,7 +103,21 @@ export default function InteractionPanel({
                 <Bot className="h-5 w-5 text-primary-foreground" />
               </span>
               <div className="flex-1 rounded-lg border bg-card p-3 text-sm">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <div className="flex items-center gap-1.5 h-5">
+                  {[...Array(3)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="h-2 w-2 rounded-full bg-muted-foreground"
+                      animate={{ y: ['0%', '-40%', '0%'] }}
+                      transition={{
+                        duration: 0.9,
+                        repeat: Infinity,
+                        delay: i * 0.15,
+                        ease: 'easeInOut',
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           )}
