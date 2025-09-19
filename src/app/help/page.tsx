@@ -37,6 +37,15 @@ export default function HelpPage() {
             </p>
             <h2 className="flex items-center gap-2">Features</h2>
 
+            <h3 className="flex items-center gap-2"><Navigation className="h-5 w-5" />Navigating Proofs</h3>
+            <p>
+              Understanding a proof is easier when you can explore it at your own pace.
+            </p>
+            <ul>
+              <li><strong>Formality Levels:</strong> At the top of the proof, you'll find buttons for "English", "Semiformal", and "Rigorous". Click these to instantly switch between different explanation styles without losing your place.</li>
+              <li><strong>Step-by-Step Navigation:</strong> Each proof is divided into logical steps. Use the arrow buttons in the top right to move between these steps one at a time, allowing you to focus on a single part of the argument.</li>
+            </ul>
+
             <h3 className="flex items-center gap-2"><Sparkles className="h-5 w-5" />AI Assistant</h3>
             <p>
               The AI Assistant is your interactive guide to understanding proofs. You can ask it questions or, if you have permission, ask it to edit a proof.
@@ -53,15 +62,6 @@ export default function HelpPage() {
             <ul>
               <li><strong>AI Edit:</strong> Click the "AI Edit" button to bring up the chat and make a request, as described above. This is the recommended way to make changes.</li>
               <li><strong>Manual Edit:</strong> Click the "Edit" button to enter direct editing mode. You can switch between a raw Markdown editor and a live preview. Remember to save your changes.</li>
-            </ul>
-
-            <h3 className="flex items-center gap-2"><Navigation className="h-5 w-5" />Navigating Proofs</h3>
-            <p>
-              Understanding a proof is easier when you can explore it at your own pace.
-            </p>
-            <ul>
-              <li><strong>Formality Levels:</strong> At the top of the proof, you'll find buttons for "English", "Semiformal", and "Rigorous". Click these to instantly switch between different explanation styles without losing your place.</li>
-              <li><strong>Step-by-Step Navigation:</strong> Each proof is divided into logical steps. Use the arrow buttons in the top right to move between these steps one at a time, allowing you to focus on a single part of the argument.</li>
             </ul>
             
             <h3 className="flex items-center gap-2"><Shield className="h-5 w-5" />Admin & Ownership Features</h3>
