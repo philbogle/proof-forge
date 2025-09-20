@@ -66,7 +66,7 @@ export function ProofDisplay({ content }: { content: string }) {
         if (segment.type === 'details' && segment.title) {
           return (
             <Accordion key={index} type="single" collapsible className="w-full">
-              <AccordionItem value={`item-${index}`} className='border-b-0'>
+              <AccordionItem value={`item-${index}`} className='my-0 py-0 border-b-0'>
                 <AccordionTrigger className='py-2 text-base font-semibold hover:no-underline'>{segment.title}</AccordionTrigger>
                 <AccordionContent>
                    <ReactMarkdown
