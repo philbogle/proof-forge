@@ -31,7 +31,11 @@ export function ProofDisplay({ content }: { content: string }) {
   let lastIndex = 0;
   let match;
 
-  while ((match = detailsRegex.exec(content)) !== null) {
+  // Use a slightly adjusted regex to better handle termination
+  const robustDetailsRegex = /(?<=\n|^)\?\?\?(\+)?\s+(note|warning|tip)\s+"([^"]+)"\n([\s\S]*?)(?=\n\s*\n|\n\s*\?\?\?|$)/g;
+
+
+  while ((match = robustDetailsRegex.exec(content)) !== null) {
     const [fullMatch, , , title, innerContent] = match;
     
     // Add the markdown content before this match
@@ -66,7 +70,7 @@ export function ProofDisplay({ content }: { content: string }) {
         if (segment.type === 'details' && segment.title) {
           return (
             <Accordion key={index} type="single" collapsible className="w-full">
-              <AccordionItem value={`item-${index}`} className='my-4 border-b-0 rounded-md bg-secondary/30 px-3'>
+              <AccordionItem value={`item-${index}`} className='my-2 border-b-0 rounded-md bg-secondary/30 px-3'>
                 <AccordionTrigger className='py-2 text-base font-semibold hover:no-underline'>{segment.title}</AccordionTrigger>
                 <AccordionContent>
                    <ReactMarkdown
