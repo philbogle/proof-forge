@@ -1,10 +1,12 @@
+// src/components/proof-display.tsx
 'use client';
 
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
-import remarkDetails from 'remark-details-simple';
+// Use require for CJS compatibility
+const remarkDetails = require('remark-details-simple');
 import 'katex/dist/katex.min.css';
 
 export function ProofDisplay({ content }: { content: string }) {
