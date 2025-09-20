@@ -13,8 +13,9 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-// Regex to find the custom collapsible syntax
-const detailsRegex = /(?<=\n|\A)\?\?\?(\+)?\s+(note|warning|tip)\s+"([^"]+)"\n([\s\S]*?)(?=\n\?\?\?|\n\n\n|$)/g;
+// Regex to find <details><summary>...</summary>...</details> blocks.
+// It captures the summary content and the details content.
+const detailsRegex = /<details>\s*<summary>([^<]+)<\/summary>([\s\S]*?)<\/details>/g;
 
 interface ParsedSegment {
   type: 'markdown' | 'details';
@@ -31,12 +32,8 @@ export function ProofDisplay({ content }: { content: string }) {
   let lastIndex = 0;
   let match;
 
-  // Use a slightly adjusted regex to better handle termination
-  const robustDetailsRegex = /(?<=\n|^)\?\?\?(\+)?\s+(note|warning|tip)\s+"([^"]+)"\n([\s\S]*?)(?=\n\s*\n|\n\s*\?\?\?|$)/g;
-
-
-  while ((match = robustDetailsRegex.exec(content)) !== null) {
-    const [fullMatch, , , title, innerContent] = match;
+  while ((match = detailsRegex.exec(content)) !== null) {
+    const [fullMatch, summaryContent, detailsContent] = match;
     
     // Add the markdown content before this match
     if (match.index > lastIndex) {
@@ -49,8 +46,8 @@ export function ProofDisplay({ content }: { content: string }) {
     // Add the details block
     parsedSegments.push({
       type: 'details',
-      title: title,
-      content: innerContent.trim(),
+      title: summaryContent.trim(),
+      content: detailsContent.trim(),
     });
 
     lastIndex = match.index + fullMatch.length;
