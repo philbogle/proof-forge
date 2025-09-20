@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
+import remarkDetails from 'remark-details';
 import 'katex/dist/katex.min.css';
 
 export function ProofDisplay({ content }: { content: string }) {
@@ -13,7 +14,7 @@ export function ProofDisplay({ content }: { content: string }) {
   return (
     <ReactMarkdown
       className="prose prose-blue dark:prose-invert max-w-none font-body text-base leading-relaxed"
-      remarkPlugins={[remarkMath]}
+      remarkPlugins={[remarkMath, remarkDetails]}
       rehypePlugins={[rehypeRaw, rehypeKatex]}
     >
       {content}

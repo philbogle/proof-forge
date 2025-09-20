@@ -59,7 +59,9 @@ ${input.proof}
 1.  **Incorporate the Edit:** Read the original proof and the user's request carefully. Generate a new version of the **entire proof** that incorporates the requested changes.
 2.  **Preserve Headers:** You MUST preserve the Markdown headers (e.g., \`### N. Step Title\`) from the original proof. Do not add new ones, renumber them, or remove them. This is critical for navigation.
 3.  **Maintain Formatting:** Your output must be in Markdown format, following the same styling and LaTeX conventions as the original proof.
-4.  **Handle Long Definitions:** If you are adding or expanding on a definition and it becomes lengthy (more than a sentence or two), use the HTML <details> and <summary> tags to create a collapsible block. The <summary> should contain the term being defined.
+4.  **Handle Long Definitions:** If you are adding or expanding on a definition and it becomes lengthy (more than a sentence or two), use the 'remark-details' syntax to create a collapsible block. The summary should contain the term being defined. For example:
+???+ note "Definition: Set"
+    A set is a well-defined collection of distinct objects, considered as an object in its own right.
 5.  **Embed YouTube Videos:** If the user's request includes a YouTube URL, you MUST embed it as an iframe. Identify the video ID from the URL (e.g., from \`https://www.youtube.com/watch?v=VIDEO_ID\` or \`https://youtu.be/VIDEO_ID\`) and use the following responsive HTML structure. Place it on its own line with blank lines before and after.
 
 <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto; margin-bottom: 1rem; margin-top: 1rem;">
