@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
-import remarkDetails from 'remark-details';
+import remarkDetails from 'remark-details-simple';
 import 'katex/dist/katex.min.css';
 
 export function ProofDisplay({ content }: { content: string }) {
