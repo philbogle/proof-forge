@@ -64,7 +64,7 @@ export default function InteractionPanel({
   }
 
   return (
-    <div className="flex h-full flex-col p-4">
+    <div className="flex h-full flex-col">
        {showTitle && (
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -73,8 +73,8 @@ export default function InteractionPanel({
           </div>
         </div>
       )}
-      <ScrollArea className="flex-1 pr-4 -mr-4">
-        <div className="space-y-4">
+      <ScrollArea className="flex-1">
+        <div className="space-y-4 pr-4">
           {conversationHistory.map((turn, index) => (
             <div key={index} className="space-y-4">
               {turn.question && (
