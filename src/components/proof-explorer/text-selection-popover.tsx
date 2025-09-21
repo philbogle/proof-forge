@@ -44,15 +44,17 @@ export function TextSelectionPopover({
 
   // Close popover if clicked outside
   React.useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
       if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
         // A small delay to allow the explain button to register its click
         setTimeout(() => onClose(), 100);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [onClose]);
 

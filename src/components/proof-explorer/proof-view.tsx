@@ -27,21 +27,24 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
     const [selection, setSelection] = React.useState<{ text: string; rect: DOMRect | null }>({ text: '', rect: null });
     const contentRef = React.useRef<HTMLDivElement>(null);
 
-    const handleMouseUp = () => {
-      const currentSelection = window.getSelection();
-      if (currentSelection && currentSelection.toString().trim().length > 0) {
-        const range = currentSelection.getRangeAt(0);
-        if (contentRef.current && contentRef.current.contains(range.commonAncestorContainer)) {
-          setSelection({
-            text: currentSelection.toString(),
-            rect: range.getBoundingClientRect(),
-          });
+    const handleSelection = () => {
+      // Add a small delay to allow the selection to finalize on mobile
+      setTimeout(() => {
+        const currentSelection = window.getSelection();
+        if (currentSelection && currentSelection.toString().trim().length > 0) {
+          const range = currentSelection.getRangeAt(0);
+          if (contentRef.current && contentRef.current.contains(range.commonAncestorContainer)) {
+            setSelection({
+              text: currentSelection.toString(),
+              rect: range.getBoundingClientRect(),
+            });
+          } else {
+              setSelection({ text: '', rect: null });
+          }
         } else {
-            setSelection({ text: '', rect: null });
+          setSelection({ text: '', rect: null });
         }
-      } else {
-        setSelection({ text: '', rect: null });
-      }
+      }, 50);
     };
 
     const handleExplain = () => {
@@ -66,7 +69,8 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
       <Card ref={ref} className='p-6 scroll-mt-32'>
         <CardContent 
             className={cn("min-h-[450px] p-0 relative", isGenerating && "flex items-center justify-center")}
-            onMouseUp={handleMouseUp}
+            onMouseUp={handleSelection}
+            onTouchEnd={handleSelection}
             ref={contentRef}
         >
           {isGenerating ? (
