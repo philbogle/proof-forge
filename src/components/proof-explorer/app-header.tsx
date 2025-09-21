@@ -18,6 +18,7 @@ import { LogIn, LogOut, Shield, ChevronDown, HelpCircle, User } from 'lucide-rea
 import { Skeleton } from '../ui/skeleton';
 import { isAdmin } from '@/lib/auth';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface AppHeaderProps {
   onToggleEditing?: () => void;
@@ -25,6 +26,7 @@ interface AppHeaderProps {
 
 export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
   const { user, auth, loading } = useAuth();
+  const router = useRouter();
   const isUserAdmin = isAdmin(user);
 
   const handleSignIn = async () => {
@@ -44,6 +46,7 @@ export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
     if (!auth) return;
     try {
       await signOut(auth);
+      router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
