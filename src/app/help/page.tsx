@@ -51,6 +51,7 @@ export default function HelpPage() {
               The AI Assistant is your interactive guide to understanding proofs. You can ask it questions or, if you have permission, ask it to edit a proof.
             </p>
             <ul>
+              <li><strong>Explain a selection:</strong> Highlight any part of the proof text, and an "Explain" button will appear. Click it to ask the AI to clarify that specific snippet in the context of the current proof step.</li>
               <li><strong>Ask a question:</strong> Simply type your question into the chat panel (e.g., "Can you explain what a 'base case' is?"). The AI will provide an explanation based on the context of the current proof.</li>
               <li><strong>Request an edit:</strong> If you are an administrator or the owner of an unapproved theorem, you can ask the AI to make changes. For example: "Make the first step more detailed," or "Add a collapsible section defining what a set is."</li>
             </ul>
