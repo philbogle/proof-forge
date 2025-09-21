@@ -17,5 +17,5 @@ A &= B \\\\
   &= D
 \\end{aligned}
 $$
-- Use the \\ulcorner and \\urcorner notation for Goedel numbers.
+- Use the \\ulcorner and \\urcorner notation for Goedel numbers, but **only for semiformal and rigorous proofs**. Do not use this notation for the english formality level.
 `;
