@@ -584,7 +584,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
           proof: latestProof,
           request: question,
           theoremName: selectedTheorem.name,
-          formality: formality,
+          formality: formalityLevel,
           proofSection,
         });
   
