@@ -115,7 +115,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const parseProofIntoPages = (fullProof: string) => {
     if (!fullProof || !selectedTheorem) return [];
   
-    // Split the proof by Markdown headers (### 1., ### 2., etc.)
+    // Split by Markdown headers (### 1., ### 2., etc.), but not (### 1.1, ### 1.2.3 etc.)
     const pages = fullProof.split(/(?=###\s+\d+\.)/).map(p => p.trim()).filter(Boolean);
   
     return pages.filter(p => p.trim() !== '');
