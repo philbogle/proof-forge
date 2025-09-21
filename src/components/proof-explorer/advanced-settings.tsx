@@ -28,8 +28,7 @@ interface AdvancedSettingsProps {
   selectedVersion: string;
   setSelectedVersion: (version: string) => void;
   handleRollback: () => void;
-  showAdminControls: boolean;
-  showOwnerControls: boolean;
+  showHistoryAndCacheControls: boolean;
 }
 
 export default function AdvancedSettings({
@@ -41,8 +40,7 @@ export default function AdvancedSettings({
   selectedVersion,
   setSelectedVersion,
   handleRollback,
-  showAdminControls,
-  showOwnerControls,
+  showHistoryAndCacheControls,
 }: AdvancedSettingsProps) {
   const latestVersion = currentProofHistory[0];
 
@@ -73,7 +71,7 @@ export default function AdvancedSettings({
                  </div>
                 )}
               
-              {showAdminControls && (
+              {showHistoryAndCacheControls && (
                 <div className="flex items-center justify-between">
                     <div>
                     <h4 className="font-semibold">Clear Theorem Cache</h4>
@@ -93,7 +91,7 @@ export default function AdvancedSettings({
                 </div>
               )}
 
-              {showAdminControls && (
+              {showHistoryAndCacheControls && (
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
                     <div>

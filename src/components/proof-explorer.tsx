@@ -129,6 +129,8 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
   const canEdit = isUserAdmin || (isOwner && !selectedTheorem?.adminApproved);
   const canDelete = isUserAdmin || isOwner;
   const canEditTitle = isUserAdmin || isOwner;
+  const showHistoryAndCacheControls = isUserAdmin || isOwner;
+
 
   return (
     <TooltipProvider>
@@ -258,8 +260,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                     selectedVersion={selectedVersion}
                     setSelectedVersion={setSelectedVersion}
                     handleRollback={handleRollback}
-                    showAdminControls={isUserAdmin}
-                    showOwnerControls={isOwner}
+                    showHistoryAndCacheControls={showHistoryAndCacheControls}
                   />
                 </div>
               )}
