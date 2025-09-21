@@ -55,7 +55,7 @@ export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
   return (
     <header className="mb-2 flex items-center justify-between gap-4 text-center">
       <div className="flex items-center gap-4">
-        <Link href="/" className="text-2xl font-bold tracking-tight text-foreground hover:no-underline">
+        <Link href="/" className="text-2xl md:text-3xl font-bold tracking-tight text-foreground hover:no-underline">
           Proof Forge
         </Link>
       </div>
