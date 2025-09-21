@@ -154,9 +154,9 @@ export default function InteractionPanel({
             <span className="sr-only">Submit</span>
           </Button>
         </div>
-        {!isUserSignedIn && !isUserAdmin && (
+        {!isUserSignedIn && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Sign in as an administrator to request edits.
+            Sign in to create proofs and request edits.
           </p>
         )}
       </div>

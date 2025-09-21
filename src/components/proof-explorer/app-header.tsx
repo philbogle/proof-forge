@@ -63,7 +63,7 @@ export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 { user ? (
-                    <Button variant="ghost">
+                    <Button variant="ghost" aria-label="My Account">
                         <Avatar className="h-6 w-6 mr-2">
                             <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} />
                             <AvatarFallback>
@@ -74,7 +74,7 @@ export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
                         <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                 ) : (
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" aria-label="My Account">
                         <Avatar className="h-8 w-8">
                             <AvatarFallback>
                                 <User className='h-5 w-5' />

@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2, Plus } from 'lucide-react';
+import { Loader2, Plus, LogIn } from 'lucide-react';
 import { wellKnownTheorems } from '@/lib/theorems';
 import { Combobox } from '@/components/ui/combobox';
 import { Separator } from '@/components/ui/separator';
@@ -232,11 +232,23 @@ export default function Home() {
             </>
         )}
 
-        {user && !authLoading && (
-            <div className="mt-12 flex justify-center">
-                {addTheoremDialog}
-            </div>
-        )}
+        <div className="mt-12 flex justify-center">
+            {authLoading ? (
+                <Skeleton className='h-10 w-36' />
+            ) : user ? (
+                addTheoremDialog
+            ) : (
+                <div className='text-center text-muted-foreground'>
+                    <LogIn className="mx-auto h-6 w-6 mb-2" />
+                    <p>
+                        <button onClick={() => {
+                            const signInButton = document.querySelector('[aria-label="My Account"]');
+                            if (signInButton instanceof HTMLElement) signInButton.click();
+                        }} className="text-primary hover:underline font-semibold">Sign in</button> to create and edit your own proofs.
+                    </p>
+                </div>
+            )}
+        </div>
       </main>
     </div>
   );
