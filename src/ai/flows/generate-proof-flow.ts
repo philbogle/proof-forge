@@ -30,9 +30,11 @@ ${input.userBackground ? `**Target Audience Background:** ${input.userBackground
 - For "english": Provide a step-by-step intuitive explanation. Use absolutely no math notation except very simple things like $x$ and $A(x)$. Explain everything in plain English, to someone with high-school level math background. **When introducing a mathematical term, define it naturally within the sentence, like this: "... which is an example of a set, or a collection of distinct objects."**
 - For "semiformal": Provide a step-by-step proof but allow for intuition and non-rigorous shortcuts. Use math notation for mathematical concepts where it aids clarity. The formulas should not be overly complex. **When introducing a potentially unfamiliar mathematical term, define it naturally within the sentence, like this: "... we use the concept of a bijection, which is a one-to-one correspondence between two sets."**
 - For "rigorous": Provide a traditional, formal, and rigorous mathematical proof.
-- **For long definitions (more than a sentence or two):** Use the \`remark-details\` syntax to create a collapsible block. The title should contain the term being defined. For example:
-???+ note "Definition: Set"
-    A set is a well-defined collection of distinct objects, considered as an object in its own right.
+- **For long definitions (more than a sentence or two):** Use the '<details><summary>...</summary>...</details>' syntax to create a collapsible block. The summary should contain the term being defined. For example:
+<details>
+<summary>Definition: Set</summary>
+A set is a well-defined collection of distinct objects, considered as an object in its own right.
+</details>
 
 ${input.structuralProof ? `**IMPORTANT STRUCTURAL GUIDE:** You MUST follow the same logical structure and step numbering (for both the visible text and the Markdown headers) as the provided proof below when you generate your new proof. This is critical for helping the user see how a proof is formalized across different levels.
 
