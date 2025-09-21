@@ -21,18 +21,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import Link from 'next/link';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
@@ -94,11 +86,10 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
   } = useProofExplorer({ proofViewRef, initialTheoremId });
 
   const [isDiscardAlertOpen, setIsDiscardAlertOpen] = React.useState(false);
-  const isMobile = useIsMobile();
 
-  const interactionPanel = (showTitle: boolean) => (
+  const interactionPanel = (
     <InteractionPanel
-      showTitle={showTitle}
+      showTitle={false}
       interactionText={interactionText}
       onInteractionTextChange={setInteractionText}
       onInteract={handleInteraction}
@@ -329,47 +320,33 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
           </AlertDialogContent>
         </AlertDialog>
 
-        {isMobile ? (
-          <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
-            <SheetTrigger asChild>
-               <Button className="fixed bottom-4 right-4 z-10 h-12 w-12 rounded-full shadow-lg">
+        <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
+          <SheetTrigger asChild>
+            <Button
+              className="fixed bottom-4 right-4 z-10 h-12 w-12 rounded-full shadow-lg"
+              aria-label="Toggle AI Assistant"
+            >
+              {isChatOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
                 <MessageSquare className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="bottom" className="h-full p-0 border-t flex flex-col">
-                <SheetHeader className="p-4 border-b">
-                    <SheetTitle>
-                        <div className="flex items-center gap-2">
-                            <Bot className="h-6 w-6" />
-                            <span className="text-xl font-semibold">AI Assistant</span>
-                        </div>
-                    </SheetTitle>
-                </SheetHeader>
-                <div className="flex-1 overflow-y-auto">
-                    {interactionPanel(false)}
-                </div>
-            </SheetContent>
-          </Sheet>
-        ) : (
-          <div className="fixed bottom-4 right-4 z-10 w-full max-w-lg">
-            <Accordion type="single" collapsible value={isChatOpen ? "chat" : ""} onValueChange={(value) => setIsChatOpen(value === "chat")}>
-              <AccordionItem
-                value="chat"
-                className="border-none flex flex-col items-end"
-              >
-                <AccordionTrigger className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-12 rounded-full p-0 shadow-lg flex items-center justify-center hover:no-underline group">
-                  <MessageSquare className="h-6 w-6 group-data-[state=open]:hidden" />
-                  <X className="h-6 w-6 group-data-[state=closed]:hidden" />
-                </AccordionTrigger>
-                <AccordionContent className="w-full">
-                  <div className="mt-2 rounded-lg border bg-card shadow-xl">
-                    {interactionPanel(true)}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
-        )}
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="h-full p-0 border-t flex flex-col sm:h-4/5 sm:rounded-t-lg sm:max-w-2xl sm:mx-auto">
+              <SheetHeader className="p-4 border-b">
+                  <SheetTitle>
+                      <div className="flex items-center gap-2">
+                          <Bot className="h-6 w-6" />
+                          <span className="text-xl font-semibold">AI Assistant</span>
+                      </div>
+                  </SheetTitle>
+              </SheetHeader>
+              <div className="flex-1 overflow-y-auto">
+                  {interactionPanel}
+              </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </TooltipProvider>
   );

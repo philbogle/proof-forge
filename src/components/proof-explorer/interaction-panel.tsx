@@ -156,7 +156,7 @@ export default function InteractionPanel({
         </div>
         {!isUserSignedIn && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Sign in to create proofs and request edits.
+            Sign in to create and edit your own proofs.
           </p>
         )}
       </div>
