@@ -20,7 +20,7 @@ const ConversationTurnSchema = z.object({
 const AnswerQuestionInputSchema = z.object({
   theoremName: z.string().describe('The name of the theorem.'),
   theoremText: z.string().describe('The text of the theorem.'),
-  question: z.string().describe('The user question about the theorem.'),
+  question: z.string().describe('The user question about the theorem. This may include a specific snippet of text the user has selected.'),
   formalityLevel: z
     .enum(['english', 'semiformal', 'rigorous'])
     .describe('The current formality level of the proof.'),
@@ -47,9 +47,9 @@ const prompt = ai.definePrompt({
   output: {schema: AnswerQuestionOutputSchema},
   prompt: `You are an expert mathematician and a helpful AI assistant. Your goal is to answer the user's questions about a mathematical proof.
 
-You should use the provided proof text and conversation history as the primary context. However, you are encouraged to draw upon your broad mathematical knowledge to provide deeper insights, clarify concepts, and offer explanations that may go beyond the literal text of the proof.
+Your answer should be clear, concise, and adapted to the current formality level.
 
-Answer clearly and concisely, adapting your explanation to the current formality level.
+**CRITICAL INSTRUCTION:** If the user's question includes a quoted snippet of text, your primary goal is to explain THAT SPECIFIC SNIPPET within the context of the proof. Start your answer by directly addressing the selected text.
 
 {{#if history}}
 **Conversation History:**

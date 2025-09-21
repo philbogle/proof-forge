@@ -9,6 +9,7 @@ import { ProofDisplay } from '@/components/proof-display';
 import { cn } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
 import { Skeleton } from '../ui/skeleton';
+import { TextSelectionPopover } from './text-selection-popover';
 
 interface ProofViewProps {
   proof: string;
@@ -18,16 +19,56 @@ interface ProofViewProps {
   isFading: boolean;
   isEditable: boolean;
   onRawProofChange: (newProof: string) => void;
+  onExplainSelection: (selection: string) => void;
 }
 
 const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
-  ({ proof, renderMarkdown, isLoading, isGenerating, isFading, isEditable, onRawProofChange }, ref) => {
+  ({ proof, renderMarkdown, isLoading, isGenerating, isFading, isEditable, onRawProofChange, onExplainSelection }, ref) => {
+    const [selection, setSelection] = React.useState<{ text: string; rect: DOMRect | null }>({ text: '', rect: null });
+    const contentRef = React.useRef<HTMLDivElement>(null);
+
+    const handleMouseUp = () => {
+      const currentSelection = window.getSelection();
+      if (currentSelection && currentSelection.toString().trim().length > 0) {
+        const range = currentSelection.getRangeAt(0);
+        if (contentRef.current && contentRef.current.contains(range.commonAncestorContainer)) {
+          setSelection({
+            text: currentSelection.toString(),
+            rect: range.getBoundingClientRect(),
+          });
+        } else {
+            setSelection({ text: '', rect: null });
+        }
+      } else {
+        setSelection({ text: '', rect: null });
+      }
+    };
+
+    const handleExplain = () => {
+      onExplainSelection(selection.text);
+      setSelection({ text: '', rect: null });
+    };
+
+    React.useEffect(() => {
+        // Close popover if user scrolls
+        const handleScroll = () => {
+            if (selection.rect) {
+                setSelection({ text: '', rect: null });
+            }
+        };
+        window.addEventListener('scroll', handleScroll, true); // Use capture to get scroll events early
+        return () => window.removeEventListener('scroll', handleScroll, true);
+    }, [selection.rect]);
 
     const showLoadingSkeleton = isLoading && !isGenerating;
 
     return (
       <Card ref={ref} className='p-6 scroll-mt-32'>
-        <CardContent className={cn("min-h-[450px] p-0", isGenerating && "flex items-center justify-center")}>
+        <CardContent 
+            className={cn("min-h-[450px] p-0 relative", isGenerating && "flex items-center justify-center")}
+            onMouseUp={handleMouseUp}
+            ref={contentRef}
+        >
           {isGenerating ? (
             <ProofLoadingIndicator />
           ) : showLoadingSkeleton ? (
@@ -69,6 +110,15 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
             )}
             </div>
           )}
+
+           {selection.rect && (
+                <TextSelectionPopover
+                    selectionRect={selection.rect}
+                    containerRef={contentRef}
+                    onExplain={handleExplain}
+                    onClose={() => setSelection({ text: '', rect: null })}
+                />
+            )}
         </CardContent>
       </Card>
     );

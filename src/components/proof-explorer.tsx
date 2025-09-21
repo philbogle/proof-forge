@@ -78,6 +78,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
     handleRawProofSave,
     handleInteraction,
     setInteractionText,
+    handleExplainSelection,
     generateNewProof,
     handleClearCache,
     handleDeleteTheorem,
@@ -196,6 +197,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
                 isFading={isFading}
                 isEditable={isEditing && !renderMarkdown}
                 onRawProofChange={setRawProofEdit}
+                onExplainSelection={handleExplainSelection}
               />
 
               {!isEditing && (

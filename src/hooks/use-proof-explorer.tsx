@@ -533,13 +533,15 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     }
   };
 
-  const handleInteraction = async () => {
-    if (!interactionText.trim() || !selectedTheorem) return;
+  const handleInteraction = React.useCallback(async (text?: string) => {
+    const question = text || interactionText;
+    if (!question.trim() || !selectedTheorem) return;
 
     setIsInteractionLoading(true);
-    const currentQuestion = interactionText;
-    setInteractionText('');
-    setConversationHistory(prev => [...prev, { question: currentQuestion, answer: '' }]);
+    if (!text) {
+      setInteractionText('');
+    }
+    setConversationHistory(prev => [...prev, { question, answer: '' }]);
   
     const proofSection = proofPages[currentPage] || '';
     const cacheKey = `${selectedTheorem.id}-${formalityLevel}`;
@@ -547,7 +549,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     const canEdit = isUserAdmin || (isOwner && !selectedTheorem.adminApproved);
   
     try {
-      const { intent } = await classifyIntent({ text: currentQuestion });
+      const { intent } = await classifyIntent({ text: question });
   
       if (intent === 'edit' && !canEdit) {
         const message = isOwner ? "You can only edit a theorem once it's been approved." : "You can only edit your own theorems before they have been approved. You can still ask questions about the proof.";
@@ -564,7 +566,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         const result = await answerQuestion({
           theoremName: selectedTheorem.name,
           theoremText: latestProof,
-          question: currentQuestion,
+          question,
           formalityLevel,
           proofSection,
           history: conversationHistory.slice(0, -1), // Don't include the current question
@@ -580,9 +582,9 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         // Do not set isGenerating, as it shows a different loading indicator
         const { editedProof, summary } = await editProof({
           proof: latestProof,
-          request: currentQuestion,
+          request: question,
           theoremName: selectedTheorem.name,
-          formality: formalityLevel,
+          formality: formality,
           proofSection,
         });
   
@@ -614,7 +616,18 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
       setIsInteractionLoading(false);
       setIsEditingProof(false);
     }
+  }, [interactionText, selectedTheorem, currentPage, proof, isUserAdmin, isOwner, formalityLevel, proofPages, proofCache, conversationHistory, toast, saveProofVersion]);
+
+  const handleExplainSelection = (selection: string) => {
+    if (!selection) return;
+    setIsChatOpen(true);
+    const question = `Explain the following in the context of the current proof step: "${selection}"`;
+    // Use a timeout to ensure the chat is open before the interaction starts
+    setTimeout(() => {
+        handleInteraction(question);
+    }, 100);
   };
+
 
   return {
     user,
@@ -655,6 +668,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     handleRawProofSave,
     handleInteraction,
     setInteractionText,
+    handleExplainSelection,
     generateNewProof,
     handleClearCache,
     handleDeleteTheorem,
