@@ -578,26 +578,31 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
         });
       } else if (intent === 'edit') {
         setIsEditingProof(true);
-        setIsFading(true);
-        // Do not set isGenerating, as it shows a different loading indicator
-        const { editedProof, summary } = await editProof({
-          proof: latestProof,
-          request: question,
-          theoremName: selectedTheorem.name,
-          formality: formalityLevel,
-          proofSection,
+        const { editedProof, summary, editedFormality } = await editProof({
+            proof: latestProof,
+            request: question,
+            theoremName: selectedTheorem.name,
+            currentFormality: formalityLevel,
+            proofSection,
         });
-  
-        const formattedProof = await saveProofVersion(formalityLevel, editedProof);
 
-        setProof(formattedProof);
+        const formattedProof = await saveProofVersion(editedFormality, editedProof);
+
+        let finalSummary = summary;
+        if (editedFormality === formalityLevel) {
+            setIsFading(true);
+            setProof(formattedProof);
+            setIsFading(false);
+        } else {
+            // Edited a different formality level in the background
+            finalSummary += ` (Note: I've updated the ${editedFormality} proof.)`;
+        }
+
         setConversationHistory(prev => {
            const newHistory = [...prev];
-           newHistory[newHistory.length - 1].answer = summary;
+           newHistory[newHistory.length - 1].answer = finalSummary;
            return newHistory;
         });
-  
-        setIsFading(false);
       }
     } catch (error: any) {
       console.error(`Error during interaction:`, error);
