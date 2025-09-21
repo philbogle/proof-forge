@@ -72,7 +72,7 @@ export function ProofLoadingIndicator() {
       <Loader2 className="h-12 w-12 animate-spin text-primary" />
       <div className="text-center">
         <p className="text-xl font-semibold text-foreground mb-2">Generating Proof</p>
-        <p className="text-sm text-muted-foreground mb-6">This may take a moment...</p>
+        <p className="text-sm text-muted-foreground mb-6">This may take a minute or so...</p>
       </div>
       <ProofGenerationAnimator />
     </div>

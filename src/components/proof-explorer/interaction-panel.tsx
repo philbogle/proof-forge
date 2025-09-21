@@ -122,7 +122,7 @@ export default function InteractionPanel({
                 </div>
                 {isEditingProof && (
                     <p className="mt-2 text-xs text-muted-foreground">
-                        Editing the proof, this may take a moment...
+                        Editing the proof, this may take a minute or so...
                     </p>
                 )}
               </div>
