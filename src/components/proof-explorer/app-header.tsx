@@ -34,7 +34,7 @@ export default function AppHeader({ onToggleEditing }: AppHeaderProps) {
       await signInWithPopup(auth, provider);
     } catch (error: any) {
       // Don't log an error if the user just closes the sign-in popup
-      if (error.code !== 'auth/cancelled-popup-request') {
+      if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
         console.error('Error signing in with Google:', error);
       }
     }
