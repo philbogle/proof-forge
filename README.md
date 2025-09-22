@@ -20,7 +20,16 @@ This application is built with Next.js and Firebase, and utilizes Genkit for its
 *   **Backend & Database:** [Firebase](https://firebase.google.com/) (Firestore, Authentication).
 *   **AI/Generative:** Google's [Genkit](https://firebase.google.com/docs/genkit).
 
-## Getting Started
+
+## Sample deployment
+
+This app is deployed to https://proof-forge.vercel.app/.
+
+## Vercel Deployment
+
+You can easily deploy this to Vercel by point Vercel at this repo and setting the GEMINI_APP_KEY environment variable to a valid key.
+
+## Development
 
 1.  **Install dependencies:**
     ```bash
