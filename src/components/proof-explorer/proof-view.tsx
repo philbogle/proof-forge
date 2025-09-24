@@ -3,6 +3,7 @@ import * as React from 'react';
 import {
   Card,
   CardContent,
+  CardFooter,
 } from '@/components/ui/card';
 import { ProofLoadingIndicator } from '@/components/proof-loading-indicator';
 import { ProofDisplay } from '@/components/proof-display';
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
 import { Skeleton } from '../ui/skeleton';
 import { TextSelectionPopover } from './text-selection-popover';
+import { Info } from 'lucide-react';
 
 interface ProofViewProps {
   proof: string;
@@ -64,11 +66,12 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
     }, [selection.rect]);
 
     const showLoadingSkeleton = isLoading && !isGenerating;
+    const showFooter = !isLoading && !isGenerating && !isEditable;
 
     return (
-      <Card ref={ref} className='p-6 scroll-mt-32'>
+      <Card ref={ref} className='scroll-mt-32'>
         <CardContent 
-            className={cn("min-h-[450px] p-0 relative", isGenerating && "flex items-center justify-center")}
+            className={cn("min-h-[450px] p-6 relative", isGenerating && "flex items-center justify-center")}
             onMouseUp={handleSelection}
             onTouchEnd={handleSelection}
             ref={contentRef}
@@ -124,6 +127,14 @@ const ProofView = React.forwardRef<HTMLDivElement, ProofViewProps>(
                 />
             )}
         </CardContent>
+         {showFooter && (
+          <CardFooter>
+            <div className="flex items-center justify-center w-full text-sm text-muted-foreground gap-2">
+              <Info className="h-4 w-4" />
+              <p>Select any text within the proof to have it explained.</p>
+            </div>
+          </CardFooter>
+        )}
       </Card>
     );
   }
