@@ -68,7 +68,7 @@ export function ProofDisplay({ content }: { content: string }) {
           return (
             <Accordion key={index} type="single" collapsible className="w-full">
               <AccordionItem value={`item-${index}`} className='my-2 border-b-0 rounded-md bg-secondary/30 px-3'>
-                <AccordionTrigger className='py-2 text-base font-semibold hover:no-underline'>{segment.title}</AccordionTrigger>
+                <AccordionTrigger className='py-2 text-lg font-semibold hover:no-underline'>{segment.title}</AccordionTrigger>
                 <AccordionContent>
                    <ReactMarkdown
                       remarkPlugins={[remarkMath]}
