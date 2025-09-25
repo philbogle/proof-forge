@@ -135,7 +135,8 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
 
   React.useEffect(() => {
     if (isEditing) {
-      setRawProofEdit(proof); // Start editing with the full proof
+      // When entering editing mode, set the raw proof to the content of the current page.
+      setRawProofEdit(proofPages[currentPage] || '');
       setRenderMarkdown(false); // Default to edit view when entering editing mode
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -343,7 +344,7 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const handleDiscardChanges = () => {
     setIsEditing(false);
     setRenderMarkdown(true);
-    setRawProofEdit(proof);
+    setRawProofEdit(proofPages[currentPage] || '');
   };
 
 
@@ -358,6 +359,17 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const handlePageChange = (page: number) => {
     if (page === currentPage) return;
     
+    if (isEditing) {
+      // In editing mode, just change the page and update the editor content
+      setIsFading(true);
+      setTimeout(() => {
+        setCurrentPage(page);
+        setRawProofEdit(proofPages[page] || '');
+        setIsFading(false);
+      }, 150);
+      return;
+    }
+
     if (isMobile) {
       proofViewRef.current?.scrollIntoView();
     }
@@ -479,9 +491,13 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
   const handleRawProofSave = () => {
     if (!isUserAdmin && !isOwner || !selectedTheorem) return;
 
-    const previousProof = proof;
+    // Reconstruct the full proof from the edited page
+    const newProofPages = [...proofPages];
+    newProofPages[currentPage] = rawProofEdit;
+    const fullNewProof = newProofPages.join('\n\n');
   
-    const formattedProof = formatProof(rawProofEdit);
+    const formattedProof = formatProof(fullNewProof);
+    const previousProof = proof;
     
     setProof(formattedProof);
     setIsEditing(false);
@@ -641,7 +657,8 @@ export function useProofExplorer({ proofViewRef, initialTheoremId }: UseProofExp
     isEditing,
     selectedTheorem,
     formalityLevel,
-    proof,
+    // For ProofView, provide the current page content for both viewing and editing
+    proof: isEditing ? rawProofEdit : proofPages[currentPage] || '',
     proofPages,
     currentPage,
     isFading,

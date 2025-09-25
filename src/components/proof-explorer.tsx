@@ -49,6 +49,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
     isEditing,
     selectedTheorem,
     formalityLevel,
+    proof,
     proofPages,
     currentPage,
     isFading,
@@ -59,7 +60,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
     isInteractionLoading,
     isEditingProof,
     renderMarkdown,
-    rawProofEdit,
+    setRawProofEdit,
     currentProofHistory,
     selectedVersion,
     isChatOpen,
@@ -67,7 +68,6 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
     handleFormalityChange,
     handlePageChange,
     setRenderMarkdown,
-    setRawProofEdit,
     handleRawProofSave,
     handleInteraction,
     setInteractionText,
@@ -180,11 +180,7 @@ export default function ProofExplorer({ initialTheoremId }: ProofExplorerProps) 
             <div className="space-y-4">
               <ProofView
                 ref={proofViewRef}
-                proof={
-                  isEditing
-                    ? rawProofEdit
-                    : proofPages[currentPage] || ''
-                }
+                proof={proof}
                 renderMarkdown={renderMarkdown}
                 isLoading={isProofLoading}
                 isGenerating={isGenerating || isEditingProof}
